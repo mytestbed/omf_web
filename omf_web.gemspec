@@ -1,10 +1,11 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "omf_web/version"
+require "omf-web/version"
 
 Gem::Specification.new do |s|
   s.name        = "omf_web"
-  s.version     = OmfWeb::VERSION
+#  s.version     = OmfWeb::VERSION
+  s.version     = 0.9
   s.authors     = ["NICTA"]
   s.email       = ["omf-user@lists.nicta.com.au"]
   s.homepage    = "https://www.mytestbed.net"
