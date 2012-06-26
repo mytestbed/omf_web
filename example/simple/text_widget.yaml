@@ -1,0 +1,12 @@
+
+# Defines a widget which shows text with an embedded
+# widget
+#
+widget:
+  id: text1
+  name: Text
+  type: text
+  content:
+    url: omf_web/example/simple/sample.md
+
+      

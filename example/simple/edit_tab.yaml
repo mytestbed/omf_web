@@ -1,0 +1,20 @@
+
+
+# Define a 'dashboard' consisting of two columns of widgets
+#
+
+widget:
+  id: edit
+  name: Edit Code
+  top_level: true
+  priority: 700
+  type: layout/two_columns/50_50
+  left:
+    - text1
+  right:
+    - type: code
+      height: 800
+      content:
+        url: omf_web/example/simple/sample.md
+  
+
