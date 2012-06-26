@@ -7,6 +7,6 @@ widget:
   name: Text
   type: text
   content:
-    url: omf_web/example/simple/sample.md
+    url: example/simple/sample.md
 
-      
+

@@ -15,6 +15,6 @@ widget:
     - type: code
       height: 800
       content:
-        url: omf_web/example/simple/sample.md
-  
+        url: example/simple/sample.md
+
 
