@@ -7,15 +7,15 @@ require 'omf-oml/tuple'
 require 'omf-oml/sql_row'
 
 module OMF::OML
-        
-  # This class fetches the content of an sqlite3 database and serves it as multiple 
-  # OML streams. 
+
+  # This class fetches the content of an sqlite3 database and serves it as multiple
+  # OML streams.
   #
-  # After creating the object, the @run@ method needs to be called to 
+  # After creating the object, the @run@ method needs to be called to
   # start producing the streams.
   #
-  class OmlSqlSource < LObject
-    
+  class OmlSqlSource < OMF::Common::LObject
+
     # +opts+ - passed on as +opts+ to the OmlSqlRow constructor
     #
     def initialize(db_file, opts = {})
@@ -26,7 +26,7 @@ module OMF::OML
       @tables = {}
       @table_opts = opts
     end
-    
+
     # Register a proc to be called when a new stream was
     # discovered on this endpoint.
     #
@@ -37,16 +37,16 @@ module OMF::OML
         @on_new_stream_procs.delete key
       end
     end
-    
-    
+
+
     # def report_new_stream(stream)
       # @on_new_stream_procs.each_value do |proc|
         # proc.call(stream)
       # end
     # end
-    
-    # Start checking the database for tables and create a new stream 
-    # by calling the internal +report_new_table+ method. 
+
+    # Start checking the database for tables and create a new stream
+    # by calling the internal +report_new_table+ method.
     # If +check_every+ > 0 continue checking every +check_every+ seconds
     # for new tables in the database, otherwise it's only checked once
     #
@@ -58,18 +58,18 @@ module OMF::OML
         Thread.new do
           @running = true
           while (@running)
-            begin 
+            begin
               run_once()
             rescue Exception => ex
               error "Exception in OmlSqlSource#run: #{ex}"
               debug "Exception in OmlSqlSource#run: #{ex.backtrace.join("\n\t")}"
             end
             sleep check_every
-          end 
+          end
         end
       end
     end
-    
+
     def run_once()
       unless @db
         @db = SQLite3::Database.new(@db_file)
@@ -82,14 +82,14 @@ module OMF::OML
         report_new_table(table_name, @table_opts) unless table_name.start_with?('_')
       end
     end
-    
-    
+
+
     protected
-    
+
     # THis method is being called for every table detected in the database.
     # It creates a new +OmlSqlRow+ object with +opts+ as the only argument.
     # The tables is then streamed as a tuple stream.
-    # After the stream has been created, each block registered with 
+    # After the stream has been created, each block registered with
     # +on_new_stream+ is then called with the new stream as its single
     # argument.
     #

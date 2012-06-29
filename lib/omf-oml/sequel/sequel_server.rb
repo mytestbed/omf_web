@@ -14,7 +14,7 @@ require 'omf_oml'
 module OMF::OML::Sequel
   module Server
 
-    class Query < LObject
+    class Query < OMF::Common::LObject
 
       def self.parse(xmls, repoFactory = RepositoryFactory.new, logger = Logger.new(STDOUT))
         if xmls.kind_of? String
@@ -222,7 +222,7 @@ module OMF::OML::Sequel
 
     end # Query
 
-    class RepositoryFactory < LObject
+    class RepositoryFactory < OMF::Common::LObject
 
       def initialize(opts = {})
         @opts = opts
