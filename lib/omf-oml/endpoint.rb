@@ -5,13 +5,13 @@ require 'omf_oml'
 require 'omf-oml/oml_tuple'
 
 module OMF::OML
-        
-  # This class parses an OML network stream and creates various OML mstreams which can 
-  # be visualized. After creating the object, the @run@ method needs to be called to 
+
+  # This class parses an OML network stream and creates various OML mstreams which can
+  # be visualized. After creating the object, the @run@ method needs to be called to
   # start processing the stream.
   #
-  class OmlEndpoint < LObject
-    
+  class OmlEndpoint < OMF::Common::LObject
+
     # Register a proc to be called when a new stream was
     # discovered on this endpoint.
     #
@@ -22,20 +22,20 @@ module OMF::OML
         @on_new_stream_procs.delete key
       end
     end
-    
+
     def initialize(port = 3000, host = "127.0.0.1")
       require 'socket'
       @serv = TCPServer.new(host, port)
       @running = false
       @on_new_stream_procs = {}
     end
-    
+
     def report_new_stream(stream)
       @on_new_stream_procs.each_value do |proc|
         proc.call(stream)
       end
     end
-    
+
     def run(in_thread = true)
       if in_thread
         Thread.new do
@@ -45,20 +45,20 @@ module OMF::OML
         _run
       end
     end
-    
+
     private
-    
+
     def _run
-      @running = true      
+      @running = true
       while @running do
         sock = @serv.accept
         debug "OML client connected: #{sock}"
-        
+
         Thread.new do
           begin
             conn = OmlConnection.new(self)
             conn.run(sock)
-            debug "OML client disconnected: #{sock}"            
+            debug "OML client disconnected: #{sock}"
           rescue Exception => ex
             error "Exception in OmlConnection: #{ex}"
             debug "Exception in OmlConnection: #{ex.backtrace.join("\n\t")}"
@@ -66,19 +66,19 @@ module OMF::OML
             sock.close
           end
         end
-        
+
       end
     end
   end
-  
-  # PRIVATE 
+
+  # PRIVATE
   # An instance of this class is created by +OmlEndpoint+ to deal with
   # and individual client connection (socket). An EndPoint is creating
   # and instance and then immediately calls the +run+ methods.
   #
   #
-  class OmlSession < MObject  # :nodoc
-    
+  class OmlSession < OMF::Common::LObject  # :nodoc
+
     # Return the value for the respective @key@ in the protocol header.
     #
     def [](key)
@@ -91,20 +91,20 @@ module OMF::OML
       @streams = []
       @on_new_stream_procs = {}
     end
-    
-    # This methods blocks until the peer disconnects. Each new stream is reported 
+
+    # This methods blocks until the peer disconnects. Each new stream is reported
     # to the @reportProc@
     #
     def run(socket)
       parse_header(socket)
       parse_rows(socket)
     end
-    
+
     private
     def parse_header(socket, &reportStreamProc)
       while (l = socket.gets.strip)
         return if l.length == 0
-        
+
         key, *value = l.split(':')
         if (key == 'schema')
           parse_schema(value.join(':'))
@@ -120,13 +120,13 @@ module OMF::OML
       els = desc.split(' ')
       #puts "ELS: #{els.inspect}"
       index = els.shift.to_i - 1
-      
+
       sname = els.shift
       schema = els.collect do |el|
         name, type = el.split(':')
         {:name => name.to_sym, :type => type.to_sym}
       end
-      
+
       @streams[index] = row = OmlTuple.new(schema, sname)
       @endpoint.report_new_stream(row)
     end
@@ -134,13 +134,13 @@ module OMF::OML
     def parse_rows(socket)
       while (l = socket.gets)
         return if l.length == 0
-        
+
         els = l.split("\t")
         index = els.delete_at(1).to_i - 1
         row = @streams[index].parse_row(els)
       end
     end
-    
+
     # def parse_row(els, sindex)
       # ts, index, *rest = els
       # row = {:oml_sname => @name, :oml_ts => ts.to_f, :oml_seq_no => index.to_i}
@@ -151,10 +151,10 @@ module OMF::OML
       # end
       # add_row(row)
     # end
-                     
+
   end # OMLEndpoint
-  
-  
+
+
 end
 
 if $0 == __FILE__
@@ -165,7 +165,7 @@ if $0 == __FILE__
   ep.on_new_stream() do |s|
     puts "New stream: #{s}"
     s.on_new_vector() do |v|
-      puts "New vector: #{v.select(:oml_ts, :value).join('|')}"      
+      puts "New vector: #{v.select(:oml_ts, :value).join('|')}"
       toml.add_row(v.select(:oml_ts, :value))
     end
   end

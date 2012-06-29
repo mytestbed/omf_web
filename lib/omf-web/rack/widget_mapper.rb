@@ -3,17 +3,17 @@ require 'omf_common/lobject'
 require 'rack'
 require 'omf-web/session_store'
 require 'omf-web/widget'
-OMF::Web::Theme.require 'widget_page' 
-      
-module OMF::Web::Rack 
-       
+OMF::Web::Theme.require 'widget_page'
+
+module OMF::Web::Rack
+
   class WidgetMapper < OMF::Common::LObject
 
     def initialize(opts = {})
       @opts = opts
       @tabs = {}
     end
-    
+
     def call(env)
       req = ::Rack::Request.new(env)
       sessionID = req.params['sid']
@@ -21,19 +21,19 @@ module OMF::Web::Rack
         sessionID = "s#{(rand * 10000000).to_i}"
       end
       Thread.current["sessionID"] = sessionID
-      
+
       body, headers = render_page(req)
       if headers.kind_of? String
-        headers = {"Content-Type" => headers}
+        headers = {"Content-Type" => headers, "Access-Control-Allow-Origin" => "*"}
       end
-      [200, headers, [body]] 
+      [200, headers, [body]]
     end
-    
+
     def render_page(req)
-      
+
       opts = @opts.dup
       opts[:prefix] = req.script_name
-      opts[:request] = req      
+      opts[:request] = req
       opts[:path] = req.path_info
 
       p = req.path_info
@@ -56,13 +56,13 @@ module OMF::Web::Rack
 
     def render_widget_list(popts)
       wlist = OMF::Web::Widget.registered_widgets
-      [wlist.to_json, 'text/json']
+      [wlist.to_json, 'application/json']
     end
-     
+
   end # WidgetMapper
-  
-end # OMF::Web::Rack 
+
+end # OMF::Web::Rack
 
 
-      
-        
+
+
