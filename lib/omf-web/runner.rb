@@ -46,7 +46,7 @@ module OMF::Web
         :wait                 => Thin::Controllers::Cluster::DEFAULT_WAIT_TIME,
  
         :rackup               => File.dirname(__FILE__) + '/config.ru',
-        :static_dirs          => ["#{File.dirname(__FILE__)}/../../share/htdocs", "./resources"]
+        :static_dirs          => ["./resources", "#{File.dirname(__FILE__)}/../../share/htdocs"]
       }.merge(opts)
       
  
@@ -82,6 +82,9 @@ module OMF::Web
     
     
     def run!
+      if theme = @options[:theme]
+        OMF::Web::Theme.theme = theme
+      end
       OMF::Web::Theme.require 'page'
       super
     end

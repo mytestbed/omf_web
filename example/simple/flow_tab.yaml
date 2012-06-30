@@ -10,5 +10,3 @@ widget:
   priority: 400
   type: layout/flow
   widgets:  [generator_table, line_chart, pie]
-
-

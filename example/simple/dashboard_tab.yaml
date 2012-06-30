@@ -14,7 +14,7 @@ widget:
       - text1
       - type: code
         content:
-          url: example/simple/sample.md
+          url: sample.md ### xexample/simple/sample.md
     - [scatter_plot, line_chart, generator_table]
     - mobile_network
   right:

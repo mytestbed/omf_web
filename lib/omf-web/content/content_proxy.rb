@@ -62,6 +62,8 @@ module OMF::Web
     def initialize(file_name, repository, opts)
       @file_name = file_name
       @repository = repository
+      @path = File.join(repository.top_dir, file_name) # requires 1.9 File.absolute_path(@file_name, @repository.top_dir)
+      
       @opts = opts
       @version = 0 # TODO: GET right version      
       
@@ -77,20 +79,27 @@ module OMF::Web
     end
     
     def on_post(req)
-      if (content = req.POST['content']) != @content
+      data = req.POST
+      if (content = data['content']) != @content
         @content = content
-        # TODO: Store content in repository
+        unless File.writable?(@path)
+          raise "Cannot write to file '#{@path}'"
+        end
+        f = File.open(@path, 'w')
+        f.write(content)
+        f.close
+        @repository.add_and_commit(@file_name, data['message'], req)
+       
       end
       [true.to_json, "text/json"]
     end
 
     def content()
       unless @content
-        path = File.join(@repository.top_dir, @file_name) # requires 1.9 File.absolute_path(@file_name, @repository.top_dir)
-        unless File.readable?(path)
-          raise "Cannot read file '#{path}'"
+        unless File.readable?(@path)
+          raise "Cannot read file '#{@path}'"
         end
-        @content = File.open(path).read
+        @content = File.open(@path).read
       end
       @content
     end

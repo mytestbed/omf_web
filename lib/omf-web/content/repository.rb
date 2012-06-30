@@ -1,4 +1,5 @@
 
+require 'grit'
 require 'omf_common/lobject'
 require 'omf_web'
 require 'omf-web/content/content_proxy'
@@ -18,8 +19,8 @@ module OMF::Web
     def self.[](opts)
       # TODO: HACK ALERT
       unless repo = @@repositories[:default]
-        #@@repositories[:default] = self.new('/tmp/foo')
-        repo = @@repositories[:default] = self.new('.')
+        repo = @@repositories[:default] = self.new('/tmp/foo')
+        #repo = @@repositories[:default] = self.new('.')
       end
       repo
     end
@@ -28,6 +29,7 @@ module OMF::Web
     
     def initialize(top_dir)
       @top_dir = top_dir
+      @repo = Grit::Repo.new(top_dir)
     end
     
     # Load content described by either a hash or a straightforward url
@@ -63,6 +65,13 @@ module OMF::Web
       return proxy
     end
     
+    def add_and_commit(file_name, message, req)
+      Dir.chdir(@top_dir) do
+        @repo.add(file_name)
+        # TODO: Should set info about committing user which should be in 'req'
+        @repo.commit_index(message || 'no message') 
+      end
+    end    
       
   end # class
 end # module

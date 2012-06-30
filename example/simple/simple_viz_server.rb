@@ -27,6 +27,7 @@ end
 #
 opts = {
   :page_title => 'Vizualisation Demo',
+  #:theme => 'labwiki'
   #:use_tabs => [:graph]
   # :tabs => {
     # :foo => {:name => 'Foo', :order => 1, :class => Foo},

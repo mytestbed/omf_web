@@ -21,6 +21,7 @@ module OMF::Web
   #   :static_dirs => [dirName, ...] - Name of directories to look for resources [.../htdocs, ./resource]
   #
   def self.start(opts)
+    puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>> USED????? "
     require 'rack'
     require 'rack/showexceptions'
     require 'thin'

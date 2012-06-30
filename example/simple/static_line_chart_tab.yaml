@@ -1,0 +1,30 @@
+
+
+# Simple tab showing a line chart with supporting table
+#
+
+widget:
+  id: download
+  name: Downloads
+  top_level: true
+  priority: 400
+  type: layout/one_column
+  widgets: 
+    - type: layout/stacked
+      widgets:
+        - type: data/line_chart2
+          data_source: 
+            name: downloads
+          mapping:
+            x_axis: t
+            y_axis: volume
+
+        - type: data/table2
+          data_source: 
+            name: downloads
+
+
+
+
+
+

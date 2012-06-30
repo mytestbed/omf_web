@@ -103,7 +103,7 @@ module OMF::Web::Rack
       popts[:active_id] = 'unknown'
       popts[:flash] = {:alert => %{There are no components defined for this site.}}
       popts[:tabs] = []      
-      [OMF::Web::Theme::Page.new(popts).to_html, 'text/html']
+      [OMF::Web::Theme::Page.new(nil, popts).to_html, 'text/html']
     end
    
     def render_page(req)
