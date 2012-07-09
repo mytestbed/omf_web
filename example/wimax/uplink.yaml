@@ -1,0 +1,59 @@
+
+# POWER Reading
+#
+
+widget:
+  id: uplink
+  name: Uplink 
+  top_level: true
+  priority: 200
+  type: layout/tabbed
+  widgets: 
+    - name: Service DU
+      type: data/line_chart2
+      data_source: 
+        name: wimax
+      mapping:
+        x_axis: oml_ts_server
+        y_axis: ulsdu
+        group_by: oml_sender_id
+      axis:
+        x:
+          ticks:
+            type: date
+            format: %I:%M
+            transition: 0
+          legend: Time (sec)
+        y:
+          ticks:
+            format: s
+          legend:  
+            text: Packets
+            offset: 60
+
+    - name: Protocol DU
+      type: data/line_chart2
+      data_source: 
+        name: wimax
+      mapping:
+        x_axis: oml_ts_server
+        y_axis: ulpdu
+        group_by: oml_sender_id
+      axis:
+        x:
+          ticks:
+            type: date
+            format: %I:%M
+            transition: 0
+          legend: Time (sec)
+        y:
+          ticks:
+            format: s
+          legend:  
+            text: Packets
+            offset: 60
+
+    - type: data/table2
+      name: Data
+      data_source: 
+        name: wimax

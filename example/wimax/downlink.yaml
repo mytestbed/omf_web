@@ -1,0 +1,59 @@
+
+# POWER Reading
+#
+
+widget:
+  id: downlink
+  name: Downlink 
+  top_level: true
+  priority: 250
+  type: layout/tabbed
+  widgets: 
+    - name: Service DU
+      type: data/line_chart2
+      data_source: 
+        name: wimax
+      mapping:
+        x_axis: oml_ts_server
+        y_axis: dlsdu
+        group_by: oml_sender_id
+      axis:
+        x:
+          ticks:
+            type: date
+            format: %I:%M
+            transition: 0
+          legend: Time (sec)
+        y:
+          ticks:
+            format: s
+          legend:  
+            text: Packets
+            offset: 60
+
+    - name: Protocol DU
+      type: data/line_chart2
+      data_source: 
+        name: wimax
+      mapping:
+        x_axis: oml_ts_server
+        y_axis: dlpdu
+        group_by: oml_sender_id
+      axis:
+        x:
+          ticks:
+            type: date
+            format: %I:%M
+            transition: 0
+          legend: Time (sec)
+        y:
+          ticks:
+            format: s
+          legend:  
+            text: Packets
+            offset: 60
+
+    - type: data/table2
+      name: Data
+      data_source: 
+        name: wimax

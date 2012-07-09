@@ -1,0 +1,40 @@
+
+# POWER Reading
+#
+
+widget:
+  id: power
+  name: Power
+  top_level: true
+  priority: 100
+  type: layout/tabbed
+  widgets: 
+    - type: data/line_chart2
+      name: Power
+      data_source: 
+        name: wimax
+      mapping:
+        x_axis: oml_ts_server
+        y_axis: power
+        group_by: oml_sender_id
+      axis:
+        x:
+          ticks:
+            type: date
+            format: %I:%M
+            transition: 0
+          legend: Time (sec)
+        y:
+          ticks:
+            format: s
+          legend:  
+            text: Power [dbm]
+            offset: 60
+      margin: 
+        left: 100
+        
+
+    - type: data/table2
+      name: Data
+      data_source: 
+        name: wimax
