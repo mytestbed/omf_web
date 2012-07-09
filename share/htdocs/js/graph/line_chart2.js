@@ -61,10 +61,15 @@ L.provide('OML.line_chart2', ["graph/abstract_chart", "#OML.abstract_chart", "gr
       }
   
   
+      var y_domain = this.extent_2d(data, y_index, o.mapping.y_axis);
+      d3.min(data, function(s) {
+        var f = y_index;
+          var t = f([1,2,3,4,5,6,7,8,9,10,11,12]);
+          var m = d3.min(s, f);
+          return m;
+      });
       var y = this.y = d3.scale.linear()
-                        // .domain([y_min, y_max])
-                        .domain(this.extent_2d(data, y_index, o.mapping.y_axis))
-                        //.range([0, ca.h]) // Set range whenver this function is used - either to draw the lines or the axis
+                        .domain(y_domain)
                         .nice();
         
       this.redraw_axis(x, y);

@@ -41,6 +41,6 @@ module OMF::Web::Widget::Layout
 
 
 
-  end # StackedWidget
+  end # class
 
 end

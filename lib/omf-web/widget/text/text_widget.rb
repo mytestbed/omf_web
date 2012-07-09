@@ -20,18 +20,21 @@ module OMF::Web::Widget
       unless (content_descr = opts[:content])
         raise "Missing 'content' option in '#{opts.inspect}'"
       end      
-      @content_proxy = OMF::Web::ContentRepository[opts].load(content_descr)
-      
-      @content = OMF::Web::Widget::Text::Maruku.format_content(@content_proxy)
+      if content_descr.is_a? OMF::Web::ContentProxy
+        self.content_proxy = content_descr
+      else    
+        self.content_proxy = OMF::Web::ContentRepository[opts].load(content_descr)
+      end
+    end
+    
+    def content_proxy=(content_proxy)
+      @content_proxy = content_proxy
+      @content = OMF::Web::Widget::Text::Maruku.format_content(content_proxy)
       @opts[:title] = @content.attributes[:title] || opts[:title]
       @widgets = @content.attributes[:widgets] || []
     end
-    
+        
     def content()
-      @content = OMF::Web::Widget::Text::Maruku.format_content(@content_proxy)
-      @opts[:title] = @content.attributes[:title] || opts[:title]
-      @widgets = @content.attributes[:widgets] || []
-      
       OMF::Web::Theme.require 'text_renderer'
       OMF::Web::Theme::TextRenderer.new(self, @content, @opts)
     end
@@ -42,6 +45,10 @@ module OMF::Web::Widget
 
     def content_id
       @content_proxy.content_id
+    end
+    
+    def mime_type
+      'text/html'
     end
 
     def collect_data_sources(ds_set)

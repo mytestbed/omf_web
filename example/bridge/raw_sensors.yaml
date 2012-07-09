@@ -3,96 +3,55 @@
 # 
 #
 
-tab:
-  id: raw_sensors
-  type: two_column
-  name: Sensors
-  topts:
-    layout: layout_66_33
-    left:  
-      - type: data/line_chart2
-        wopts:
-          data_source: 
-            name: diff_sensors
-          mapping:
-            x_axis: t
-            y_axis: 
-              property: delta
-            group_by:
-              property: label              
-          axis:
-            x:
-              ticks:
-                format: s
-              legend: Time (sec)
-            y:
-              ticks:
-                format: s
-              legend: Delta
-          margin: 
-            left: 100
-      - type: data/line_chart2
-        wopts:
-          data_source: 
-            name: raw_sensors
-          mapping:
-            x_axis: t
-            y_axis: 
-              property: value
-            group_by:
-              property: sensor              
-          axis:
-            x:
-              ticks:
-                format: s
-              legend: Time (sec)
-            y:
-              ticks:
-                format: s
-              legend: Acceleration
-          margin: 
-            left: 100
-      - type: data/line_chart2
-        wopts:
-          data_source: 
-            name: raw_sensors
-          mapping:
-            x_axis: t
-            y_axis: 
-              property: smoothed
-            group_by:
-              property: sensor              
-          axis:
-            x:
-              ticks:
-                format: s
-              legend: Time (sec)
-            y:
-              ticks:
-                format: s
-              legend: Acceleration
-          margin: 
-            left: 100
-      - type: data/line_chart2
-        wopts:
-          data_source: 
-            name: raw_sensors
-          mapping:
-            x_axis: t
-            y_axis: 
-              property: raw
-            group_by:
-              property: sensor              
-          axis:
-            x:
-              ticks:
-                format: s
-              legend: Time (sec)
-            y:
-              ticks:
-                format: s
-              legend: Acceleration
-          margin: 
-            left: 100
+widget:
+  id: raw
+  name: Sensor Raw
+  top_level: true
+  priority: 400
+  type: layout/two_columns/50_50
+  left: 
+    - type: data/line_chart2
+      title: Diff
+      data_source: 
+        name: diff_sensors
+      mapping:
+        x_axis: t
+        y_axis: 
+          property: delta
+        group_by:
+          property: label              
+      axis:
+        x:
+          ticks:
+            format: s
+          legend: Time (sec)
+        y:
+          ticks:
+            format: s
+          legend: Delta
+      margin: 
+        left: 100
+        
+  right:      
+    - type: data/line_chart2
+      title: Raw
+      data_source: 
+        name: raw_sensors
+      mapping:
+        x_axis: t
+        y_axis: 
+          property: value
+        group_by:
+          property: sensor              
+      axis:
+        x:
+          ticks:
+            format: s
+          legend: Time (sec)
+        y:
+          ticks:
+            format: s
+          legend: Delta
+      margin: 
+        left: 100
 
-    right: []

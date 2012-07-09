@@ -1,5 +1,7 @@
 
+require 'base64'
 require 'grit'
+require 'find'
 require 'omf_common/lobject'
 require 'omf_web'
 require 'omf-web/content/content_proxy'
@@ -10,6 +12,15 @@ module OMF::Web
   # It retrieves, archives and versions content.
   #
   class ContentRepository
+    
+    MIME_TYPE = {
+      :js => 'text/javascript',       
+      :md => 'text/markup',
+      :rb => 'text/ruby',       
+      :r => 'text/r',       
+      :svg => 'text/svg',       
+      :txt => 'text' 
+    }
     
     @@repositories = {}
     
@@ -46,8 +57,8 @@ module OMF::Web
         end
       elsif url_or_descr.is_a? Hash
         descr = url_or_descr
-        unless url = descr[:url]
-          raise "Missing url in content description (#{content_description.inspect})"
+        unless url = descr[:url] || descr[:path]
+          raise "Missing url in content description (#{descr.inspect})"
         end
         url = url.to_s
       else
@@ -71,7 +82,48 @@ module OMF::Web
         # TODO: Should set info about committing user which should be in 'req'
         @repo.commit_index(message || 'no message') 
       end
-    end    
-      
+    end
+    
+    #
+    # Return an array of file names which are in the repository and
+    # match 'search_pattern'
+    #
+    def find_files(search_pattern)
+      search_pattern = Regexp.new(search_pattern)
+      tree = @repo.tree
+      res = []
+      _find_files(search_pattern, tree, nil, res)
+    end
+    
+    def _find_files(search_pattern, tree, dir_path, res)
+      tree.contents.each do |e|
+        d = e.name
+        long_name = dir_path ? "#{dir_path}/#{d}" : d
+
+        if e.is_a? Grit::Tree
+          _find_files(search_pattern, e, long_name, res)
+        else
+          if long_name.match(search_pattern)
+            mt = mime_type_for_file(e.name)
+            res << {:path => long_name, :name => e.name,
+                    :mime_type => mt,
+                    #:id => Base64.encode64(long_name).gsub("\n", ''), 
+                    :size => e.size, :blob => e.id}
+          end
+          # name = e.name
+          # if File.fnmatch(search_pattern, long_name)
+            # res << long_name
+          # end
+        end
+      end
+      res
+    end
+    
+    def mime_type_for_file(fname)
+      ext = fname.split('.')[-1]
+      mt = MIME_TYPE[ext.to_sym] || 'text'
+    end
+    
+          
   end # class
 end # module

@@ -16,7 +16,7 @@ L.provide('OML.table2', ["graph/abstract_widget", "#OML.abstract_widget", [
                                 '/resource/vendor/slickgrid/controls/slick.columnpicker.js',
                               ],
                                 //'/resource/vendor/slickgrid/slick.grid.css',                                
-                                '/resource/css/theme/bright/slickgrid.css',                                
+                                '/resource/theme/bright/css/slickgrid.css',                                
                                 
                               ], function () {
 

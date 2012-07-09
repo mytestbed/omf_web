@@ -146,6 +146,19 @@ module OMF::OML
       end
       t
     end
+    
+    def to_table(name = nil, opts = {})
+      unless name
+        name = @sname
+      end
+      t = OMF::OML::OmlTable.new(name, self.schema)
+      include_oml_internals = opts[:include_oml_internals] || true
+      self.on_new_tuple() do |v|
+        r = v.to_a(include_oml_internals)
+        t.add_row(r)   
+      end
+      t
+    end
 
 
     protected

@@ -1,5 +1,6 @@
 
 
+
 # Simple tab showing a line chart with supporting table
 #
 
@@ -22,6 +23,7 @@ widget:
         - type: data/table2
           data_source: 
             name: downloads
+
 
 
 

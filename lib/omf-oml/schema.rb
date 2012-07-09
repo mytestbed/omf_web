@@ -92,7 +92,13 @@ module OMF::OML
         else
           throw "Simple column schema should consist of [name, type, title] array, but found '#{col.inspect}'"
         end
+      elsif col.kind_of? Hash
+        # ensure there is a :title property
+        unless col[:title]
+          col[:title] = col[:name].to_s.split('_').collect {|s| s.capitalize}.join(' ')
+        end
       end
+      
       # should normalize type
       if type = col[:type]
         unless type = ANY2TYPE[type.to_s.downcase]

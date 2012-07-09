@@ -7,6 +7,7 @@ module OMF::Web::Theme
     
     def initialize(widgets, opts)
       super opts
+      @opts = opts
       @widgets = widgets
     end
     

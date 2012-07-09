@@ -29,7 +29,7 @@ module OMF::Web::Widget
       if restrict_to
         wa = restrict_to.map do |name|
           unless w = @@descriptions[name.to_sym]
-            raise "Unknown top level widget '#{name}"
+            raise "Unknown top level widget '#{name}'"
           end
           w
         end

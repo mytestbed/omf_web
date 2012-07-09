@@ -3,8 +3,8 @@ require 'omf-web/theme/abstract_page'
 module OMF::Web::Theme
   class Page < OMF::Web::Theme::AbstractPage
     
-    depends_on :css, '/resource/css/theme/bright/reset-fonts-grids.css'
-    depends_on :css, "/resource/css/theme/bright/bright.css"
+    depends_on :css, '/resource/theme/bright/css/reset-fonts-grids.css'
+    depends_on :css, "/resource/theme/bright/css/bright.css"
    
     depends_on :script, %{
       OML.show_widget = function(opts) {

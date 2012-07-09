@@ -44,6 +44,10 @@ module OMF::Web::Widget
       @opts[:title]
     end
     
+    def mime_type
+      @opts[:mime_type] || 'unknown'
+    end
+    
     def collect_data_sources(ds_set)
       raise "Should have been implemented"
     end

@@ -8,10 +8,11 @@ module OMF::Web::Theme
     
     depends_on :css, "/resource/css/coderay.css"
     
-    def initialize(widget, content, opts)
+    def initialize(widget, content, mode, opts)
       super opts
       @widget = widget
       @content = content
+      @mode = mode
       @opts = opts
     end
         
@@ -19,7 +20,7 @@ module OMF::Web::Theme
       
       base_id = "cm#{self.object_id}"
       edit_id = base_id + '_e'
-      mode = 'markdown'
+      mode = @mode
 
       opts = @opts.dup
       opts.delete :id
@@ -61,7 +62,7 @@ module OMF::Web::Theme
           link :href => "/resource/vendor/codemirror/lib/#{f}.css", 
             :media => "all", :rel => "stylesheet", :type => "text/css"
         end
-        link :href => "/resource/css/theme/bright/codemirror.css", 
+        link :href => "/resource/theme/bright/css/codemirror.css", 
             :media => "all", :rel => "stylesheet", :type => "text/css"
 
         ['codemirror', 'util/dialog', 'util/searchcursor', 'util/search', 'util/loadmode'].each do |f|
@@ -80,28 +81,7 @@ module OMF::Web::Theme
             #{js_toolbar.join("\n");}
           });
         })
-      end
-
-        
-      # tid = "ta#{self.object_id}"
-      # form do
-        # textarea :id => tid, :style => 'width:100%;height:100%'   do
-          # rawtext @content
-        # end
-      # end
-      # javascript(%{
-        # OML.widgets.#{tid} = CodeMirror.fromTextArea(document.getElementById("#{tid}"), {
-          # mode: "#{mode}",
-          # lineNumbers: true,
-          # matchBrackets: true,
-          # tabMode: "indent",
-#           
-        # });
-        # window.onbeforeunload = function() {
-          # return 'You may have unsaved changes!';
-        # }
-      # }) 
-        
+      end        
     end
 
     def content2()

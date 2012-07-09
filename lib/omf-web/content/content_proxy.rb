@@ -57,7 +57,7 @@ module OMF::Web
     # end
 #     
     
-    attr_reader :content_url, :content_id
+    attr_reader :content_url, :content_id, :file_name, :mime_type
     
     def initialize(file_name, repository, opts)
       @file_name = file_name
@@ -69,6 +69,8 @@ module OMF::Web
       
       @content_id = opts[:url_key]
       @content_url = "/_content/#{@content_id}?v=#{@version}"
+      
+      @mime_type = repository.mime_type_for_file(file_name)
 
       @@proxies[@content_id] = self
     end

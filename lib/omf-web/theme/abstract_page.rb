@@ -11,22 +11,24 @@ module OMF::Web::Theme
     depends_on :js, '/resource/vendor/underscore/underscore.js'
     depends_on :js, '/resource/vendor/backbone/backbone.js'    
     depends_on :js, "/resource/js/require3.js"
-  
-    depends_on :script, %{
-      L.baseURL = "/resource";
-      OML = {
-        data_sources: {},
-        widgets: {},
-        
-      };
-        
-      var OHUB = {};
-      _.extend(OHUB, Backbone.Events);
-      
-      $(window).resize(function(x) {
-        OHUB.trigger('window.resize', {});
-      });      
-    }
+
+    depends_on :js, "/resource/theme/abstract/abstract.js"
+
+    # depends_on :script, %{
+      # L.baseURL = "/resource";
+      # OML = {
+        # data_sources: {},
+        # widgets: {},
+#         
+      # };
+#         
+      # var OHUB = {};
+      # _.extend(OHUB, Backbone.Events);
+#       
+      # $(window).resize(function(x) {
+        # OHUB.trigger('window.resize', {});
+      # });      
+    # }
     
     attr_reader :opts
     

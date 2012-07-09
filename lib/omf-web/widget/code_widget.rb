@@ -12,13 +12,28 @@ module OMF::Web::Widget
       return self.new(wdescr)
     end
     
+    attr_accessor :content_proxy
+    
     def initialize(opts)
       super opts
       unless (content_descr = opts[:content])
         raise "Missing 'content' option in '#{opts.describe}'"
-      end      
-      @content_proxy = OMF::Web::ContentRepository[opts].load(content_descr)
+      end  
+      if content_descr.is_a? OMF::Web::ContentProxy
+        @content_proxy = content_descr
+      else    
+        @content_proxy = OMF::Web::ContentRepository[opts].load(content_descr)
+      end
     end
+    
+    def title 
+      @content_proxy.file_name
+    end
+    
+    def mime_type
+      @content_proxy.mime_type
+    end
+    
     
     def update_url
       @content_proxy.content_url
@@ -30,7 +45,8 @@ module OMF::Web::Widget
    
     def content()
       OMF::Web::Theme.require 'code_renderer'
-      OMF::Web::Theme::CodeRenderer.new(self, @content_proxy.content, @opts)
+      mode = @content_proxy.mime_type.split('/')[-1]
+      OMF::Web::Theme::CodeRenderer.new(self, @content_proxy.content, mode, @opts)
     end
     
     def collect_data_sources(ds_set)
