@@ -29,4 +29,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "maruku", "~> 0.6.0"
   s.add_runtime_dependency "ritex", "~> 1.0.1"
   s.add_runtime_dependency "json", "~> 1.7.3"
+  s.add_runtime_dependency "grit", "~> 2.5.0"
 end
