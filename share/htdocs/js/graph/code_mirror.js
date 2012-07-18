@@ -66,6 +66,21 @@ L.provide('OML.code_mirror',
         var s_el = $(o.base_el + " .CodeMirror-scroll");
         s_el.css('height', this.h);
       //}
+      
+        // var p = $(o.base_el);
+        // $(o.base_el).resizable({
+          // stop: function() { 
+            // cm.refresh(); 
+          // },
+          // resize: function() {
+            // var scroll = $(o.edit_el + " .CodeMirror-scroll");
+            // scroll.height($(this).height());
+            // scroll.width($(this).width());
+            // cm.refresh();
+          // }
+        // });
+
+      
       this.on_changed(this.code_mirror, null);
       this.code_mirror.refresh();
       this.code_mirror.focus();

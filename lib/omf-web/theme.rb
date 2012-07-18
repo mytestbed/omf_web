@@ -1,6 +1,8 @@
 
 
 module OMF::Web::Theme
+  extend OMF::Common::Loggable
+  
   @@search_order = ['omf-web/theme/bright']  # default theme
   @@loaded = {}
   
@@ -29,9 +31,10 @@ module OMF::Web::Theme
     return if @@loaded[name]
     @@search_order.each do |theme|
       begin
-        puts "Checking for '#{theme}/#{name}.rb'"
+        #puts "Checking for '#{theme}/#{name}.rb'"
         Kernel::require "#{theme}/#{name}"
         @@loaded[name] = true
+        debug "Using renderer '#{theme}/#{name}.rb'"        
         return
       rescue LoadError
         # Move on to the next one

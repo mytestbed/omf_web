@@ -11,25 +11,30 @@ module OMF::Web::Theme
       @content = content
     end
     
+
     def content
       wid = "w#{@widget.object_id}"
       div :class => "text" do
         rawtext @content.to_html
-        javascript(%{
-          OHUB.bind("content.changed.#{@widget.content_id}", function(evt) {
-            $.ajax({
-              url: '/widget/#{@widget.widget_id}?embedded&body_only',
-              type: 'GET'
-            }).done(function(data) { 
-              $('\##{wid}_b').replaceWith(data);
-              var i = 0;
-            });
-          });
-        })
+        render_content_observer(wid)
       end
       
     end
-      
+    
+    def render_content_observer(div_id)
+      javascript(%{
+        OHUB.bind("content.changed.#{@widget.content_id}", function(evt) {
+          
+          $.ajax({
+            url: '/widget/#{@widget.widget_id}?embedded&body_only',
+            type: 'GET'
+          }).done(function(data) { 
+            $('\##{wid}_b').replaceWith(data);
+            var i = 0;
+          });
+        });
+      })
+    end      
   end 
 
 end # OMF::Web::Theme

@@ -56,7 +56,7 @@ L.provide('OML.abstract_widget', ["/resource/vendor/d3/d3.js"], function () {
       this.resize();
       
       var self = this;
-      OHUB.bind('window.resize', function(e) {
+      OHUB.bind('layout.resize', function(e) {
         self.resize();
         self.update();
       });  

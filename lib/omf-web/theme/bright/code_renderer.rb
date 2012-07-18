@@ -8,11 +8,18 @@ module OMF::Web::Theme
     
     depends_on :css, "/resource/css/coderay.css"
     
+    # This maps the content's mime type to a different mode  supported
+    # CodeMirror
+    #
+    MODE_MAPPER = {
+      :markup => :markdown
+    }
+    
     def initialize(widget, content, mode, opts)
       super opts
       @widget = widget
       @content = content
-      @mode = mode
+      @mode = MODE_MAPPER[mode.to_sym] || mode
       @opts = opts
     end
         

@@ -1,10 +1,8 @@
 
 require 'thin'
-require 'thin/runner'
+require 'omf-web/thin/logging'
 
-require 'omf_web'
-require 'omf-web/theme'
-
+#
 # Add code to Thin::Connection to verify peer certificate
 #
 module Thin
@@ -46,7 +44,7 @@ module OMF::Web
         :wait                 => Thin::Controllers::Cluster::DEFAULT_WAIT_TIME,
  
         :rackup               => File.dirname(__FILE__) + '/config.ru',
-        :static_dirs          => ["./resources", "#{File.dirname(__FILE__)}/../../share/htdocs"]
+        :static_dirs          => ["./resources", "#{File.dirname(__FILE__)}/../../../share/htdocs"]
       }.merge(opts)
       
  
@@ -82,6 +80,7 @@ module OMF::Web
     
     
     def run!
+      require 'omf-web/theme'
       if theme = @options[:theme]
         OMF::Web::Theme.theme = theme
       end

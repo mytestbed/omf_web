@@ -19,15 +19,17 @@ module OMF::Web::Widget
       unless (content_descr = opts[:content])
         raise "Missing 'content' option in '#{opts.describe}'"
       end  
-      if content_descr.is_a? OMF::Web::ContentProxy
-        @content_proxy = content_descr
-      else    
-        @content_proxy = OMF::Web::ContentRepository[opts].load(content_descr)
-      end
+      # if content_descr.is_a? OMF::Web::ContentProxy
+        # @content_proxy = content_descr
+      # else    
+        # #@content_proxy = OMF::Web::ContentRepository[opts].load(content_descr)
+        # @content_proxy = OMF::Web::Repository.create_content_proxy_for(content_descr, opts)
+      # end
+      @content_proxy = OMF::Web::ContentRepository.create_content_proxy_for(content_descr, opts)
     end
     
     def title 
-      @content_proxy.file_name
+      @content_proxy.name
     end
     
     def mime_type

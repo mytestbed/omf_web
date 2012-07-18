@@ -20,11 +20,13 @@ module OMF::Web::Widget
       unless (content_descr = opts[:content])
         raise "Missing 'content' option in '#{opts.inspect}'"
       end      
-      if content_descr.is_a? OMF::Web::ContentProxy
-        self.content_proxy = content_descr
-      else    
-        self.content_proxy = OMF::Web::ContentRepository[opts].load(content_descr)
-      end
+      # if content_descr.is_a? OMF::Web::ContentProxy
+        # self.content_proxy = content_descr
+      # else    
+        # #self.content_proxy = OMF::Web::ContentRepository[opts].load(content_descr)
+        # self.content_proxy = OMF::Web::ContentRepository.create_content_proxy_for(content_descr, opts)
+      # end
+      self.content_proxy = OMF::Web::ContentRepository.create_content_proxy_for(content_descr, opts)
     end
     
     def content_proxy=(content_proxy)

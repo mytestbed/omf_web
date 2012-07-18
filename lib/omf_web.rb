@@ -9,10 +9,9 @@ module OMF
     VERSION = 'git:release-5.4'
     
     def self.start(opts)
-      require 'omf-web/runner'
-      require 'thin'
+      require 'omf-web/thin/runner'
       
-      Thin::Logging.debug = true
+      #Thin::Logging.debug = true
       OMF::Web::Runner.new(ARGV, opts).run!      
     end
     

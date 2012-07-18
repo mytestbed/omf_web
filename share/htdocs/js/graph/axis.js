@@ -49,6 +49,8 @@ L.provide('OML.axis', ["graph.css", "/resource/vendor/d3/d3.js"], function () {
     } else if (ot.format) {
       d3_axis.tickFormat(d3.format(ot.format));
     }
+    
+    if (count = ot.count)  d3_axis.ticks(count);
         
     
     function axis(selection) {

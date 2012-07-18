@@ -57,12 +57,12 @@ module OMF::Web
     # end
 #     
     
-    attr_reader :content_url, :content_id, :file_name, :mime_type
+    attr_reader :content_url, :content_id, :name, :mime_type
     
-    def initialize(file_name, repository, opts)
-      @file_name = file_name
+    def initialize(content_handle, repository, opts)
+      @content_handle = content_handle
       @repository = repository
-      @path = File.join(repository.top_dir, file_name) # requires 1.9 File.absolute_path(@file_name, @repository.top_dir)
+      #@path = File.join(repository.top_dir, content_handle) # requires 1.9 File.absolute_path(@content_handle, @repository.top_dir)
       
       @opts = opts
       @version = 0 # TODO: GET right version      
@@ -70,7 +70,8 @@ module OMF::Web
       @content_id = opts[:url_key]
       @content_url = "/_content/#{@content_id}?v=#{@version}"
       
-      @mime_type = repository.mime_type_for_file(file_name)
+      @mime_type = repository.mime_type_for_file(content_handle)
+      @name = opts[:name]
 
       @@proxies[@content_id] = self
     end
@@ -90,7 +91,7 @@ module OMF::Web
         f = File.open(@path, 'w')
         f.write(content)
         f.close
-        @repository.add_and_commit(@file_name, data['message'], req)
+        @repository.add_and_commit(@content_handle, data['message'], req)
        
       end
       [true.to_json, "text/json"]
@@ -98,10 +99,11 @@ module OMF::Web
 
     def content()
       unless @content
-        unless File.readable?(@path)
-          raise "Cannot read file '#{@path}'"
-        end
-        @content = File.open(@path).read
+        @content = @repository.read(@content_handle)
+        # unless File.readable?(@path)
+          # raise "Cannot read file '#{@path}'"
+        # end
+        # @content = File.open(@path).read
       end
       @content
     end
