@@ -29,7 +29,7 @@ require 'log4r'
 require 'log4r/configurator'
 require 'log4r/yamlconfigurator'
 require 'log4r/outputter/datefileoutputter'
-require 'omf_common/log4r_io_outputter'
+require 'omf_common/log4r_outputter'
 
 #include Log4r
 
