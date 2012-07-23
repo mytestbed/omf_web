@@ -8,11 +8,13 @@ module OMF
     
     VERSION = 'git:release-5.4'
     
-    def self.start(opts)
+    def self.start(opts, &block)
       require 'omf-web/thin/runner'
       
       #Thin::Logging.debug = true
-      OMF::Web::Runner.new(ARGV, opts).run!      
+      runner = OMF::Web::Runner.new(ARGV, opts)
+      block.call if block
+      runner.run!      
     end
     
     @@datasources = {}

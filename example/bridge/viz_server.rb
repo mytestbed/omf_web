@@ -1,24 +1,34 @@
 
 #require 'omf-common/mobject2'
 require 'omf_common/lobject'
-OMF::Common::Loggable.init_log 'bridge'
+# require 'yaml'
+# require 'log4r'
+
+#OMF::Common::Loggable.init_log 'bridge', 'development', :searchPath => File.dirname(__FILE__)
+OMF::Common::Loggable.init_log 'bridge', :searchPath => File.dirname(__FILE__)
+
+    
 require 'omf-oml/table'
 
-Dir.glob("#{File.dirname(__FILE__)}/data_sources/*.rb").each do |fn|
-  load fn
-end
-
-require 'yaml'
-Dir.glob("#{File.dirname(__FILE__)}/*.yaml").each do |fn|
-  OMF::Common::LObject.debug "Load yaml file '#{fn}'"
-  h = YAML.load_file(fn)
-  if w = h['widget']
-    OMF::Web.register_widget w
-  # elsif t = h['tab']
-    # OMF::Web.register_tab t
-    # OMF::Web.use_tab t['id']
-  else
-    OMF::Common::LObject.error "Don't know what to do with '#{fn}'"
+def load_environment
+  Dir.glob("#{File.dirname(__FILE__)}/data_sources/*.rb").each do |fn|
+    load fn
+  end
+  
+  require 'yaml'
+  Dir.glob("#{File.dirname(__FILE__)}/*.yaml").each do |fn|
+    next if fn.match /log4r.yaml/
+    OMF::Common::LObject.debug "Load yaml file '#{fn}'"
+    
+    h = YAML.load_file(fn)
+    if w = h['widget']
+      OMF::Web.register_widget w
+    # elsif t = h['tab']
+      # OMF::Web.register_tab t
+      # OMF::Web.use_tab t['id']
+    else
+      OMF::Common::LObject.error "Don't know what to do with '#{fn}'"
+    end
   end
 end
 
@@ -30,4 +40,6 @@ opts = {
   :static_dirs_pre => ["#{File.dirname(__FILE__)}/htdocs"]
 }
 require 'omf_web'
-OMF::Web.start(opts)
+OMF::Web.start(opts) do 
+  load_environment
+end

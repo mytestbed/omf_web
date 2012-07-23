@@ -72,6 +72,7 @@ module OMF::Web
         @options[:ssl_verify] ||= sopts[:verify_peer]
       end
 
+      OMF::Common::Loggable.set_environment @options[:environment]
 
       if print_options
         require 'pp'
