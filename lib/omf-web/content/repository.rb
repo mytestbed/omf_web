@@ -11,7 +11,7 @@ module OMF::Web
   # This class provides an interface to a particular content repository.
   # It retrieves, archives and versions content.
   #
-  class ContentRepository
+  class ContentRepository < OMF::Common::LObject
     
     MIME_TYPE = {
       :js => 'text/javascript',       
@@ -42,6 +42,7 @@ module OMF::Web
     # @return: Content proxy
     #
     def self.create_content_proxy_for(url_or_descr, opts = {})
+      debug "self.create_content_proxy_for: '#{url_or_descr.inspect}'"
       if url_or_descr.is_a? ContentProxy
         return url_or_descr
       end
@@ -61,6 +62,16 @@ module OMF::Web
         raise "Unknown repository type '#{type}'"
       end
     end
+    
+    #
+    # Create a URL for a file with 'path' in the user's primary repository.
+    # If 'strictly_new' is true, returns nil if 'path' already exists.
+    #
+    def self.create_url(path, strictly_new = true)
+      # TODO: Need to add code to select proper repository
+      return GitContentRepository.create_url(path, strictly_new)
+    end
+    
     
 
     attr_reader :top_dir

@@ -43,10 +43,13 @@ module OMF::Web
         :require              => [],
         :wait                 => Thin::Controllers::Cluster::DEFAULT_WAIT_TIME,
  
-        :rackup               => File.dirname(__FILE__) + '/config.ru',
-        :static_dirs          => ["./resources", "#{File.dirname(__FILE__)}/../../../share/htdocs"]
+        :rackup               => File.dirname(__FILE__) + '/../config.ru',
+        :static_dirs          => ["#{File.dirname(__FILE__)}/../../../share/htdocs"],
+        :static_dirs_pre      => ["./resources"]  # directories to prepend to 'static_dirs'
       }.merge(opts)
-      
+      # Search path for resource files is concatination of 'pre' and 'standard' static dirs
+      @options[:static_dirs] = @options[:static_dirs_pre].concat(@options[:static_dirs])
+        
  
  
       print_options = false

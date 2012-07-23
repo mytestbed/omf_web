@@ -21,10 +21,14 @@ module OMF::Web::Theme
     def render_widget(widget)
       wid = "w#{widget.object_id}_c"
       div :class => :widget_container, :id => wid do
-        render_widget_header(widget)
-        render_widget_info(widget)
-        render_widget_body(widget)
-        render_widget_footer(widget)        
+        if @opts[:chrome] == false
+          render_widget_body(widget)
+        else
+          render_widget_header(widget)
+          render_widget_info(widget)
+          render_widget_body(widget)
+          render_widget_footer(widget)
+        end        
       end
     end
 

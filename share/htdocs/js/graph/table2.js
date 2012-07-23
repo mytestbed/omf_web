@@ -98,33 +98,12 @@ L.provide('OML.table2', ["graph/abstract_widget", "#OML.abstract_widget", [
       this.grid.render();
     },
       
-    init_grid: function(data) {
+    init_grid: function() {
       var schema = this.data_source.schema;
       var opts = this.opts;
       var self = this;
       
-      var columns;
-      if (columns = opts.columns) {
-        var sh = {}; _.each(schema, function(e) { sh[e.name] = e; })
-        _.each(columns, function(c) {
-          var s = sh[c.field];
-          c.id = s.index;
-          _.defaults(c, {
-            name: s.title || s.name,
-            width: 0,
-            sortable: true,
-          })
-          if (c.format) {
-            c.formatter = self.find_formatter(c.type || s.type, c)
-          }
-        });
-        var i = 0;
-      } else {
-        columns = _.map(schema, function(col) {
-                        var i = 0;
-                        return { id: col.index, name: col.title, field: col.name, width: 0, sortable: true };
-                      })
-      }
+      var columns = this.init_columns();
     
       // Define function used to get the data.
       //var currentSortCol = { id: "title" };
@@ -155,9 +134,50 @@ L.provide('OML.table2', ["graph/abstract_widget", "#OML.abstract_widget", [
         // grid.invalidateAllRows();
         // grid.render();
       });
+      //grid.setSelectionModel(new Slick.RowSelectionModel());
+      // grid.onSelectedRowsChanged.subscribe(function(e, args) {
+        // var i = 0;
+      // });
       
     },
     
+    /*
+     * Return an array of columns definitions to be used for the slick grid constructor
+     */
+    init_columns: function() {
+      var schema = this.data_source.schema;
+      var opts = this.opts;
+      var self = this;
+      
+      var columns;
+      if (opts.columns) {
+        var sh = {}; _.each(schema, function(e) { sh[e.name] = e; })
+        columns = _.map(opts.columns, function(c) {
+          if (typeof c === 'string') {
+            c = {field: c};
+          }
+          var s = sh[c.field];
+          c.id = s.index;
+          _.defaults(c, {
+            name: s.title || s.name,
+            width: 0,
+            sortable: true,
+          })
+          if (c.format) {
+            c.formatter = self.find_formatter(c.type || s.type, c)
+          }
+          return c;
+        });
+        var i = 0;
+      } else {
+        columns = _.map(schema, function(col) {
+                        var i = 0;
+                        return { id: col.index, name: col.title, field: col.name, width: 0, sortable: true };
+                      })
+      }
+      return columns;
+    },
+
     find_formatter: function(type, opts) {
       if (type == 'date' || type == 'dateTime') {
         var d_f = d3.time.format(opts.format || "%X");

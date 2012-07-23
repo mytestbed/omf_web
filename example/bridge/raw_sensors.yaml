@@ -8,50 +8,32 @@ widget:
   name: Sensor Raw
   top_level: true
   priority: 400
-  type: layout/two_columns/50_50
+  #type: layout/two_columns/50_50
+  type: layout/one_column
   left: 
-    - type: data/line_chart2
-      title: Diff
-      data_source: 
-        name: diff_sensors
-      mapping:
-        x_axis: t
-        y_axis: 
-          property: delta
-        group_by:
-          property: label              
-      axis:
-        x:
-          ticks:
-            format: s
-          legend: Time (sec)
-        y:
-          ticks:
-            format: s
-          legend: Delta
-      margin: 
-        left: 100
-        
   right:      
     - type: data/line_chart2
       title: Raw
       data_source: 
-        name: raw_sensors
+        name: sensors
       mapping:
-        x_axis: t
+        x_axis: oml_ts_server
         y_axis: 
-          property: value
+          property: v1
         group_by:
-          property: sensor              
+          property: sensorID             
       axis:
         x:
           ticks:
-            format: s
-          legend: Time (sec)
+            type: date
+            format: %I:%M
+            count: 5
+          legend: Time
         y:
           ticks:
             format: s
-          legend: Delta
+          legend: V1
       margin: 
-        left: 100
+        left: 20
+        right: 20
 

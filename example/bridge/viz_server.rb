@@ -10,6 +10,7 @@ end
 
 require 'yaml'
 Dir.glob("#{File.dirname(__FILE__)}/*.yaml").each do |fn|
+  OMF::Common::LObject.debug "Load yaml file '#{fn}'"
   h = YAML.load_file(fn)
   if w = h['widget']
     OMF::Web.register_widget w
@@ -17,7 +18,7 @@ Dir.glob("#{File.dirname(__FILE__)}/*.yaml").each do |fn|
     # OMF::Web.register_tab t
     # OMF::Web.use_tab t['id']
   else
-    LObject.error "Don't know what to do with '#{fn}'"
+    OMF::Common::LObject.error "Don't know what to do with '#{fn}'"
   end
 end
 
@@ -26,11 +27,7 @@ end
 #
 opts = {
   :page_title => 'Sydney Harbor Bridge Monitoring',
-  #:use_tabs => [:graph]
-  # :tabs => {
-    # :foo => {:name => 'Foo', :order => 1, :class => Foo},
-    # :goo => {:name => 'Goo', :order => 3}
-  # }
+  :static_dirs_pre => ["#{File.dirname(__FILE__)}/htdocs"]
 }
 require 'omf_web'
 OMF::Web.start(opts)

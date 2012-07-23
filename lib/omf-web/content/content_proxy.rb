@@ -11,70 +11,25 @@ module OMF::Web
   #
   class ContentProxy < OMF::Common::LObject
     
-    # @@descriptions = {}
     @@proxies = {}
 
     def self.[](url)
       @@proxies[url.to_s]
     end
-#     
-    # def self.register_content(content_description, opts = {})
-      # descr = OMF::Web.deep_symbolize_keys(content_description)
-      # unless url = descr[:url]
-        # raise "Missing url in content description (#{content_description.inspect})"
-      # end
-      # url = url.to_s
-      # if (@@descriptions.key? url)
-        # raise "Repeated try to register content source '#{url}'"
-      # end
-      # @@descriptions[url] = descr
-      # url
-    # end
-#     
-    # # Return proxies for 'url'. This proxy is only valid within this session
-    # #
-    # # @return: Content proxies
-    # #
-    # def self.create_proxy(url_or_descr)
-      # if url_or_descr.is_a? String
-        # url = url_or_descr.to_s
-        # descr = @@descriptions[url]
-        # unless descr
-          # throw "Unknown content source '#{url}' (#{@@contents.keys.inspect})"
-        # end
-      # elsif url_or_descr.is_a? Hash
-        # descr = url_or_descr
-        # unless url = descr[:url]
-          # raise "Missing url in content description (#{content_description.inspect})"
-        # end
-        # url = url.to_s
-      # else
-        # raise "Unsupported type '#{url_or_descr.class}'"
-      # end
-      # key = descr[:url_key] ||= Digest::MD5.hexdigest(url) 
-      # proxy = @@proxies[key] ||= self.new(url, descr)
-      # return proxy
-    # end
-#     
     
-    attr_reader :content_url, :content_id, :name, :mime_type
-    
-    def initialize(content_handle, repository, opts)
-      @content_handle = content_handle
-      @repository = repository
-      #@path = File.join(repository.top_dir, content_handle) # requires 1.9 File.absolute_path(@content_handle, @repository.top_dir)
-      
-      @opts = opts
-      @version = 0 # TODO: GET right version      
-      
-      @content_id = opts[:url_key]
-      @content_url = "/_content/#{@content_id}?v=#{@version}"
-      
-      @mime_type = repository.mime_type_for_file(content_handle)
-      @name = opts[:name]
-
-      @@proxies[@content_id] = self
+    def self.create(content_descr, repo)
+      unless key = content_descr[:url_key]
+        raise "Missing ':url_key' in content descriptor '#{content_descr.inspect}'"
+      end
+      if proxy = @@proxies[key]
+        return proxy
+      end
+      debug "Create content proxy for '#{key}' (#{content_descr.inspect})"
+      @@proxies[key] = self.new(content_descr, repo)
     end
+    
+#    attr_reader :content_url, :content_id, :name, :mime_type
+    
     
     def on_get(req)
       c = content()
@@ -83,32 +38,44 @@ module OMF::Web
     
     def on_post(req)
       data = req.POST
-      if (content = data['content']) != @content
-        @content = content
-        unless File.writable?(@path)
-          raise "Cannot write to file '#{@path}'"
-        end
-        f = File.open(@path, 'w')
-        f.write(content)
-        f.close
-        @repository.add_and_commit(@content_handle, data['message'], req)
-       
-      end
-      [true.to_json, "text/json"]
+      write(data['content'], data['message'])
+      # if (content = data['content']) != @content
+        # @content = content
+        # @repository.add_and_commit(@content_handle, content, data['message'], req)
+      # end
+      # [true.to_json, "text/json"]
     end
-
+    
+    def write(content, message = "")
+      if content != @content
+        @content = content
+        @repository.write(@content_descriptor, content, message)
+      end
+    end
+    
     def content()
       unless @content
-        @content = @repository.read(@content_handle)
-        # unless File.readable?(@path)
-          # raise "Cannot read file '#{@path}'"
-        # end
-        # @content = File.open(@path).read
+        @content = @repository.read(@content_descriptor)
       end
       @content
     end
+    alias :read :content 
     
+    private
     
+    def initialize(content_descriptor, repository)
+      @content_descriptor = content_descriptor
+      @repository = repository
+      #@path = File.join(repository.top_dir, content_handle) # requires 1.9 File.absolute_path(@content_handle, @repository.top_dir)
+      
+      @content_id = content_descriptor[:url_key]
+      @content_url = "/_content/#{@content_id}"
+      
+      @mime_type = repository.mime_type_for_file(content_descriptor[:path])
+      @name = content_descriptor[:name]
+
+      @@proxies[@content_id] = self
+    end
     
   end
   

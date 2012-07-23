@@ -66,10 +66,15 @@ module OMF::Web::Theme
       require 'omf-oml/table'
       require 'set'
       
-      dsh = @widget.collect_data_sources(Set.new)
+      dsh = {}
+      @widget.collect_data_sources(Set.new).each do |ds|
+        name = ds[:name].to_s
+        dsh[name] = ds.merge(dsh[name] || {})
+      end
+      puts ">>>> #{dsh.inspect}"
       return if dsh.empty?
       
-      js = dsh.to_a.collect do |ds|
+      js = dsh.values.to_a.collect do |ds|
         render_data_source(ds)
       end
       # Calling 'javascript' doesn't seem to work here. No idea why, so let's do it by hand

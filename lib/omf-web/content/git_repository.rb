@@ -35,50 +35,76 @@ module OMF::Web
       @@repositories['git:foo'] = self
     end
     
-    # Load content described by either a hash or a straightforward url
+    #
+    # Create a URL for a file with 'path' in.
+    # If 'strictly_new' is true, returns nil if 'path' already exists.
+    #
+    def create_url(path, strictly_new = true)
+      return "git:"
+      # TODO: Need to add code to select proper repository
+      return GitContentRepository.create_url(path, strictly_new)
+    end
+    
+    
+    # Load content described by either a hash or a straightforward path
     # and return a 'ContentProxy' holding it.
+    #
+    # If descr[:strictly_new] is true, return nil if file for which proxy is requested
+    # already exists.
     #
     # @return: Content proxy
     #
-    def create_content_proxy_for(url_or_descr)
-      if url_or_descr.is_a? String
-        url = url_or_descr.to_s
-        # descr = @descriptions[url]
-        # unless descr
-          # throw "Unknown content source '#{url}' (#{@@contents.keys.inspect})"
-        # end
-      elsif url_or_descr.is_a? Hash
-        descr = url_or_descr
-        unless url = descr[:url] || descr[:path]
-          raise "Missing url in content description (#{descr.inspect})"
+    def create_content_proxy_for(path_or_descr)
+      if path_or_descr.is_a? String
+        path = path_or_descr.to_s
+      elsif path_or_descr.is_a? Hash
+        descr = path_or_descr
+        unless path = descr[:path]
+          raise "Missing 'path' in content description (#{descr.inspect})"
         end
-        url = url.to_s
+        path = path.to_s
       else
-        raise "Unsupported type '#{url_or_descr.class}'"
+        raise "Unsupported type '#{path_or_descr.class}'"
       end
       # TODO: Make sure that key is really unique across multiple repositories
+      descr = descr ? descr.dup : {}
+      url = @url_prefix + path
       key = Digest::MD5.hexdigest(url)
-      if proxy = ContentProxy[key]
-        return proxy
+      descr[:url] = url      
+      descr[:url_key] = key
+      descr[:path] = path      
+      descr[:name] = url # Should be something human digestable
+      if (descr[:strictly_new])
+        Dir.chdir(@top_dir) do
+          return nil if File.exist?(path)
+        end
       end
-      opts = descr ? descr.dup : {}
-      opts[:url] = url      
-      opts[:url_key] = key
-      opts[:name] = url # Should be something human digestable
-      proxy = ContentProxy.new(url, self, opts)
+      proxy = ContentProxy.create(descr, self)
       return proxy
     end
         
-    def add_and_commit(file_name, message, req)
+    def write(content_descr, content, message)
+      unless file_name = content_descr[:path]
+        raise "Missing property 'path' in content descriptor '#{content_descr.inspect}'"
+      end
       Dir.chdir(@top_dir) do
+        unless File.writable?(file_name)
+          raise "Cannot write to file '#{file_name}'"
+        end
+        f = File.open(file_name, 'w')
+        f.write(content)
+        f.close
+        
         @repo.add(file_name)
-        # TODO: Should set info about committing user which should be in 'req'
+        # TODO: Should set info about committing user which should be in thread context
         @repo.commit_index(message || 'no message') 
       end
     end
     
-    def read(url)
-      file_name = url.split(':')[-1] # Should check if this is really this repository
+    def read(content_descr)
+      unless file_name = content_descr[:path]
+        raise "Missing property 'path' in content descriptor '#{content_descr.inspect}'"
+      end
       Dir.chdir(@top_dir) do
         unless File.readable?(file_name)
           raise "Cannot read file '#{file_name}'"

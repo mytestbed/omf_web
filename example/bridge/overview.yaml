@@ -1,0 +1,81 @@
+
+
+# 
+#
+
+widget:
+  id: overview
+  name: Overview
+  top_level: true
+  priority: 900
+  type: layout/one_column
+  chrome: false  # don't show title
+  widgets:
+    - type: data/bridge
+      title: Context
+      data_source: 
+        name: health
+        dynamic: 1
+      mapping:
+        health: health
+        fill_color:
+          property: health
+          #scale: 0.04 # 1.0 / 25
+          color: red_green() # () indicates a color scale  
+        
+      margin: 
+        left: 20
+        right: 20
+          
+    - type: layout/two_columns/50_50
+      left:
+        - type: data/event_table
+          title: Events
+          data_source:
+            name: health
+            dynamic: 1  # check once a second
+          columns: 
+            - field: eventID
+              name: Event ID
+              behavior: select
+              cssClass: cell-selection
+              selectable: true
+              
+            - field: jointID
+              name: Joint ID
+
+            - field: health
+          topts: 
+            enableCellNavigation: true
+          margin:
+            left: 5
+      right:
+        - type: data/event_line_chart
+          title: Sensor Reading
+          data_source:
+            name: sensors
+          mapping:
+            x_axis: oml_ts_server
+            y_axis: 
+              property: v1
+            group_by:
+              property: sensorID             
+          axis:
+            x:
+              ticks:
+                type: date
+                format: %I:%M
+                count: 5
+              legend: Time
+            y:
+              ticks:
+                format: s
+              legend: V1
+          margin: 
+            top: 10
+            left: 60
+            right: 20
+          
+          
+
+
