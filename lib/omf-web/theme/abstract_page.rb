@@ -71,7 +71,7 @@ module OMF::Web::Theme
         name = ds[:name].to_s
         dsh[name] = ds.merge(dsh[name] || {})
       end
-      puts ">>>> #{dsh.inspect}"
+      #puts ">>>> #{dsh.inspect}"
       return if dsh.empty?
       
       js = dsh.values.to_a.collect do |ds|
