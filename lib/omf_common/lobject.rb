@@ -29,6 +29,7 @@ require 'log4r'
 require 'log4r/configurator'
 require 'log4r/yamlconfigurator'
 require 'log4r/outputter/datefileoutputter'
+require 'omf_common/log4r_io_outputter'
 
 #include Log4r
 
@@ -58,7 +59,7 @@ module OMF::Common
     #
     def self.init_log(appName, opts = {})
   	  
-      @@logger = Log4r::Logger.new(appName)
+      @@logger = ::Log4r::Logger.new(appName)
       set_environment(opts[:environment] || 'development')
       
       configFile = opts[:configFile]
@@ -83,21 +84,21 @@ module OMF::Common
         # if (appInstance == nil)
           # appInstance = DateTime.now.strftime("%F-%T").split(':').join('-')
         # end
-        # Log4r::Configurator['appInstance'] = opts[:appInstance] || 'default'
-        Log4r::Configurator['appName'] = appName
+        # ::Log4r::Configurator['appInstance'] = opts[:appInstance] || 'default'
+        ::Log4r::Configurator['appName'] = appName
         begin
           ycfg = YAML.load_file(configFile)
-          Log4r::YamlConfigurator.decode_yaml(ycfg['log4r'])
-          #Log4r::Configurator.load_xml_file(configFile)
-        rescue Log4r::ConfigError => ex
-          @@logger.outputters = Log4r::Outputter.stdout
+          ::Log4r::YamlConfigurator.decode_yaml(ycfg['log4r'])
+          #::Log4r::Configurator.load_xml_file(configFile)
+        rescue ::Log4r::ConfigError => ex
+          @@logger.outputters = ::Log4r::Outputter.stdout
           #self.error("Log::Config", ex)
           # TODO: FIX ME
           puts("ERROR: Log::Config: #{ex}")
         end
       else
         # set default behavior
-        @@logger.outputters = Log4r::Outputter.stdout
+        @@logger.outputters = ::Log4r::Outputter.stdout
       end
     end
     
