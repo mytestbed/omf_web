@@ -90,11 +90,10 @@ module OMF::Common
           ycfg = YAML.load_file(configFile)
           ::Log4r::YamlConfigurator.decode_yaml(ycfg['log4r'])
           #::Log4r::Configurator.load_xml_file(configFile)
-        rescue ::Log4r::ConfigError => ex
-          @@logger.outputters = ::Log4r::Outputter.stdout
-          #self.error("Log::Config", ex)
-          # TODO: FIX ME
-          puts("ERROR: Log::Config: #{ex}")
+        # rescue ::Log4r::ConfigError => ex
+          # @@logger.outputters = ::Log4r::Outputter.stdout
+          # # TODO: FIX ME
+          # puts("ERROR: Log::Config: #{ex}")
         end
       else
         # set default behavior

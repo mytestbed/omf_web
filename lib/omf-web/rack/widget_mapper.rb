@@ -3,6 +3,8 @@ require 'omf_common/lobject'
 require 'rack'
 require 'omf-web/session_store'
 require 'omf-web/widget'
+require 'omf-web/theme'
+
 OMF::Web::Theme.require 'widget_page'
 
 module OMF::Web::Rack

@@ -15,6 +15,8 @@ end
 
 module OMF::Web
   class Runner < Thin::Runner
+    include OMF::Common::Loggable
+    
     @@instance = nil
     
     def self.instance
@@ -45,7 +47,9 @@ module OMF::Web
  
         :rackup               => File.dirname(__FILE__) + '/../config.ru',
         :static_dirs          => ["#{File.dirname(__FILE__)}/../../../share/htdocs"],
-        :static_dirs_pre      => ["./resources"]  # directories to prepend to 'static_dirs'
+        :static_dirs_pre      => ["./resources"],  # directories to prepend to 'static_dirs'
+        
+        :handlers             => {}  # procs to call at various times of the server's life cycle
       }.merge(opts)
       # Search path for resource files is concatination of 'pre' and 'standard' static dirs
       @options[:static_dirs] = @options[:static_dirs_pre].concat(@options[:static_dirs])
@@ -82,13 +86,22 @@ module OMF::Web
       @@instance = self
     end
     
+    def life_cycle(step)
+      begin
+        if (p = @options[:handlers][step])
+          p.call()
+        end
+      rescue => ex
+        error ex
+        debug "#{ex.backtrace.join("\n")}"
+      end
+    end    
     
     def run!
-      require 'omf-web/theme'
       if theme = @options[:theme]
+        require 'omf-web/theme'
         OMF::Web::Theme.theme = theme
       end
-      OMF::Web::Theme.require 'page'
       super
     end
   end

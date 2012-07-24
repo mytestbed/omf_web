@@ -4,6 +4,7 @@ require 'omf_common/lobject'
 use ::Rack::ShowExceptions
 use ::Rack::Lint
 
+OMF::Web::Runner.instance.life_cycle(:pre_rackup)
 options = OMF::Web::Runner.instance.options
 
 map "/resource" do
@@ -56,6 +57,8 @@ map "/" do
   end
   run handler
 end
+
+OMF::Web::Runner.instance.life_cycle(:post_rackup)
 
 
 

@@ -19,7 +19,8 @@ log4r:
     - type: DateFileOutputter
       name: datefile
       dirname: "/tmp"
-      file: "bridge" 
+      filename: "bridge.log" 
+      date_pattern: '%Y-%m-%d'  # timestamp to add to log file, also rolls over on
       formatter:
         date_pattern: '%Y-%m-%d %H:%M:%S'
         pattern     : '%d %l %p %C: %m '

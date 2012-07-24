@@ -7,6 +7,11 @@ module Log4r
   # The following monkey patch retries once to open the file and write again
   #
   class FileOutputter
+    
+    # def initialize(_name, hash={})
+      # raise "#{_name}::#{hash.inspect}"
+    # end
+    
     def write(data)
       #puts ">>> #{data}"
       begin

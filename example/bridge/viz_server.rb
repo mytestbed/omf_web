@@ -11,6 +11,7 @@ OMF::Common::Loggable.init_log 'bridge', :searchPath => File.dirname(__FILE__)
 require 'omf-oml/table'
 
 def load_environment
+
   Dir.glob("#{File.dirname(__FILE__)}/data_sources/*.rb").each do |fn|
     load fn
   end
@@ -23,9 +24,6 @@ def load_environment
     h = YAML.load_file(fn)
     if w = h['widget']
       OMF::Web.register_widget w
-    # elsif t = h['tab']
-      # OMF::Web.register_tab t
-      # OMF::Web.use_tab t['id']
     else
       OMF::Common::LObject.error "Don't know what to do with '#{fn}'"
     end
@@ -37,9 +35,13 @@ end
 #
 opts = {
   :page_title => 'Sydney Harbor Bridge Monitoring',
-  :static_dirs_pre => ["#{File.dirname(__FILE__)}/htdocs"]
+  :static_dirs_pre => ["#{File.dirname(__FILE__)}/htdocs"],
+  :handlers => {
+    :pre_rackup => lambda { load_environment }
+  }
 }
 require 'omf_web'
-OMF::Web.start(opts) do 
-  load_environment
-end
+OMF::Web.start(opts)
+ # do 
+  # load_environment
+# end

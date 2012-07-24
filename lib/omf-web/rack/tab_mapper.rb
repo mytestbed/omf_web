@@ -1,12 +1,13 @@
 
 require 'omf_common/lobject'
-require 'erector'
+#require 'erector'
 require 'rack'
 #require 'omf-web/page'
 #require 'omf-web/multi_file'
 require 'omf-web/session_store'
 #require 'omf-web/tab'
 require 'omf-web/widget'
+require 'omf-web/theme'
 
       
 module OMF::Web::Rack      
@@ -38,6 +39,7 @@ module OMF::Web::Rack
       end
       Thread.current["sessionID"] = sessionID
       
+      OMF::Web::Theme.require 'page'      
       body, headers = render_page(req)
       if headers.kind_of? String
         headers = {"Content-Type" => headers}
@@ -75,9 +77,8 @@ module OMF::Web::Rack
       end
       opts[:tab] = tab_id = tab[:id]
       
-      #opts[:session_id] = session_id = req.params['sid']
-      #opts[:update_path] = "/_update?id=#{session_id}:#{tab_id}"
       widget = find_top_widget(tab, req)
+      OMF::Web::Theme.require 'page'
       page = OMF::Web::Theme::Page.new(widget, opts)
       [page.to_html, 'text/html']
     end
@@ -95,7 +96,6 @@ module OMF::Web::Rack
       popts[:flash] = {:alert => %{Unknonw component '#{comp_name}'. To select any of the available 
         components, please click on one of the tabs above.}}
 
-      OMF::Web::Theme.require 'page'      
       [OMF::Web::Theme::Page.new(nil, popts).to_html, 'text/html']
     end
 
