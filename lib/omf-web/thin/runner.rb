@@ -32,14 +32,16 @@ module OMF::Web
       sopts = opts.delete(:ssl) # runner has it's own idea of ssl options
       
       # Default options values
+      app_name = opts[:app_name] || 'omf_web_app'
       @options = {
+        :app_name             => app_name,
         :chdir                => Dir.pwd,
         :environment          => 'development',
         :address              => '0.0.0.0',
         :port                 => Thin::Server::DEFAULT_PORT,
         :timeout              => Thin::Server::DEFAULT_TIMEOUT,
-        :log                  => 'log/thin.log',
-        :pid                  => 'tmp/pids/thin.pid',
+        :log                  => "/tmp/#{app_name}_thin.log",
+        :pid                  => "/tmp/#{app_name}.pid",
         :max_conns            => Thin::Server::DEFAULT_MAXIMUM_CONNECTIONS,
         :max_persistent_conns => Thin::Server::DEFAULT_MAXIMUM_PERSISTENT_CONNECTIONS,
         :require              => [],
@@ -67,6 +69,11 @@ module OMF::Web
       p.on("--disable-https", "Run server without SSL") do sopts = nil end                
       p.on("--print-options", "Print option settings after parsing command lines args") do print_options = true end                      
   
+      # Allow application to add it's own parsing options
+      if ph = @options[:handlers][:pre_parse]
+        ph.call(p)
+      end
+      
       parse!
 
       if sopts
@@ -76,6 +83,9 @@ module OMF::Web
         @options[:ssl_verify] ||= sopts[:verify_peer]
       end
 
+      # Change the name of the root logger so we can apply different logging
+      # policies depending on environment. 
+      #
       OMF::Common::Loggable.set_environment @options[:environment]
 
       if print_options

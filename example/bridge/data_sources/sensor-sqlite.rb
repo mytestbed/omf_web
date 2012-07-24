@@ -19,12 +19,13 @@ class BridgeSensor < OMF::Common::LObject
   end
 
   def process_health(stream)
-    fake_health   
-    return
+    if $fake_bridge_events
+      fake_health
+      return   
+    end
     
     @table = stream.to_table(:health, :include_oml_internals => true)
     OMF::Web.register_datasource @table 
-    
   end
   
   def run
@@ -74,4 +75,4 @@ class BridgeSensor < OMF::Common::LObject
     end    
   end
 end
-wv = BridgeSensor.new('example/bridge/data_sources/test3.sq3').run()
+wv = BridgeSensor.new($oml_database).run()

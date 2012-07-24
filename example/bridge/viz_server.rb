@@ -7,7 +7,12 @@ require 'omf_common/lobject'
 #OMF::Common::Loggable.init_log 'bridge', 'development', :searchPath => File.dirname(__FILE__)
 OMF::Common::Loggable.init_log 'bridge', :searchPath => File.dirname(__FILE__)
 
-    
+
+# If set, create fake sensor events 
+$fake_bridge_events = false
+# Path to OML database
+$oml_database = 'example/bridge/data_sources/test3.sq3'
+
 require 'omf-oml/table'
 
 def load_environment
@@ -34,14 +39,27 @@ end
 # Configure the web server
 #
 opts = {
-  :page_title => 'Sydney Harbor Bridge Monitoring',
+  :app_name => 'bridge',
+  :page_title => 'Sydney Harbour Bridge Monitoring',
+  :footer_left => lambda do
+    #img :src => '/resource/image/imagined_by_nicta.jpeg', :height => 24
+    text 'Imagined by NICTA'
+  end,
+  :footer_right => 'git:omf_web/bridge',
   :static_dirs_pre => ["#{File.dirname(__FILE__)}/htdocs"],
   :handlers => {
-    :pre_rackup => lambda { load_environment }
+    # delay connecting to databases to AFTER we may run as daemon
+    :pre_rackup => lambda { load_environment },
+    :pre_parse => lambda do |p|
+      p.separator ""
+      p.separator "BRIDGE options:"
+      p.on("--fake-events", "If set, create fake sensor events") { $fake_bridge_events = true }
+      p.on("--oml-database", "Database containing bridge data [#{$oml_database}]") do |f|
+        $oml_database = f
+      end
+      p.separator ""
+    end
   }
 }
 require 'omf_web'
 OMF::Web.start(opts)
- # do 
-  # load_environment
-# end
