@@ -44,16 +44,16 @@ module OMF::Web
       end
     end
     
-    def self.read_content(url, opts)
-      unless (a = url.split(':')).length == 3
-        raise "Expected 'git:some_name:some_path', but got '#{url}'"
-      end
-      git, name, path = a
-      unless (repo = @@repositories['git:' + name])
-        raise "Unknown git repository '#{name}'"
-      end
-      repo.read(path)
-    end
+    # def self.read_content(url, opts)
+      # unless (a = url.split(':')).length == 3
+        # raise "Expected 'git:some_name:some_path', but got '#{url}'"
+      # end
+      # git, name, path = a
+      # unless (repo = @@repositories['git:' + name])
+        # raise "Unknown git repository '#{name}'"
+      # end
+      # repo.read(path)
+    # end
 
     attr_reader :name, :top_dir
     
@@ -84,23 +84,8 @@ module OMF::Web
     #
     # @return: Content proxy
     #
-    def create_content_proxy_for(path_or_descr)
-      if path_or_descr.is_a? String
-        path = path_or_descr.to_s
-      elsif path_or_descr.is_a? Hash
-        descr = path_or_descr
-        if (url = descr[:url])
-          path = url.split(':')[2] # git:repo_name:path
-        else
-          path = descr[:path]
-        end
-        unless path
-          raise "Missing 'path' or 'url' in content description (#{descr.inspect})"
-        end
-        path = path.to_s
-      else
-        raise "Unsupported type '#{path_or_descr.class}'"
-      end
+    def create_content_proxy_for(content_descr)
+      path = _get_path(content_descr)
       # TODO: Make sure that key is really unique across multiple repositories
       descr = descr ? descr.dup : {}
       url = @url_prefix + path
@@ -119,32 +104,28 @@ module OMF::Web
     end
         
     def write(content_descr, content, message)
-      unless file_name = content_descr[:path]
-        raise "Missing property 'path' in content descriptor '#{content_descr.inspect}'"
-      end
+      path = _get_path(content_descr)
       Dir.chdir(@top_dir) do
-        unless File.writable?(file_name)
-          raise "Cannot write to file '#{file_name}'"
+        unless File.writable?(path)
+          raise "Cannot write to file '#{path}'"
         end
-        f = File.open(file_name, 'w')
+        f = File.open(path, 'w')
         f.write(content)
         f.close
         
-        @repo.add(file_name)
+        @repo.add(path)
         # TODO: Should set info about committing user which should be in thread context
         @repo.commit_index(message || 'no message') 
       end
     end
     
     def read(content_descr)
-      unless file_name = content_descr[:path]
-        raise "Missing property 'path' in content descriptor '#{content_descr.inspect}'"
-      end
+      path = _get_path(content_descr)
       Dir.chdir(@top_dir) do
-        unless File.readable?(file_name)
-          raise "Cannot read file '#{file_name}'"
+        unless File.readable?(path)
+          raise "Cannot read file '#{path}'"
         end
-        content = File.open(file_name).read
+        content = File.open(path).read
         return content
       end
     end
@@ -189,6 +170,32 @@ module OMF::Web
         end
       end
       res
+    end
+    
+    def _get_path(content_descr)
+      if content_descr.is_a? String
+        path = content_descr.to_s
+        if path.start_with? 'git:'
+          path = path.split(':')[2]
+        end
+      elsif content_descr.is_a? Hash
+        descr = content_descr
+        if (url = descr[:url])
+          path = url.split(':')[2] # git:repo_name:path
+        else
+          path = descr[:path]
+        end
+        unless path
+          raise "Missing 'path' or 'url' in content description (#{descr.inspect})"
+        end
+        path = path.to_s
+      else
+        raise "Unsupported type '#{content_descr.class}'"
+      end
+      unless path
+        raise "Can't find path information in '#{content_descr.inspect}'"
+      end
+      return path
     end
               
   end # class

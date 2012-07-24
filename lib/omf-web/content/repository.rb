@@ -60,7 +60,7 @@ module OMF::Web
     end
     
     def self.read_content(url, opts)
-      find_repo_for(url).read_content(url, opts)
+      find_repo_for(url).read(url)
     end
     
     # Find files whose file name matches 'selector'. 
