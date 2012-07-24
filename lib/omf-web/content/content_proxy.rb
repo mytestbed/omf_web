@@ -28,7 +28,7 @@ module OMF::Web
       @@proxies[key] = self.new(content_descr, repo)
     end
     
-#    attr_reader :content_url, :content_id, :name, :mime_type
+    attr_reader :content_url, :content_id, :name, :mime_type
     
     
     def on_get(req)
@@ -69,7 +69,7 @@ module OMF::Web
       #@path = File.join(repository.top_dir, content_handle) # requires 1.9 File.absolute_path(@content_handle, @repository.top_dir)
       
       @content_id = content_descriptor[:url_key]
-      @content_url = "/_content/#{@content_id}"
+      @content_url = "/_content/#{@content_id}"  # That most likley should come from the content handler
       
       @mime_type = repository.mime_type_for_file(content_descriptor[:path])
       @name = content_descriptor[:name]
