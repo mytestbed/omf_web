@@ -62,7 +62,7 @@ module OMF::Web
       p = parser
       p.separator ""
       p.separator "OMF options:"
-      p.on("--theme", "Select web theme") do |t| OMF::Web::Theme.theme = t end                
+      p.on("--theme THEME", "Select web theme") do |t| OMF::Web::Theme.theme = t end                
       
       p.separator ""
       p.separator "Testing options:"
