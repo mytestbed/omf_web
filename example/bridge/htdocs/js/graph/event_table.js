@@ -1,6 +1,7 @@
 
 L.provide('OML.event_table', ["graph/table2", "#OML.table2", [
-                                '/resource/vendor/slickgrid/plugins/slick.checkboxselectcolumn.js'
+                                '/resource/vendor/slickgrid/plugins/slick.checkboxselectcolumn.js',
+                                '/resource/css/bridge.css'
                              ]], function () {
 
   OML.event_table = OML.table2.extend({
@@ -38,6 +39,29 @@ L.provide('OML.event_table', ["graph/table2", "#OML.table2", [
         // cssClass: "slick-cell-checkboxsel"
       // });
       // columns.splice(0, 0, checkboxSelector.getColumnDefinition());
+      
+      function health_formatter(row, cell, value, columnDef, dataContext) {
+        if (value == null || value === "") {
+          return "";
+        }
+        var value = Math.round(100 * (1 - value));
+        var color;
+    
+        if (value < 30) {
+          color = "silver";
+        } else if (value < 50) {
+          color = "orange";
+        } else {
+          color = "red";
+        }
+        var width = value * (columnDef.width - 50) / 100; // 50 size of text
+        var text = "<span class'percent-complete-text'>" + value + "%</span>";
+        var bar = "<span class='percent-complete-bar' style='background:" + color + ";width:" + width + "px'></span>";
+        return text + bar;
+      }
+      var hc = columns[2];
+      hc.formatter = health_formatter;
+      hc.name = 'Attention'
       return columns;
     },
 

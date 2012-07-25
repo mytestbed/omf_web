@@ -1,0 +1,12 @@
+
+.percent-complete-bar {
+  display: inline-block;
+  height: 6px;
+
+  position: absolute;
+  left: 40px;
+  top: 8px;
+
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+}

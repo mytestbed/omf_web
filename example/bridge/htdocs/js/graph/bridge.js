@@ -87,14 +87,28 @@ L.provide('OML.bridge', ["graph/abstract_chart", "#OML.abstract_chart", ["/resou
       selector.enter()
         .append('svg:rect')
           .attr('x', m.joint2x)
-          .attr('y', 0)
+          .attr('y', 20)
           .attr('width', 4)
           .attr('height', this.h)
           .attr('class', 'locator')
           .attr('fill', 'blue')
           .attr('opacity', 0.5)
           ;
+      
+      selector
+        .enter()
+          .append("text")
+            .attr('class', 'locator')
+            .attr('x', m.joint2x)
+            .attr('y', 10)
+            .attr('text-anchor', 'middle')
+            //.attr("transform", "translate(" + x(1) + "," + y(1) + ")scale(-1,-1)")
+            .text(function(d) {
+              return d;
+            })
+
       selector.exit().remove();
+
     },
     
     draw_background: function(bgl) {
