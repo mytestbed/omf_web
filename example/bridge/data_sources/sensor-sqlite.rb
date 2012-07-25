@@ -58,7 +58,6 @@ class BridgeSensor < OMF::Common::LObject
       begin
         seq_no = 1
         loop do
-          sleep 5
           #2012-07-21-17:03:25|node49|0.600000023841858
           ev_id = Time.now.iso8601
           [['node47', 0, '2012-07-21-00:48:46'], ['node48', 0.2, ev_id], ['node49', 0.6, ev_id]].each do |r|
@@ -66,6 +65,7 @@ class BridgeSensor < OMF::Common::LObject
             table.add_row [0, seq_no, 0.0, 0.0, ev_id, joint_id, health]
           end
           seq_no += 1
+          sleep 5
           #break if seq_no > 3
         end
       rescue Exception => ex

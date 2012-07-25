@@ -15,6 +15,7 @@ L.provide('OML.event_line_chart', ["graph/line_chart2", "#OML.line_chart2"], fun
       var self = this;
       OHUB.bind("bridge.event_selected", function(evt) {
         self.event_id = evt.event[evt.schema.eventID.index];
+        self.joint_id = evt.event[evt.schema.jointID.index];
         self.update();
       });
     },

@@ -5,7 +5,6 @@ L.provide('OML.bridge', ["graph/abstract_chart", "#OML.abstract_chart", ["/resou
 
   OML.bridge = OML.abstract_chart.extend({
     decl_properties: [
-      //['health', 'key', {property: 'value'}], 
       ['health', 'key'], 
       ['fill_color', 'color', 'blue'], 
     ],
@@ -80,35 +79,36 @@ L.provide('OML.bridge', ["graph/abstract_chart", "#OML.abstract_chart", ["/resou
       var o = this.opts;
       var ca = this.widget_area;
       var m = this.mapping;
+      var self= this;
+      
+      function locator(g) {
+        g.append('svg:rect')
+          .attr('x', m.joint2x)
+          .attr('y', 20)
+          .attr('width', 4)
+          .attr('height', self.h)
+          .attr('fill', 'blue')
+          .attr('opacity', 0.5)
+          ;
+        g.append("text")
+            .attr('x', m.joint2x)
+            .attr('y', 10)
+            .attr('text-anchor', 'middle')
+            .text(function(d) {
+              return d;
+            })
+            ;
+         return g;
+      }
       
       var selector = this.selector_layer.selectAll('.locator')
                     .data([joint_id], function(d) { return d; })
                     ;
-      selector.enter()
-        .append('svg:rect')
-          .attr('x', m.joint2x)
-          .attr('y', 20)
-          .attr('width', 4)
-          .attr('height', this.h)
-          .attr('class', 'locator')
-          .attr('fill', 'blue')
-          .attr('opacity', 0.5)
-          ;
-      
       selector
-        .enter()
-          .append("text")
+        .enter().append('g')
             .attr('class', 'locator')
-            .attr('x', m.joint2x)
-            .attr('y', 10)
-            .attr('text-anchor', 'middle')
-            //.attr("transform", "translate(" + x(1) + "," + y(1) + ")scale(-1,-1)")
-            .text(function(d) {
-              return d;
-            })
-
+            .call(locator)
       selector.exit().remove();
-
     },
     
     draw_background: function(bgl) {
@@ -127,7 +127,7 @@ L.provide('OML.bridge', ["graph/abstract_chart", "#OML.abstract_chart", ["/resou
           .attr('d', "m 0,977.36218 c 90.943759,-42.38013 169.5164,-85 300,-85 130.51627,-0.39668 210.6141,43.53389 300,85 l 0,0 0,75.00002 C 525.47235,1001.8883 430.85399,921.13875 300,922.0728 169.19905,922.68682 73.345644,999.90863 0,1052.3622 c 0,0 2.020305,-4.2894 0,-75.00002 z")
           .attr('fill', 'none')
           .attr('stroke', stroke)
-          .attr('stroke-width', '1px')
+          .attr('stroke-width', '2px')
           .attr('stroke-linecap', 'butt')
           .attr('stroke-linejoin', 'miter')
           .attr('stroke-opacity', '1')
@@ -141,7 +141,7 @@ L.provide('OML.bridge', ["graph/abstract_chart", "#OML.abstract_chart", ["/resou
           .attr('y1', ly)
           .attr('y2', ly)        
           .attr('stroke', stroke)
-          .attr('stroke-width', '2px')
+          .attr('stroke-width', '4px')
         ;
         
       var self = this;
