@@ -54,7 +54,7 @@ opts = {
       p.separator ""
       p.separator "BRIDGE options:"
       p.on("--fake-events", "If set, create fake sensor events") { $fake_bridge_events = true }
-      p.on("--oml-database", "Database containing bridge data [#{$oml_database}]") do |f|
+      p.on("--oml-database DATABASE", "Database containing bridge data [#{$oml_database}]") do |f|
         $oml_database = f
       end
       p.separator ""
