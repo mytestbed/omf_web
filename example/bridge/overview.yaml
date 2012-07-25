@@ -55,7 +55,7 @@ widget:
           data_source:
             name: sensors
           mapping:
-            x_axis: oml_ts_client
+            x_axis: time
             y_axis: 
               property: v1
             group_by:
