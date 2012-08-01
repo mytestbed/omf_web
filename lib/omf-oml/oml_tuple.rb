@@ -46,8 +46,10 @@ module OMF::OML
         type = col[:type] || raise("Ill-formed schema '#{schema}'")
         j = i + 2; # need to create a locally scoped variable for the following lambdas
         @vprocs[name] = @vprocs[i] = case type      
-          when :string : lambda do |r| r[j] end
-          when :double : lambda do |r| r[j].to_f end
+          when :string
+            lambda do |r| r[j] end
+          when :double
+            lambda do |r| r[j].to_f end
           else raise "Unrecognized OML type '#{type}'"
         end
         i += 1

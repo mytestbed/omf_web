@@ -21,7 +21,7 @@ module OMF::Web::Theme
       
     end
     
-    def render_content_observer(div_id)
+    def render_content_observer(wid)
       javascript(%{
         OHUB.bind("content.changed.#{@widget.content_id}", function(evt) {
           

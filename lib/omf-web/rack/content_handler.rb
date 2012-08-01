@@ -25,7 +25,6 @@ module OMF::Web::Rack
         debug ex.to_s + "\n\t" + ex.backtrace.join("\n\t")
         return [500, {"Content-Type" => 'text'}, [ex.to_s]]
       end
-      
       if headers.kind_of? String
         headers = {"Content-Type" => headers}
       end

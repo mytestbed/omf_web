@@ -43,11 +43,12 @@ module OMF::Web
         # @content = content
         # @repository.add_and_commit(@content_handle, content, data['message'], req)
       # end
-      # [true.to_json, "text/json"]
+      [true.to_json, "text/json"]
     end
     
     def write(content, message = "")
       if content != @content
+        debug "Updating '#{@content_descriptor.inspect}'"
         @content = content
         @repository.write(@content_descriptor, content, message)
       end

@@ -83,8 +83,10 @@ module OMF::OML
         name = col[:name] || raise("Ill-formed schema '#{schema}'")
         type = col[:type] || raise("Ill-formed schema '#{schema}'")
         @vprocs[name] = @vprocs[i] = case type
-          when :string : lambda do |r| r[i] end
-          when :double : lambda do |r| r[i].to_f end
+          when :string
+            lambda do |r| r[i] end
+          when :double 
+            lambda do |r| r[i].to_f end
           else raise "Unrecognized Schema type '#{type}'"
         end
         i += 1

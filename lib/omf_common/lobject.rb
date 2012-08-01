@@ -72,7 +72,8 @@ module OMF::Common
       else
         name = opts[:fileName] || "#{appName}_log4r.yaml"
         if ((searchPath = opts[:searchPath]) != nil)
-          logDir = searchPath.detect {|dir|
+          searchPath = searchPath.is_a?(Enumerable) ? searchPath : [searchPath]
+          logDir = searchPath.find {|dir|
             File.exists?("#{dir}/#{name}")
           }
           #puts "logDir '#{logDir}:#{logDir.class}'"

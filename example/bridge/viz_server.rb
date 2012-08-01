@@ -41,7 +41,7 @@ end
 opts = {
   :app_name => 'bridge',
   :page_title => 'Sydney Harbour Bridge Monitoring',
-  :footer_left => lambda do
+  :footer_left => lambda do |e|
     #img :src => '/resource/image/imagined_by_nicta.jpeg', :height => 24
     text 'Imagined by NICTA'
   end,

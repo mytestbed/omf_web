@@ -15,6 +15,6 @@ widget:
     - type: code
       height: 800
       content:
-        url: sample.md # xample/simple/sample.md
+        url: file:demo:sample.md # xample/simple/sample.md
 
 

@@ -7,7 +7,7 @@ widget:
   name: Text
   type: text
   content:
-    url: sample.md 
+    url: file:demo:sample.md 
 
 # xexample/simple/sample.md
 

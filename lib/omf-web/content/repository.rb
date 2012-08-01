@@ -51,9 +51,13 @@ module OMF::Web
     
     def self.find_repo_for(url)
       parts = url.split(':')
-      if (type = parts[0]) == 'git'
+      case type = parts[0]
+      when 'git'
         require 'omf-web/content/git_repository' 
         return GitContentRepository[parts[1]]
+      when 'file'
+        require 'omf-web/content/file_repository' 
+        return FileContentRepository[parts[1]]
       else
         raise "Unknown repo type '#{type}'"
       end

@@ -31,12 +31,15 @@ module OMF::Web::Widget
     
     def content_proxy=(content_proxy)
       @content_proxy = content_proxy
-      @content = OMF::Web::Widget::Text::Maruku.format_content(content_proxy)
-      @opts[:title] = @content.attributes[:title] || opts[:title]
-      @widgets = @content.attributes[:widgets] || []
     end
         
     def content()
+      # Could avoid doing the next three steps every time if we would know if the
+      # content in content_proxy has changed.
+      @content = OMF::Web::Widget::Text::Maruku.format_content(@content_proxy)
+      @opts[:title] = @content.attributes[:title] || opts[:title]
+      @widgets = @content.attributes[:widgets] || []
+      
       OMF::Web::Theme.require 'text_renderer'
       OMF::Web::Theme::TextRenderer.new(self, @content, @opts)
     end
