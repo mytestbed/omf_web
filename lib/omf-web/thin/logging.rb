@@ -45,8 +45,8 @@ module Thin
     public :debug
     
     # Log an error backtrace if debugging is activated
-    def log_error(e=$!)
-      (@logger ||= OMF::Common::LObject.new(self.class)).error(msg)
+    def log_error(e = $!)
+      (@logger ||= OMF::Common::LObject.new(self.class)).error(e)
     end
     module_function :log_error
     public :log_error
