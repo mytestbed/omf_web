@@ -20,9 +20,7 @@ module OMF::Web::Theme
         current.siblings().removeClass('current');
         
         // May be a bit overkill, but this should shake out the widgets hidden so far
-        OHUB.trigger('window.resize', {}); 
-        //var widget = OML.widgets[widget_id];
-        //if (widget) widget.resize().update();
+        OHUB.trigger('layout.resize', {}); 
           
         return false;
       };
