@@ -34,15 +34,19 @@ module OMF::Web::Widget
     end
         
     def content()
+      update()      
+      OMF::Web::Theme.require 'text_renderer'
+      @opts[:title] = @content.attributes[:title] || opts[:title]
+      OMF::Web::Theme::TextRenderer.new(self, @content, @opts)
+    end
+    
+    def update()
       # Could avoid doing the next three steps every time if we would know if the
       # content in content_proxy has changed.
       @content = OMF::Web::Widget::Text::Maruku.format_content(@content_proxy)
-      @opts[:title] = @content.attributes[:title] || opts[:title]
       @widgets = @content.attributes[:widgets] || []
-      
-      OMF::Web::Theme.require 'text_renderer'
-      OMF::Web::Theme::TextRenderer.new(self, @content, @opts)
     end
+    
 
     def content_url
       @content_proxy.content_url
@@ -57,6 +61,7 @@ module OMF::Web::Widget
     end
 
     def collect_data_sources(ds_set)
+      update()
       @widgets.each {|w| w.collect_data_sources(ds_set) }
       ds_set
     end
