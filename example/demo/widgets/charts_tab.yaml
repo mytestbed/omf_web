@@ -1,0 +1,126 @@
+
+
+
+# Simple tab showing a line chart with supporting table
+#
+
+widget:
+  id: chart_gallery
+  name: Charts
+  top_level: true
+  priority: 900
+  type: layout/tabbed
+  widgets: 
+    - name: Line Chart
+      type: data/line_chart3
+      data_source: 
+        name: downloads
+      mapping:
+        x_axis: t
+        y_axis: volume
+
+    - name: Zoom & Focus
+      type: data/line_chart_with_focus
+      data_source: 
+        name: downloads
+      mapping:
+        x_axis: t
+        y_axis: volume
+      margin:
+        bottom: 30
+
+    - name: Discrete Barchart
+      type: data/discrete_bar_chart
+      data_source: 
+        name: financial_returns
+      mapping:
+        label: name
+        value: value
+        
+    - name: Histogram
+      type: data/histogram2
+      data_source: 
+        name: irwin_hall
+      mapping:
+        value: value
+        group_by: device
+      rotate_labels: 0
+      axis:
+        x:
+          ticks: 
+            format: ",.2f"
+
+    - name: Multi Barchart
+      type: data/multi_barchart
+      data_source: 
+        name: movies_year_genre
+      mapping:
+        label: genre
+        value: count
+        group_by: year
+      rotate_labels: 0
+      axis:
+        x:
+          ticks: 
+            format: false
+
+    - name: Pie Chart
+      type: data/pie_chart2
+      data_source: 
+        name: financial_returns_all_positive
+      mapping:
+        label: name
+        value: value
+        
+    - name: Map
+      type: data/map2
+      data_sources: walk
+      map:
+        center: [151.197189, -33.895508]
+        zoom: 18
+      mapping:
+        lat:
+          property: lat
+        lng:
+          property: lon
+        radius:
+          property: rssi 
+          min: 10      # ensure that the circle isn't getting too small
+        fill_color:
+          property: rssi
+          scale: 0.04 # 1.0 / 25
+          color: red_yellow20_green() # () indicates a color scale  
+          
+    - name: Network
+      type: data/network2
+      data_source: 
+        name: mobile_network
+        dynamic: 1
+      mapping:
+        nodes:
+          x:
+            property: x
+          y: 
+            property: y
+        links:
+          stroke_width:
+            property: load
+            scale: 20
+            min: 3
+          stroke_color:
+            property: load
+            color: red_yellow20_green() #green_yellow80_red()
+          
+        
+    - name: Table
+      type: data/table2
+      data_source: 
+        name: movies
+        
+
+
+
+
+
+
+

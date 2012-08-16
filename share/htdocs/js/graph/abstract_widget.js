@@ -211,9 +211,12 @@ L.provide('OML.abstract_widget', ["/resource/vendor/d3/d3.js"], function () {
            return this.create_mapping(mname, {property: descr}, stream, type, def);
          } else {
            var value = (descr == undefined) ? def : descr;
-           if (type == 'color' && /\(\)$/.test(value)) {
-             //var t = /\(\)$/.test(value); // check if value ends with () indicating color function
-             value = this.decl_color_func[value];
+           if (type == 'color' && /\(\)$/.test(value)) { // check if value ends with () indicating color function
+             var cf = this.decl_color_func[value];
+             var cf_i = cf();
+             value = function(x) {
+               return cf_i(x);
+             }
            }
            return value;
          }
@@ -263,6 +266,14 @@ L.provide('OML.abstract_widget', ["/resource/vendor/d3/d3.js"], function () {
            return t;
          }
        } else {
+         if (descr.values) {
+           // provided custom mapping for values
+           var values = descr.values;
+           var def_value = descr['default'];
+           return function(x) {
+             return values[x] || def_value;
+           }
+         }
          var pname = descr.property;
          if (pname == undefined) {
            throw "Missing 'property' declaration for mapping '" + mname + "'.";
@@ -293,10 +304,11 @@ L.provide('OML.abstract_widget', ["/resource/vendor/d3/d3.js"], function () {
            if (color_fname == undefined) {
              throw "Missing color function for '" + mname + "'.";
            } 
-           var color_f = self.decl_color_func[color_fname];
-           if (color_f == undefined) {
+           var color_fp = self.decl_color_func[color_fname];
+           if (color_fp == undefined) {
              throw "Unknown color function '" + color_fname + "'.";
            } 
+           var color_f = color_fp();
            var scale = descr.scale;
            var min_value = descr.min;
            return function(d) {

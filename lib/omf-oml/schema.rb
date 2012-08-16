@@ -110,6 +110,23 @@ module OMF::OML
         type = :string
       end
       col[:type] = type
+      
+      col[:type_conversion] = case type
+        when :string
+          lambda do |r| r end
+        when :key
+          lambda do |r| r end
+        when :integer 
+          lambda do |r| r.to_i end
+        when :float 
+          lambda do |r| r.to_f end
+        when :date 
+          lambda do |r| Date.parse(r) end
+        when :dateTime
+          lambda do |r| Time.parse(r) end
+        else raise "Unrecognized Schema type '#{type}'"
+      end
+                  
       @schema.insert(index, col)
     end
     
@@ -122,13 +139,14 @@ module OMF::OML
     # Translate a record described in a hash of 'col_name => value'
     # to a row array
     #
-    def hash_to_row(hrow)
+    def hash_to_row(hrow, set_nil_when_missing = false)
       @schema.collect do |cdescr|
         cname = cdescr[:name]
         unless hrow.key? cname
-          raise 'Missing record element '#{cname}' in record '#{hrow}'"
+          next nil if set_nil_when_missing
+          raise "Missing record element '#{cname}' in record '#{hrow}'"
         end
-        hrow[cname]
+        cdescr[:type_conversion].call(hrow[cname])
       end
     end
     

@@ -6,23 +6,39 @@ L.provide('OML.abstract_chart', ["graph/abstract_widget", "#OML.abstract_widget"
     
     decl_color_func: {
       // scale
-      "green_yellow80_red()": d3.scale.linear()
-                              .domain([0, 0.8, 1])
-                              .range(["green", "yellow", "red"]),
-      "green_red()":          d3.scale.linear()
-                              .domain([0, 1])
-                              .range(["green", "red"]),
-      "red_yellow20_green()": d3.scale.linear()
-                              .domain([0, 0.2, 1])
-                              .range(["red", "yellow", "green"]),
-      "red_green()":          d3.scale.linear()
-                              .domain([0, 1])
-                              .range(["red", "green"]),
+      "green_yellow80_red()": function() {
+                                return d3.scale.linear()
+                                        .domain([0, 0.8, 1])
+                                        .range(["green", "yellow", "red"])
+                              },
+      "green_red()":          function() {
+                                return d3.scale.linear()
+                                        .domain([0, 1])
+                                        .range(["green", "red"])
+                              },
+      "red_yellow20_green()": function() {
+                                return d3.scale.linear()
+                                        .domain([0, 0.2, 1])
+                                        .range(["red", "yellow", "green"])
+                              },
+      "red_green()":          function() {
+                                return d3.scale.linear()
+                                        .domain([0, 1])
+                                        .range(["red", "green"])
+                              },
       // category
-      "category10()":         d3.scale.category10(),      
-      "category20()":         d3.scale.category20(),
-      "category20b()":         d3.scale.category20b(),
-      "category20c()":         d3.scale.category20c(),
+      "category10()":         function() {
+                                return d3.scale.category10()
+                              },
+      "category20()":         function() {
+                                return d3.scale.category20()
+                              },
+      "category20b()":        function() {
+                                return d3.scale.category20b()
+                              },
+      "category20c()":        function() {
+                                return d3.scale.category20c()
+                              },
     },
     
     defaults: function() {

@@ -8,10 +8,11 @@ require 'omf-oml/table'
 
 schema = [[:t, :float], [:device, :string], [:amplitude, :float], [:x, :float], [:y, :float]]
 table = OMF::OML::OmlTable.new 'generator', schema, :max_size => 20
+table_static = OMF::OML::OmlTable.new 'generator_static', schema
 
 require 'omf_web'
 OMF::Web.register_datasource table
-
+OMF::Web.register_datasource table_static
 
 
 samples = 30
@@ -37,6 +38,12 @@ def measure_device(name, t, angle, table, ctxt)
 end
 
 samples.times {|i| measure(i, table, ctxt) }
+samples.times do |i| 
+  c = ctxt.dup
+  c[:timeOffset] = 0
+  c[:timeScale] = 1
+  measure(i, table_static, c) 
+end
 
 # Keep on measuring
 Thread.new do

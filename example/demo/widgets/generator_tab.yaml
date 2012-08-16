@@ -9,4 +9,4 @@ widget:
   top_level: true
   priority: 600
   type: layout/tabbed
-  widgets:  [generator_table, line_chart]
+  widgets:  [line_chart_static, generator_table, line_chart]

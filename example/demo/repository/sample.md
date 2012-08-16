@@ -1,4 +1,4 @@
-title: Lorem ipsum dolor sit
+title: Lorem ipsum dolor sitXX
 
 # Lorem ipsum dolor sit
 
@@ -24,7 +24,7 @@ ipsum dolor sit amet, consectetur adipiscing elit.
   widget:
     id_ref: pie
     title: Fusce vehicula sapien
-    width: 0.5
+    width: 0.2
     margin:
       left: 0
       right: 0

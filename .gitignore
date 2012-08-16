@@ -23,3 +23,5 @@ share/htdocs/vendor/valums-file-uploader-cf7bfb1/.gitignore
 .project
 
 UNUSED/
+*.swp
+.DS_Store

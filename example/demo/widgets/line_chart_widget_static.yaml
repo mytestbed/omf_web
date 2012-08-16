@@ -9,11 +9,12 @@
 #
 # 
 widget:
-  id: line_chart
-  name: Line Chart (Dynamic)
+  id: line_chart_static
+  name: Line Chart (Static)
   type: data/line_chart3
+  #area: true # color the area between line and zero line
   data_source: 
-    name: generator
+    name: generator_static
     dynamic: 1  # check once a second
   mapping:
     x_axis: t
@@ -22,12 +23,17 @@ widget:
       min: -10.5
       max: 10.5
     group_by: device
+    stroke_width:
+      # property: device ## needs to be the same as 'group_by' for line charts
+      values: 
+        Dev1: 2.5
+        Dev2: 5
+      default: 10 # for all the lines with different names
   axis:
     x:
       ticks:
-        type: dateTime
-        format: "%I:%M"
-        transition: 0
+        type: time
+        #transition: 0
       legend: Time (sec)
     y:
       legend: Voltage (V)
