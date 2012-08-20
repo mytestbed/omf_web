@@ -23,7 +23,7 @@
 
 /** TOOL BAR **/
 
-.codemirror_toolbar_container {
+.codemirror_widget .codemirror_toolbar_container {
   border: 1px solid silver;
   width: 100%;
   padding: 2px;
