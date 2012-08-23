@@ -256,7 +256,7 @@ nv.utils.windowResize = function(fun){
 // behaviour
 nv.utils.getColor = function(color){
     if( Object.prototype.toString.call( color ) === '[object Array]' )
-        return function(d, i) { return d.color || color[i % color.length]; };
+        return function(d, i) { return d.color || color[i % color.length]; };
     else
         return color;
         //can't really help it if someone passes rubish as color
