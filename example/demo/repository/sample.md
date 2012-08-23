@@ -1,4 +1,4 @@
-title: Lorem ipsum dolor sitXX
+title: Lorem ipsum dolor sit
 
 # Lorem ipsum dolor sit
 
@@ -22,9 +22,14 @@ ipsum dolor sit amet, consectetur adipiscing elit.
 
 {{{
   widget:
-    id_ref: pie
     title: Fusce vehicula sapien
-    width: 0.2
+    type: data/pie_chart2
+    data_sources: animals
+    mapping:
+      value: count
+      fill_color: category10()
+      label: name
+    width: 0.6
     margin:
       left: 0
       right: 0

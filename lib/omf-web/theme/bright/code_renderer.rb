@@ -1,12 +1,12 @@
 
-require 'coderay'
+#require 'coderay'
 require 'omf-web/theme/abstract_page'
 
 module OMF::Web::Theme
 
   class CodeRenderer < Erector::Widget
     
-    depends_on :css, "/resource/css/coderay.css"
+    #depends_on :css, "/resource/css/coderay.css"
     
     # This maps the content's mime type to a different mode  supported
     # CodeMirror
@@ -69,8 +69,6 @@ module OMF::Web::Theme
           link :href => "/resource/vendor/codemirror/lib/#{f}.css", 
             :media => "all", :rel => "stylesheet", :type => "text/css"
         end
-        link :href => "/resource/theme/bright/css/codemirror.css", 
-            :media => "all", :rel => "stylesheet", :type => "text/css"
 
         ['codemirror', 'util/dialog', 'util/searchcursor', 'util/search', 'util/loadmode'].each do |f|
           script :src => "/resource/vendor/codemirror/lib/#{f}.js"
@@ -82,22 +80,32 @@ module OMF::Web::Theme
         # Div where the text should go
         div :id => edit_id, :class => "codemirror_edit" #, :style => 'height:100%'
          
+        render_widget_creation(base_id, opts)
         javascript(%{
-          L.require('#OML.code_mirror', 'graph/code_mirror.js', function() {
-            OML.widgets.#{base_id} = new OML.code_mirror(#{opts.to_json});
-            #{js_toolbar.join("\n");}
-          });
+          #{js_toolbar.join("\n");}
         })
+        
       end        
     end
-
-    def content2()
-      link :href => "/resource/css/coderay.css", 
-        :media => "all", :rel => "stylesheet", :type => "text/css"     
-      div :class => "oml_code CodeRay" do
-        rawtext(@content.html :line_numbers => :inline, :tab_width => 2, :wrap => :div)
-      end
+    
+    def render_widget_creation(base_id, opts)
+      link :href => "/resource/theme/bright/css/codemirror.css", 
+          :media => "all", :rel => "stylesheet", :type => "text/css"
+      
+      javascript(%{
+        L.require('#OML.code_mirror2', 'graph/code_mirror2.js', function() {
+          OML.widgets.#{base_id} = new OML.code_mirror(#{opts.to_json});
+        });
+      })
     end
+
+    # def content2()
+      # link :href => "/resource/css/coderay.css", 
+        # :media => "all", :rel => "stylesheet", :type => "text/css"     
+      # div :class => "oml_code CodeRay" do
+        # rawtext(@content.html :line_numbers => :inline, :tab_width => 2, :wrap => :div)
+      # end
+    # end
     
   end
   

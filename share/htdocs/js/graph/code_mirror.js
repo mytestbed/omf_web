@@ -21,6 +21,7 @@ L.provide('OML.code_mirror',
     
     initialize: function(opts) {
       OML.code_mirror.__super__.initialize.call(this, opts);
+      this.code_mirror = null;
       this.update();
     },
     
@@ -28,6 +29,7 @@ L.provide('OML.code_mirror',
       var o = this.opts;
       
       if ($(o.base_el).is(':hidden')) {
+        this.code_mirror = null;
         return;
       }
 
@@ -36,7 +38,7 @@ L.provide('OML.code_mirror',
       // go astray. Brute force solution is to recreate the editor on every 
       // update.
       
-      //if (!o.code_mirror) {
+      if (!this.code_mirror) {
         var edit_el = $(o.edit_el);
         edit_el.empty(); // remove old instances if any
         
@@ -63,27 +65,16 @@ L.provide('OML.code_mirror',
 
         var hlLine = cm.setLineClass(0, "activeline");
         
-        var s_el = $(o.base_el + " .CodeMirror-scroll");
-        s_el.css('height', this.h);
-      //}
-      
-        // var p = $(o.base_el);
-        // $(o.base_el).resizable({
-          // stop: function() { 
-            // cm.refresh(); 
-          // },
-          // resize: function() {
-            // var scroll = $(o.edit_el + " .CodeMirror-scroll");
-            // scroll.height($(this).height());
-            // scroll.width($(this).width());
-            // cm.refresh();
-          // }
-        // });
-
-      
-      this.on_changed(this.code_mirror, null);
+        this.on_changed(this.code_mirror, null);
+        this.code_mirror.focus();
+      }
+      this._update_widget_height(o);
       this.code_mirror.refresh();
-      this.code_mirror.focus();
+    },
+    
+    _update_widget_height: function(opts) {
+      var s_el = $(opts.base_el + " .CodeMirror-scroll");
+      s_el.css('height', this.h);      
     },
     
     on_changed: function(editor, change) {

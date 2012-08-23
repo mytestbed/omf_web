@@ -117,6 +117,19 @@ widget:
       data_source: 
         name: movies
         
+    - name: Embedded Text
+      type: text
+      content:
+        url: file:demo:sample.md 
+
+    - name: Edit Text 
+      type: code
+      width: 1.0
+      #height: 800
+      content:
+        url: file:demo:sample.md 
+        
+        
 
 
 
