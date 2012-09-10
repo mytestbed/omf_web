@@ -27,7 +27,13 @@ module OMF::Web
     end
     
     def self.[](name)
-      OMF::Web::SessionStore[name.to_sym, :dsp]
+      name = name.to_sym
+      unless dsp = OMF::Web::SessionStore[name, :dsp]
+        if ds = @@datasources[name]
+          dsp = OMF::Web::SessionStore[name, :dsp] = self.new(name, ds)
+        end
+      end
+      dsp
     end
     
     # Return proxies for 'ds_name'. Note, there can be more then
@@ -35,6 +41,8 @@ module OMF::Web
     # has one ds for the nodes and one for the links
     #
     # @return: Array of proxies
+    #
+    # TODO: This seems to hardcode networks.
     #
     def self.for_source(ds_descr)
       #raise "FOO #{ds_descr.inspect}"
@@ -44,7 +52,7 @@ module OMF::Web
       ds_name = ds_descr[:name].to_sym
       ds = @@datasources[ds_name]
       unless ds
-        throw "Unknown data source '#{ds_name}' (#{@@datasources.keys.inspect})"
+        raise "Unknown data source '#{ds_name}' (#{@@datasources.keys.inspect})"
       end
       if ds.is_a? Hash
         n_name = "#{ds_name}_nodes".to_sym
@@ -73,20 +81,13 @@ module OMF::Web
     end
     
     
-    def to_javascript(update_interval)
-      #name = "ds#{@data_source.object_id}"
-      # %{
-        # OML.data_sources['#{@name}'] = new OML.data_source('#{@name}', 
-                                                          # '/_update/#{@name}?sid=#{Thread.current["sessionID"]}',
-                                                          # #{update_interval},
-                                                          # #{@data_source.schema.to_json},
-                                                          # #{@data_source.rows.to_json});
-      # }
+    def to_javascript(update_interval = 0)
+      is_dynamic = update_interval > 0 ? ".is_dynamic(#{update_interval})" : ""
       %{
         OML.data_sources.register('#{@name}', 
                                   '/_update/#{@name}?sid=#{Thread.current["sessionID"]}',
                                   #{@data_source.schema.to_json},
-                                  #{@data_source.rows.to_json});
+                                  #{@data_source.rows.to_json})#{is_dynamic};
       }
      
     end

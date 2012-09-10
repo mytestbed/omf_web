@@ -25,3 +25,5 @@ share/htdocs/vendor/valums-file-uploader-cf7bfb1/.gitignore
 UNUSED/
 *.swp
 .DS_Store
+
+share/htdocs/vendor/jquery-ui-1.8.23/development-bundle

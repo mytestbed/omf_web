@@ -68,9 +68,9 @@ module OMF::OML
     
     # NOTE: +on_row_added+ callbacks are done within the monitor. 
     #
-    def add_row(row)
+    def add_row(row, needs_casting = false)
       synchronize do
-        _add_row(row)
+        _add_row(row, needs_casting)
       end
     end
     
@@ -80,9 +80,9 @@ module OMF::OML
     
     # Add an array of rows to this table
     #
-    def add_rows(rows)
+    def add_rows(rows, needs_casting = false)
       synchronize do
-        rows.each { |row| _add_row(row) }
+        rows.each { |row| _add_row(row, needs_casting) }
       end
     end
     
@@ -98,7 +98,10 @@ module OMF::OML
     
     # NOT synchronized
     #
-    def _add_row(row)
+    def _add_row(row, needs_casting = false)
+      if needs_casting
+        row = @schema.cast_row(row)
+      end
       #puts row.inspect
       if @on_before_row_added
         row = @on_before_row_added.call(row)

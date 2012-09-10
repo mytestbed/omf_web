@@ -6,8 +6,8 @@ OML.data_sources = function() {
   function context() {};
   
   context.register = function(name, updateURL, schema, events) {
-    sources[name] = new OML.data_source(name, updateURL, schema, events);
-    return context;
+    return sources[name] = new OML.data_source(name, updateURL, schema, events);
+    //return context;
   };
   
   context.lookup = function(ds_descr) {
@@ -43,6 +43,9 @@ OML['data_source'] = function(name, updateURL, schema, events) {
   };
   
   this.name = name;
+  if (! updateURL) {
+    updateURL = '/_update/' + name + '?sid=' + OML.session_id;
+  }
   this.update_url = updateURL;
   this.update_interval = -1;
   this.schema = schema;
@@ -127,7 +130,14 @@ OML['data_source'] = function(name, updateURL, schema, events) {
       
       if (first_time) {
         var self = this;
+        var check1 = $('.widget-title-icon');
+        // L.require([], function() {
+          // var check2 = $('.widget-title-icon');
+          // var i = 0;
+        // });
         L.require(['/resource/vendor/jquery/jquery.js', '/resource/vendor/jquery/jquery.periodicalupdater.js'], function() {
+          var check3 = $('.widget-title-icon');
+        
           var update_interval = self.update_interval * 1000;
           if (update_interval < 1000) update_interval = 3000;
           var opts = {
@@ -157,5 +167,7 @@ OML['data_source'] = function(name, updateURL, schema, events) {
   this.on_changed = function(update_f) {
     OHUB.bind(this.event_name, update_f);
   }
+  
+  return this;
 }
 

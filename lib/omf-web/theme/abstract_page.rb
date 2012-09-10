@@ -13,6 +13,7 @@ module OMF::Web::Theme
     depends_on :js, "/resource/js/require3.js"
 
     depends_on :js, "/resource/theme/abstract/abstract.js"
+    depends_on :js, "/resource/js/data_source.js"    
 
     # depends_on :script, %{
       # L.baseURL = "/resource";
@@ -79,7 +80,6 @@ module OMF::Web::Theme
       end
       # Calling 'javascript' doesn't seem to work here. No idea why, so let's do it by hand
       %{
-        <script src='/resource/js/data_source.js' type="text/javascript"></script>        
         <script type="text/javascript">
           // <![CDATA[
             #{js.join("\n")}

@@ -150,14 +150,22 @@ module OMF::OML
       end
     end
     
+    # Cast each element in 'row' into its proper type according to this schema
+    #
+    def cast_row(raw_row)
+      unless raw_row.length == @schema.length
+        raise "Row needs to have same size as schema (#{raw_row.inspect})"
+      end
+      # This can be done more elegantly in 1.9
+      row = []
+      raw_row.each_with_index do |el, i|
+        row << @schema[i][:type_conversion].call(el)
+      end
+      row
+    end
+    
     def describe
-      # @schema.collect do |name, type|
-        # if type.kind_of? Class
-          # type = CLASS2TYPE[type] || 'unknown'
-        # end
-        # {:name => name, :type => type}
-      # end
-      @schema
+      @schema.map {|c| {:name => c[:name], :type => c[:type], :title => c[:title] }}
     end
     
     def to_json(*opt)

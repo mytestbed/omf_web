@@ -11,6 +11,7 @@ L = new function() {
     var onReady = deps.pop();
     
     var absDeps = this._calculate_required(deps);
+    absDeps.push('#DOM_LOADED'); // only continue when DOM is ready
     
     this._pending_require.push({
       deps: absDeps, onReady: onReady
@@ -41,12 +42,19 @@ L = new function() {
   //
   this.provide = function(obj_name, deps, onReady) {
     var absDeps = this._calculate_required(deps);
+    absDeps.push('#DOM_LOADED');
 
     this._pending_provide.push({
       obj_name: obj_name, deps: absDeps, onReady: onReady
     });
     this._load(deps, true);
     this._checkAllPending(); // we may already have everything we need
+  }
+  
+  // Report that an URL has been loaded through some other means
+  this.already_loaded = function(url) {
+    this._loaded[url] = true;
+    this._checkAllPending();
   }
   
   this._load = function(urls, loadParallel) {
@@ -238,7 +246,15 @@ L = new function() {
       }
     }
     return true;
-  }
+  };
+  
+  // Report that an URL has been loaded through some other means
+  var self = this;
+  $(document).ready(function() {
+    self._loaded['#DOM_LOADED'] = true;
+    self._checkAllPending();
+  });
+  
   
   // this._checkOnePending = function(p) {
     // var deps = p.deps;
