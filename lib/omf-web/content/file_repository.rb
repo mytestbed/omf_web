@@ -100,16 +100,6 @@ module OMF::Web
       end
     end
     
-    def read(content_descr)
-      path = _get_path(content_descr)
-      Dir.chdir(@top_dir) do
-        unless File.readable?(path)
-          raise "Cannot read file '#{path}'"
-        end
-        content = File.open(path).read
-        return content
-      end
-    end
     
     
     #

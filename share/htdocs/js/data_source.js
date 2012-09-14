@@ -22,7 +22,7 @@ OML.data_sources = function() {
     } 
     var source = sources[name];
     if (! source) {
-      raise("Unknown data source '" + name + "'.");
+      throw("Unknown data source '" + name + "'.");
     }
     if (dynamic) {
       source.is_dynamic(dynamic);

@@ -63,6 +63,10 @@ module OMF::Web
       end
     end
     
+    def self.absolute_path_for(url)
+      find_repo_for(url).absolute_path(url)
+    end
+    
     def self.read_content(url, opts)
       find_repo_for(url).read(url)
     end
@@ -105,6 +109,23 @@ module OMF::Web
       ext = fname.split('.')[-1]
       mt = MIME_TYPE[ext.to_sym] || 'text'
     end
+    
+    def read(content_descr)
+      path = _get_path(content_descr)
+      Dir.chdir(@top_dir) do
+        unless File.readable?(path)
+          raise "Cannot read file '#{path}'"
+        end
+        content = File.open(path).read
+        return content
+      end
+    end    
+    
+    def absolute_path(content_descr)
+      path = _get_path(content_descr)
+      File.join(@top_dir, path)
+    end
+    
     
           
   end # class
