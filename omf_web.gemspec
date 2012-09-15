@@ -5,7 +5,7 @@ require "omf-web/version"
 Gem::Specification.new do |s|
   s.name        = "omf_web"
 #  s.version     = OmfWeb::VERSION
-  s.version     = 0.9
+  s.version     = '0.9.1'
   s.authors     = ["NICTA"]
   s.email       = ["omf-user@lists.nicta.com.au"]
   s.homepage    = "https://www.mytestbed.net"
