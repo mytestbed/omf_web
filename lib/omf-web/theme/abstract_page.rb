@@ -105,6 +105,7 @@ module OMF::Web::Theme
     end
   
     def to_html(opts = {})
+      page_title = @title  # context may get screwed up below, so put title into scope
       b = super
       if @opts[:request].params.key?('embedded')
         b
@@ -114,7 +115,7 @@ module OMF::Web::Theme
           instruct
           html do
             head do
-              title @title || "OMF WEB"
+              title page_title || "OMF WEB"
               #<link rel="shortcut icon" href="/resource/theme/@theme/img/favicon.ico">
               #<link rel="apple-touch-icon" href="/resource/theme/@theme/img/apple-touch-icon.png">
               text! e.join("\n")
