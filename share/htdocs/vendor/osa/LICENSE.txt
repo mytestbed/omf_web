@@ -1,0 +1,11 @@
+http://www.opensecurityarchitecture.org/cms/library/icon-library
+
+Our icon library is depicted as PNG images on this page, and as a pack of 
+SVG and PNG images in a zip file for download. We have based these icons on 
+the Tango Free Desktop Project SVG images (many thanks for the excellent 
+base images).
+
+You are free to use these as the basis for building patterns in conjunction 
+with the pattern template we provide. If you have ideas for new icons please 
+let us know, or send through examples as SVG so we can include in the next 
+release. All PNG icons are rendered at 128 x 128 pixels.

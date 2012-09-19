@@ -7,7 +7,7 @@
 widget:
   id: pie
   name: Pie Chart
-  type: data/pie_chart
+  type: data/pie_chart2
   data_sources: animals
   mapping :
     value: count

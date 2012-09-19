@@ -93,7 +93,7 @@ module OMF::Web::Theme
           :media => "all", :rel => "stylesheet", :type => "text/css"
       
       javascript(%{
-        L.require('#OML.code_mirror2', 'graph/code_mirror2.js', function() {
+        L.require('#OML.code_mirror', 'graph/js/code_mirror', function() {
           OML.widgets.#{base_id} = new OML.code_mirror(#{opts.to_json});
         });
       })

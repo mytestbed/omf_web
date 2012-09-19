@@ -32,6 +32,7 @@ module OMF::Web::Theme
     # end
  
     def content
+      super
       div :id => 'doc3' do
         div :id => 'hd' do
           render_top_line

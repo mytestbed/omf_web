@@ -3,6 +3,11 @@
 
 require 'maruku'
 require 'maruku/ext/math'
+# Monkey patches to add line numbers to html output
+require 'omf-web/widget/text/maruku/input/parse_block'
+require 'omf-web/widget/text/maruku/output/to_html'
+require 'omf-web/widget/text/maruku/helpers'
+
 require 'rexml/document'
 require 'yaml'
 

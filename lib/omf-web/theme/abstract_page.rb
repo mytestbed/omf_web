@@ -40,6 +40,17 @@ module OMF::Web::Theme
       @opts = opts
     end
     
+    def content
+      javascript %{
+        if (typeof(LW) == "undefined") LW = {};
+        LW.session_id = OML.session_id = '#{Thread.current["sessionID"]}';
+        
+        L.provide('jquery', ['vendor/jquery/jquery.js']);
+        L.provide('jquery.periodicalupdater', ['vendor/jquery/jquery.periodicalupdater.js']);   
+        L.provide('jquery.ui', ['vendor/jquery-ui/js/jquery-ui.min.js']);
+      }    
+    end
+
     def render_flash
       return unless @flash
       if @flash[:notice] 

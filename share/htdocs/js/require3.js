@@ -134,7 +134,8 @@ L = new function() {
           s.push('js');
         }
         var ext = s.pop();
-        url = this.baseURL + '/' + ext + "/" + url;
+        //url = this.baseURL + '/' + ext + "/" + url;
+        url = this.baseURL + '/' + url;
       }
     }
     return url;    

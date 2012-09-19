@@ -233,19 +233,19 @@ ol.widget_tools_menu li.current a {
 }
 
 ol.widget_tools_menu li.data_line_chart2 a {
-  background: url(/resource/image/graph/line_chart.png) 0px -50px no-repeat;  
+  background: url(/resource/graph/img/line_chart.png) 0px -50px no-repeat;  
 }
 
 ol.widget_tools_menu li.data_scatter_plot a {
-  background: url(/resource/image/graph/scatter_plot.png) 0px 0px no-repeat;  
+  background: url(/resource/graph/img/scatter_plot.png) 0px 0px no-repeat;  
 }
 
 ol.widget_tools_menu li.data_table2 a {
-  background: url(/resource/image/graph/table.png) 0px -50px no-repeat;  
+  background: url(/resource/graph/img/table.png) 0px -50px no-repeat;  
 }
 
 ol.widget_tools_menu li.info a {
-  background: url(/resource/image/graph/info.png) 3px 3px no-repeat;
+  background: url(/resource/graph/img/info.png) 3px 3px no-repeat;
   margin-left: 10px  
 }
 
