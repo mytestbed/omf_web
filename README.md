@@ -14,7 +14,7 @@
     
 This will start a web server at port 3000. Point your browser there and you should see somthing like:
 
-![Screenshot of starting page](doc/screenshot.png "Screenshot")
+![Screenshot of starting page](raw/master/doc/screenshot.png doc/screenshot.png "Screenshot")
 
 For additional options start the server with -h.
 
