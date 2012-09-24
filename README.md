@@ -10,11 +10,17 @@
 ## Try the simple example
 
     git init /tmp/foo
-    ruby example/simple/simple_viz_server.rb start -p 4000
+    ruby -I lib -rubygems example/demo/demo_viz_server.rb start
+    
+This will start a web server at port 3000. Point your browser there and you should see somthing like:
 
-_4000 is the port number. For all options, please take a look at "thin -h" for more options_
+![Screenshot of starting page](doc/screenshot.png "Screenshot")
+
+For additional options start the server with -h.
 
 ## Design Notes
+
+** These notes are way out of date. Look at the 'demo' example for some guidance **
 
 This module is used to define and run a web server which allows a user to explore and
 intereact with various experiments. It is a stand-alone unit communicating through

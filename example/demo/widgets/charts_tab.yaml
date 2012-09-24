@@ -11,6 +11,21 @@ widget:
   priority: 900
   type: layout/tabbed
   widgets: 
+    
+    - name: Multi Barchart
+      type: data/multi_barchart
+      data_source: 
+        name: movies_year_genre
+      mapping:
+        label: genre
+        value: count
+        group_by: year
+      rotate_labels: 0
+      axis:
+        x:
+          ticks: 
+            format: false
+    
     - name: Line Chart
       type: data/line_chart3
       data_source: 
@@ -52,20 +67,6 @@ widget:
         x:
           ticks: 
             format: ",.2f"
-
-    - name: Multi Barchart
-      type: data/multi_barchart
-      data_source: 
-        name: movies_year_genre
-      mapping:
-        label: genre
-        value: count
-        group_by: year
-      rotate_labels: 0
-      axis:
-        x:
-          ticks: 
-            format: false
 
     - name: Pie Chart
       type: data/pie_chart2
