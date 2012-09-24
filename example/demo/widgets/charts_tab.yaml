@@ -29,6 +29,9 @@ widget:
       margin:
         bottom: 30
 
+    - name: Dynamic
+      id_ref: line_chart
+      
     - name: Discrete Barchart
       type: data/discrete_bar_chart
       data_source: 
@@ -95,7 +98,8 @@ widget:
       type: data/network2
       data_source: 
         name: mobile_network
-        dynamic: 1
+        unique: id  # only use the latest link and row descriptions
+        dynamic: true
       mapping:
         nodes:
           x:

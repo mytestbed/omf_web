@@ -24,16 +24,19 @@ OMF::Web.register_datasource nw, :index => :id
 # Move mobile node
 Thread.new do
   begin
+    ts = 0
     angle = 0
     delta = Math::PI / 6
     twoPi = 2 * Math::PI
     r = 0.25
     loop do
       sleep 1
+      ts = ts + 1
       angle += delta
       angle -= twoPi if angle >= twoPi
       nw.transaction do 
         m = nw.node(:m1)
+        #m[:ts] = ts
         m[:x] = r * Math.sin(angle) + 0.5
         m[:y] = r * Math.cos(angle) + 0.5
         l[:load] = rand()

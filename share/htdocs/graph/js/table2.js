@@ -1,16 +1,18 @@
 
 L.provide('jquery.event.drag', ['vendor/jquery/jquery.event.drag.js'], function() {
-  L.provide('slickgrid', [
-               'vendor/slickgrid/slick.core.js',
-               'vendor/slickgrid/slick.formatters.js',
-               'vendor/slickgrid/slick.editors.js',
-               'vendor/slickgrid/plugins/slick.rowselectionmodel.js',
-               'vendor/slickgrid/slick.grid.js',
-               'vendor/slickgrid/slick.dataview.js',
-               'vendor/slickgrid/controls/slick.pager.js',
-               'vendor/slickgrid/controls/slick.columnpicker.js',
-               'theme/bright/css/slickgrid.css'
-  ]);
+//  L.require(['theme/bright/css/slickgrid.css'], function() { // We seem to have a race condition with the CSS file
+    L.provide('slickgrid', [
+                 'vendor/slickgrid/slick.core.js',
+                 'vendor/slickgrid/slick.formatters.js',
+                 'vendor/slickgrid/slick.editors.js',
+                 'vendor/slickgrid/plugins/slick.rowselectionmodel.js',
+                 'vendor/slickgrid/slick.grid.js',
+                 'vendor/slickgrid/slick.dataview.js',
+                 'vendor/slickgrid/controls/slick.pager.js',
+                 'vendor/slickgrid/controls/slick.columnpicker.js',
+                 'theme/bright/css/slickgrid.css'
+    ]);
+//  });
 });
              
 L.provide('OML.table2', ["graph/js/abstract_widget", "#OML.abstract_widget", '#slickgrid'], function () {

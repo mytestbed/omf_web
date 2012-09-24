@@ -31,7 +31,8 @@ module OMF::Web::Widget::Layout
       
 
     def collect_data_sources(ds_set)
-      @widgets.each {|w| w.collect_data_sources(ds_set) }
+      @active_widget.collect_data_sources(ds_set)
+      #@widgets.each {|w| w.collect_data_sources(ds_set) }
       ds_set
     end
     

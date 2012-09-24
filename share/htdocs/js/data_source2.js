@@ -5,8 +5,8 @@ OML.data_sources = function() {
   
   function context() {};
   
-  context.register = function(name, updateURL, schema, events) {
-    sources[name] = new OML.data_source(name, updateURL, schema, events);
+  context.register = function(opts) {
+    sources[opts.id || opts.name] = new OML.data_source(opts);
     return context;
   };
   
@@ -15,14 +15,14 @@ OML.data_sources = function() {
     var dynamic = false;
     
     if (typeof(ds_descr) == 'object') {
-      name = ds_descr.name;
+      name = ds_descr.id || ds_descr.name;
       dynamic = ds_descr.dynamic;
     } else {
       name = ds_descr;
     } 
     var source = sources[name];
     if (! source) {
-      raise("Unknown data source '" + name + "'.");
+      throw("Unknown data source '" + name + "'.");
     }
     if (dynamic) {
       source.is_dynamic(dynamic);
@@ -33,48 +33,51 @@ OML.data_sources = function() {
   return context;
 }();
 
-OML.data_source = function(name, updateURL, schema, events) {
-  var event_name = "data_source." + this.name + ".changed";
-  var indexes = [];
+OML.data_source = function(opts) {
+  
+  var name = opts.id || opts.name;
+  var event_name = "data_source." + name + ".changed";
+  var rows = opts.rows || [];
+  var offset = opts.offset || -1; // Number of (initial) rows skipped (count towards 'max_rows')
+  var schema = opts.schema;
+  
+  var data_source = {
+    version: "0.1",
+    name: name,
+    schema: schema,
+    rows: function() {return rows},
+    index_for_column: index_for_column,
+    is_dynamic: is_dynamic,
+    event_name: event_name,
+  }
+  
+  var indexes = {};
+  var unique_index_check = null;
+  
   var update_interval = -1;
   var ws = null; // points to web socket instance
-  
-  function ds() {};
-  ds.version = "0.1";
-  
-  this.create_index = function(index) {
-    var idx = this.indexes[index];
-    if (idx) return;
-    
-    this._create_index(index);
-  };
-    
-  ds.create_index = function(index) {
-    var idx = indexes[index] = {};
-    // index ignores rows with identical index
-    _.map(events, function(r) {
-      idx[r[index]] = r;
-    });
-  };
-  
-  ds.get_indexed_row = function(index, key) {
-    var idx = indexes[index];
-    if (idx == undefined) {
-      throw "Need to create index first";
+
+  function index_for_column(col_descr) {
+    var i = col_descr.index;
+    var index = indexes[i];
+    if (!index) {
+      index = indexes[i] = {};
+      _.each(rows, function(r) { index[r[i]] = r; })
     }
-    return idx[key];
+    return function(key) {
+      return indexes[i][key]; // need fresh lookup as we may redo index
+    }
   }
   
-  ds.update_indexes = function() {
-    var self = this;
-    _.each(indexes, function(value, key) {
-      var i = 0;
-      self._create_index(key);
+  function update_indexes() {
+    // This can most likley be done more efficiently if we consider what has changed
+    _.each(indexes, function(ignore, i) {
+      var index = indexes[i] = {};
+      _.each(rows, function(r) { index[r[i]] = r; })
     });
-    
   }
-  
-  ds.is_dynamic = function(_) {
+    
+  function is_dynamic(_) {
     if (!arguments.length) {
       return update_interval > 0 || ws;
     }
@@ -88,29 +91,22 @@ OML.data_source = function(name, updateURL, schema, events) {
     }
     if (interval < 0) return false;
 
-    //if (window.WebSocket) {
-    if (false) {  // web sockets don't work right now
-      _start_web_socket();
+    if (window.WebSocket) {
+    //if (false) {  // web sockets don't work right now
+      //start_web_socket();
     } else {
-      _start_polling_backend();
+      start_polling_backend();
     }
   }
     
-  ds._start_web_socket = function() {
+  function start_web_socket() {
     if (ws) return; // already running
     
-    var url = 'ws://' + window.location.host + '/_ws';
+    var url = 'ws://' + window.location.host + '/_ws?sid=' + opts.sid;
     var ws = new WebSocket(url);
     var self = this;
-    ws.onopen = function() {
-      ws.send('id:' + name);
-    };
-    ws.onmessage = function(evt) {
-      // evt.data contains received string.
-      var msg = jQuery.parseJSON(evt.data);
-      var data = msg;
-      self.events.append(data);
-    };
+    ws.onopen = on_open;
+    ws.onmessage = on_message;
     ws.onclose = function() {
       var status = "onclose";
     };
@@ -118,8 +114,52 @@ OML.data_source = function(name, updateURL, schema, events) {
       var status = "onerror";
     };
   } 
+  
+  function on_open() {
+    msg = {type: 'register_data_source', args: {name: name, offset: offset + rows.length}}
+    // ws.send(JSON.stringify(msg));
+  };
+  
+  function on_message(evt) {
+    // evt.data contains received string.
+    var msg = jQuery.parseJSON(evt.data);
+    switch(msg.type) {
+      case 'datasource_update':
+        on_update(msg);
+        break;
+      case 'reply':
+        // great
+        break;
+      default:
+        throw "Unknown message type '" + msg.type + "'.";
+    }
+  };
+  
+  function on_update(msg) {
+    if (unique_index_check) {
+      // Let's first see if we simply replace a row
+      _.each(msg.rows, function(r) {
+        if (!unique_index_check(r)) {
+          rows.push(r); // new index
+        }
+      });          
+    } else {
+      // need to append to 'rows' as it's referenced in other closures
+      _.each(msg.rows, function(r) { rows.push(r) });
+      var chop = msg.offset - offset;
+      if (offset >= 0 && chop > 0) {
+        rows = _.rest(rows, chop);
+      }
+    }
+    offset = msg.offset;
+      
+    update_indexes();
+    var evt = {data_source: data_source};
+    OHUB.trigger(event_name, evt);
+    OHUB.trigger("data_source.changed", evt);
+  }
  
-  ds._start_polling_backend = function() {    
+  function start_polling_backend() {   
     var first_time = this.update_interval < 0;
     
     if (this.update_interval < 0 || this.update_interval > interval) {
@@ -128,7 +168,7 @@ OML.data_source = function(name, updateURL, schema, events) {
     
     if (first_time) {
       var self = this;
-      L.require(['/resource/vendor/jquery/jquery.js', '/resource/vendor/jquery/jquery.periodicalupdater.js'], function() {
+      L.require(['vendor/jquery/jquery.js', 'vendor/jquery/jquery.periodicalupdater.js'], function() {
         var update_interval = self.update_interval * 1000;
         if (update_interval < 1000) update_interval = 3000;
         var opts = {
@@ -152,10 +192,69 @@ OML.data_source = function(name, updateURL, schema, events) {
     return true;
   }
   
-  this.on_changed = function(update_f) {
-    OHUB.bind(this.event_name, update_f);
+  // Let's check if this data_source maintains uniqueness along one axis (column)
+  if (opts.unique_column) {
+    var col_name = opts.unique_column;
+    var index = -1;
+    _.find(schema, function(cd) {
+      index += 1;
+      return cd.name == col_name;
+    });
+    if (index >= 0) {
+      var key2row = {};
+      unique_index_check = function (row) {
+        var key = row[index];
+        var existing_row = key2row[key];
+        if (existing_row) {
+          // replace content of existing row with 'row'
+          // Need to replace in place, there may be a better way
+          existing_row.length = 0;
+          _.each(row, function(e) { existing_row.push(e); })
+          return true;
+        }
+        key2row[key] = row;
+        return false;
+      }
+      // pre-seed 
+      rows = _.uniq(rows, false, function(r) { return r[index]; });
+      _.each(rows, function(r) { key2row[r[index]] = r; });
+    } else {
+      throw "Error in processing option 'unique_column'. Unknown column '" + col_name + "'."
+    }
   }
   
-  return ds;
+  // In slice mode, only fetch a 'slice' of the underlying data source. A slice
+  // is defined by specific value in the 'slice_column' of all rows.
+  //
+  // opts.slice: 
+  //      slice_column: id
+  //      event:
+  //        name: graph.static_network.links.changed
+  //        key: id
+  var slice_column = null;
+  var slice_column_value = null;  
+  if (opts.slice) {
+    var so = opts.slice;
+    slice_column = so.slice_column;
+    if (so.event) {
+      var evt_name = so.event.name;
+      if (! evt_name) 
+        throw "Missing event name in slice definition for data source '" + name + "'.";
+      OHUB.bind(evt_name, function(evt) {
+        var i = 0;
+      })
+    }
+  }
+  
+  if (window.WebSocket) {
+    start_web_socket();
+  }
+  
+  // Bind to event directly
+  // this.on_changed = function(update_f) {
+    // OHUB.bind(this.event_name, update_f);
+  // }
+  
+  return data_source;
 }
 

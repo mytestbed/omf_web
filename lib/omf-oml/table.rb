@@ -17,6 +17,7 @@ module OMF::OML
     attr_reader :name
     attr_accessor :max_size
     attr_reader :schema
+    attr_reader :offset
     
     # 
     # tname - Name of table
@@ -38,6 +39,7 @@ module OMF::OML
         @index_col = @schema.index_for_col(index)
       end
       @on_before_row_added = on_before_row_added
+      @offset = 0 # number of rows skipped before the first one recorded here
       @rows = []
       @max_size = opts[:max_size]
       @on_row_added = {}
@@ -114,6 +116,7 @@ module OMF::OML
         @rows << row
         if @max_size && @max_size > 0 && (s = @rows.size) > @max_size
           @rows.shift # not necessarily fool proof, but fast
+          @offset = @offset + 1
         end
       end
       _notify_row_added(row)
@@ -122,7 +125,11 @@ module OMF::OML
     def _notify_row_added(row)
       @on_row_added.each_value do |proc|
         #puts "call: #{proc.inspect}"
-        proc.call(row)
+        if proc.arity == 1
+          proc.call(row)
+        else
+          proc.call(row, @offset)
+        end
       end
     end
     

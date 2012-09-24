@@ -219,7 +219,43 @@ module OMF::OML
         end
       end
       {:nodes => node_table, :links => link_table}
+      #{:nodes => to_table(:nodes, table_opts), :links => to_table(:links, table_opts)}
     end
+    
+    # Create a table to track and aspect of this network. 
+    #
+    # @param aspect - Eitherr nodes or links 
+    #
+    def to_table(aspect, table_opts = {})
+      aspect = aspect.to_sym
+      case aspect
+      when :nodes
+        table = OmlTable.new 'nodes', @node_schema, table_opts
+        @nodes.each do |id, n|
+          table.add_row @node_schema.hash_to_row(n.attributes)
+        end
+      when :links
+        table = OmlTable.new 'links', @link_schema, table_opts
+        @links.each do |id, l|
+          table.add_row @link_schema.hash_to_row(l.attributes)
+        end
+      else
+        raise "Unknown aspect '#{aspect}'. Should be either 'nodes' or 'links'."
+      end
+      
+      on_update "__to_tables_#{table.object_id}" do |a|
+        a.each do |e|
+          if aspect == :nodes && e.kind_of?(NetworkNode)
+            table.add_row @node_schema.hash_to_row(e.attributes)
+          end
+          if aspect == :links && e.kind_of?(NetworkLink)
+            table.add_row @link_schema.hash_to_row(e.attributes)
+          end
+        end
+      end
+      table
+    end
+    
     
     def to_json
       describe.to_json

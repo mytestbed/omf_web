@@ -9,31 +9,41 @@ module OMF::Web::Rack
     include OMF::Common::Loggable
     extend OMF::Common::Loggable    
   
-    def on_message(env, msg)
+    def on_message(env, msg_s)
       begin
-        #puts "message received: " + msg
-        
-        ma = msg.split(':')
-        cmd = ma.shift.to_sym
-        if (cmd == :id)
-          begin
-            h = OMF::Web::SessionStore.find_tab_from_path(ma)
-            Thread.current["sessionID"] = h[:sid]
-            @tab_inst = h[:tab_inst]
-            @sub_path = h[:sub_path]
-            @tab_inst.on_ws_open(self, @sub_path.dup)
-          rescue Exception => ex
-            error ex
-            debug "#{ex.backtrace.join("\n")}"
-            send_data("{error: '#{ex.to_s}'}")
+        req = ::Rack::Request.new(env)
+        sid = req.params['sid']
+        Thread.current["sessionID"] = sid
+
+        msg = JSON.parse(msg_s)
+        debug("Msg(#{sid}): #{msg.inspect}")
+        msg_type = msg['type']
+        args = msg['args']
+        case msg_type
+        when 'register_data_source'
+          ds_name = args['name']
+          unless dsp = OMF::Web::DataSourceProxy[ds_name]
+            send_data({type: 'reply', status: 'error', err_msg: "Unknown datasource '#{ds_name}'"}.to_json)
             return
           end
-
+          debug "Received registration for datasource proxy '#{dsp}'"
+          dsp.on_changed(args['offset']) do |new_rows, offset|
+            msg = {
+              type: 'datasource_update',
+              datasource: ds_name,
+              rows: new_rows,
+              offset: offset
+            }
+            send_data(msg.to_json)
+          end
+          send_data({type: 'reply', status: 'ok'}.to_json)
         else
-          send_data("{error: 'Unknown command -#{cmd}-'}")
+          send_data({type: 'reply', status: 'error', err_msg: "Unknown message type '#{msg_type}'"}.to_json)
         end
       rescue Exception => ex
-        error(ex)
+        error ex
+        debug "#{ex.backtrace.join("\n")}"
+        send_data({type: 'reply', status: 'exception', err_msg: ex.to_s}.to_json)
       end
       #puts "message processed"      
     end

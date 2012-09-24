@@ -19,7 +19,6 @@ module OMF::Web::Widget::Layout
       OMF::Web::Theme::TabbedRenderer.new(self, @widgets, @opts)
     end
       
-
     def collect_data_sources(ds_set)
       @widgets.each {|w| w.collect_data_sources(ds_set) }
       ds_set
@@ -65,6 +64,6 @@ module OMF::Web::Widget::Layout
 
 
 
-  end # StackedWidget
+  end # class
 
 end

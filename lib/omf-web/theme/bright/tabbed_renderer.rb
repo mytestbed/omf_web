@@ -29,6 +29,13 @@ module OMF::Web::Theme
         end
       end     
     end
+    
+    # Return an array of widgets to collect data sources from
+    #
+    # def data_source_widgets
+      # puts "TABREN>>>>>>> #{get_selected_widget()}"
+      # [get_selected_widget()]
+    # end
 
     def render_card_nav(selected)
       cname = @opts[:component_name]

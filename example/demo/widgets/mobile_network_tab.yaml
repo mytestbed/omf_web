@@ -1,0 +1,52 @@
+
+
+
+# Simple tab showing a line chart with supporting table
+#
+
+widget:
+  id: mob_network_testing
+  name: Mobile Network
+  top_level: true
+  priority: 100
+  type: layout/tabbed
+  widgets: 
+    - name: Mobile Network
+      type: data/network2
+      data_source: 
+        name: mobile_network
+        unique_column: id  # only use the latest link and row descriptions
+        dynamic: true
+      mapping:
+        nodes:
+          x:
+            property: x
+          y: 
+            property: y
+        links:
+          stroke_width:
+            property: load
+            scale: 20
+            min: 3
+          stroke_color:
+            property: load
+            color: red_yellow20_green() #green_yellow80_red()
+
+    - name: Nodes (T)
+      type: data/table2
+      data_source: 
+        name: mobile_network/nodes
+        dynamic: true
+
+    - name: Links (T)
+      type: data/table2
+      data_source: 
+        name: mobile_network/links
+        dynamic: true
+
+
+
+
+
+
+

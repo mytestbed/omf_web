@@ -13,24 +13,8 @@ module OMF::Web::Theme
     depends_on :js, "/resource/js/require3.js"
 
     depends_on :js, "/resource/theme/abstract/abstract.js"
-    depends_on :js, "/resource/js/data_source.js"    
+    depends_on :js, "/resource/js/data_source2.js"    
 
-    # depends_on :script, %{
-      # L.baseURL = "/resource";
-      # OML = {
-        # data_sources: {},
-        # widgets: {},
-#         
-      # };
-#         
-      # var OHUB = {};
-      # _.extend(OHUB, Backbone.Events);
-#       
-      # $(window).resize(function(x) {
-        # OHUB.trigger('window.resize', {});
-      # });      
-    # }
-    
     attr_reader :opts
     
     def initialize(widget, opts)
@@ -46,8 +30,8 @@ module OMF::Web::Theme
         LW.session_id = OML.session_id = '#{Thread.current["sessionID"]}';
         
         L.provide('jquery', ['vendor/jquery/jquery.js']);
-        L.provide('jquery.periodicalupdater', ['vendor/jquery/jquery.periodicalupdater.js']);   
-        L.provide('jquery.ui', ['vendor/jquery-ui/js/jquery-ui.min.js']);
+        //L.provide('jquery.periodicalupdater', ['vendor/jquery/jquery.periodicalupdater.js']);   
+        //L.provide('jquery.ui', ['vendor/jquery-ui/js/jquery-ui.min.js']);
       }    
     end
 
@@ -72,23 +56,44 @@ module OMF::Web::Theme
       end
     end # render_flesh
     
+    # Return an array of widgets to collect data sources from
+    #
+    def data_source_widgets
+      # puts ">>>>> #{@widget.class}"
+      # if @widget.respond_to? :data_source_widgets
+        # @widget.data_source_widgets
+      # else
+        [@widget]
+      # end
+    end
+    
     def render_data_sources
       return unless @widget
       
       require 'omf-oml/table'
       require 'set'
       
-      dsh = {}
-      @widget.collect_data_sources(Set.new).each do |ds|
-        name = ds[:name].to_s
-        dsh[name] = ds.merge(dsh[name] || {})
+      dss = Set.new
+      data_source_widgets.each do |w|
+        w.collect_data_sources(dss)
       end
+      puts ">>>>>>>>>>> #{dss.inspect}"
+      # dsh = {}
+      # dss.each do |ds|
+        # name = ds[:name].to_s
+        # dsh[name] = ds.merge(dsh[name] || {})
+      # end
+
       #puts ">>>> #{dsh.inspect}"
-      return if dsh.empty?
+      return if dss.empty?
       
-      js = dsh.values.to_a.collect do |ds|
+      js = dss.map do |ds|
         render_data_source(ds)
       end
+      
+      # js = dsh.values.to_a.collect do |ds|
+        # render_data_source(ds)
+      # end
       # Calling 'javascript' doesn't seem to work here. No idea why, so let's do it by hand
       %{
         <script type="text/javascript">
@@ -99,11 +104,11 @@ module OMF::Web::Theme
       }
     end
     
-    def render_data_source(ds, update_interval = -1)
+    def render_data_source(ds)
       dspa = OMF::Web::DataSourceProxy.for_source(ds)
       dspa.collect do |dsp|
         dsp.reset()
-        dsp.to_javascript(update_interval)
+        dsp.to_javascript(ds)
       end.join("\n")
     end
     

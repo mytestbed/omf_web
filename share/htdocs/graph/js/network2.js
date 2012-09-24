@@ -2,7 +2,7 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
 
 
   
-  OML['network2'] = OML.abstract_chart.extend({
+  OML.network2 = OML.abstract_chart.extend({
     decl_properties: {
       nodes:  [['key', 'key', {property: 'id'}], 
                ['radius', 'int', 30], 
@@ -21,6 +21,11 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
               ]
     },
     
+    defaults: function() {
+      return this.deep_defaults({
+        interaction_mode: 'none',   // none, hover, click
+      }, OML.network2.__super__.defaults.call(this));      
+    },    
     
     configure_base_layer: function(vis) {
       var ca = this.widget_area;
@@ -108,8 +113,8 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
     
     update: function() {
 
-      var ldata = this.data_source.links.events;
-      var ndata = this.data_source.nodes.events;
+      var ldata = this.data_source.links.rows();
+      var ndata = this.data_source.nodes.rows();
 
       this.redraw({links: ldata, nodes: ndata});
     },
@@ -164,148 +169,237 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
 
       var ldata = data.links
       var link2 = this.graph_layer.selectAll("path.link")
-        .data(d3.values(ldata))
-          //.each(position) // update existing markers
-          .style("stroke", lmapping.stroke_color)
-          .style("stroke-width", lmapping.stroke_width)
-          .attr("d", line_f)
-        .enter().append("svg:path")
-          .attr("class", "link")
-          .style("stroke", lmapping.stroke_color)
-          .style("stroke-width", lmapping.stroke_width)
-          .attr("fill", "none")         
-          .attr("d", line_f)
-          .on("mouseover", function(d) {
-            var id = lmapping.key(d);
-            self.on_highlighted({'elements': [{'id': id, 'type': 'link'}]});
-          })
-          .on("mouseout", function(d) {
-            var id = lmapping.key(d);
-            self.on_dehighlighted({'elements': [{'id': id, 'type': 'link'}]});
-          }) 
+                    .data(d3.values(ldata));
+      link2
+        //.each(position) // update existing markers
+        .style("stroke", lmapping.stroke_color)
+        .style("stroke-width", lmapping.stroke_width)
+        .attr("d", line_f)
+        ;
+      var le = link2.enter().append("svg:path");
+      le.attr("class", "link")
+        .style("stroke", lmapping.stroke_color)
+        .style("stroke-width", lmapping.stroke_width)
+        .attr("fill", "none")         
+        .attr("d", line_f)
+        ;
+      this._set_link_interaction_mode(le);
+        
+
+      var ndata = data.nodes;
+      // first draw white circle to allow actual node to become transparent
+      // without links showing through
+      var bg_node = this.graph_layer.selectAll("circle.bg_node")
+                        .data(ndata, function(d) { return nmapping.key(d); })
+          .attr("cx", function(d) { return x(nmapping.x(d)) }) 
+          .attr("cy", function(d) { return y(nmapping.y(d)) })
+          .attr("r", nmapping.radius)
+          .style("fill", 'white')
+        .enter().append("svg:circle")
+          .attr("class", "bg_node")
+          .attr("cx", function(d) { return x(nmapping.x(d)) }) 
+          .attr("cy", function(d) { return y(nmapping.y(d)) })
+          .attr("r", nmapping.radius)
+          .style("fill", 'white');
           ;
 
-     var ndata = data.nodes;
-     var node = this.graph_layer.selectAll("circle.node")
-       .data(d3.values(ndata))
-         .attr("cx", function(d) { return x(nmapping.x(d)) }) 
-         .attr("cy", function(d) { return y(nmapping.y(d)) })
-         .attr("r", nmapping.radius)
-         .style("fill", nmapping.fill_color)
-         .style("stroke", nmapping.stroke_color)
-         .style("stroke-width", nmapping.stroke_width)
-       .enter().append("svg:circle")
-         .attr("class", "node")
-         .attr("cx", function(d) { return x(nmapping.x(d)) }) 
-         .attr("cy", function(d) { return y(nmapping.y(d)) })
-         .attr("r", nmapping.radius)
-         .style("fill", nmapping.fill_color)
-         .style("stroke", nmapping.stroke_color)
-         .style("stroke-width", nmapping.stroke_width)
-         .attr("fixed", true)
-         //.call(force.drag)
-          .on("mouseover", function(d) {
-            var id = nmapping.key(d);
-            self.on_highlighted({'elements': [{'id': id, 'type': 'node'}]});
-          })
-          .on("mouseout", function(d) {
-            var id = nmapping.key(d);
-            self.on_dehighlighted({'elements': [{'id': id, 'type': 'node'}]});
-          })         
+      
+      var node = this.graph_layer.selectAll("circle.node")
+                        .data(ndata, function(d) {
+                            return nmapping.key(d);
+                            });
+                        //.data(d3.values(ndata));
+                        //function(d) { return d.time; }
+      node
+        .attr("cx", function(d) { return x(nmapping.x(d)) }) 
+        .attr("cy", function(d) { return y(nmapping.y(d)) })
+        .attr("r", nmapping.radius)
+        .style("fill", nmapping.fill_color)
+        .style("stroke", nmapping.stroke_color)
+        .style("stroke-width", nmapping.stroke_width)
+        ;
+      var en = node.enter().append("svg:circle");
+      en.attr("class", "node")
+        .attr("cx", function(d) { return x(nmapping.x(d)) }) 
+        .attr("cy", function(d) { return y(nmapping.y(d)) })
+        .attr("r", nmapping.radius)
+        .style("fill", nmapping.fill_color)
+        .style("stroke", nmapping.stroke_color)
+        .style("stroke-width", nmapping.stroke_width)
+        .attr("fixed", true)
         .transition()
           .attr("r", nmapping.radius)
           .delay(0)
-       ;      
-    },
-     
-    // this.init_svg = function(w, h) {
-      // var opts = this.opts;
-// 
-      // //if (opts.svg) return opts.svg;
-//       
-      // var base_el = opts.base_el || "body";
-      // if (typeof(base_el) == "string") base_el = d3.select(base_el);
-      // var vis = opts.svg = base_el.append("svg:svg")
-        // .attr("width", w)
-        // .attr("height", h)
-        // .attr('class', 'oml-network');
-      // return vis;
-    // }
-  
-    on_highlighted: function(evt) {
-      var els = evt.elements;
-      var links = _.filter(els, function(el) { return  el.type == 'link'});
-      if (links.length > 0) { this._on_links_highlighted(links); }
-      var nodes = _.filter(els, function(el) { return  el.type == 'node'});
-      if (nodes.length > 0) { this._on_nodes_highlighted(nodes); }
-
-      if (evt.source == null) {
-        evt.source = this;
-        OHUB.trigger("graph.highlighted", evt);
-      }
-    },
-
-    on_dehighlighted: function(evt) {
-      this._on_links_dehighlighted();
-      this._on_nodes_dehighlighted();
-
-      if (evt.source == null) {
-        evt.source = this;
-        OHUB.trigger("graph.dehighlighted", evt);
-      }
-    },
-  
-    _on_nodes_highlighted: function(nodes) {
-      var names = _.map(nodes, function(el) { return el.id});
-      var vis = this.base_layer;
-      var key_f = this.mapping.nodes.key;
-      this.graph_layer.selectAll("circle.node")
-       .filter(function(d) {
-         var key = key_f(d);
-         return ! _.include(names, key);
-       })
-       .transition()
-         .style("stroke", "lightgray")
-         .style("fill", "rgb(240,240,240)")               
-         .delay(0)
-         .duration(300);
+        ;
+      this._set_node_interaction_mode(en);
     },
     
-    _on_nodes_dehighlighted: function() {
-      var vis = this.base_layer;
-      var nmapping = this.mapping.nodes;
-      this.graph_layer.selectAll("circle.node")
-       .transition()
-         .style("fill", nmapping.fill_color)
-         .style("stroke", nmapping.stroke_color)
-         .delay(0)
-         .duration(300);   
-    },
+    _set_link_interaction_mode: function(le) {
+      var self = this;
+      var o = this.opts;
 
-    _on_links_highlighted: function(links) {
-      var names = _.map(links, function(el) { return el.id});
-      var vis = this.base_layer;
+      if (o.interaction_mode == 'hover') {
+        le.on("mouseover", function(d) {
+          self._on_link_selected(d);
+        })
+        .on("mouseout", function(d) {
+          self._on_link_selected(d);
+        }) 
+        ;
+      } else if (o.interaction_mode == 'click') {   
+        le.on("click", function(d) {
+          self._on_link_selected(d);
+        })
+        .style('cursor', 'hand')
+        ;
+      }
+    },
+    
+    _on_link_selected: function(d) {
       var key_f = this.mapping.links.key;
+      var id = key_f(d);      
+      var msg = {id: id, type: 'link', source: this, data_source: this.data_source.links};
+
+      if (this.selected_link == id) {
+        // if same link is clicked twice, unselect it
+        this._render_selected_link(null);      
+        this._render_selected_node(null);
+      } else {
+        this._render_selected_link(id);      
+        this._render_selected_node('_NONE_');
+        this._report_selected(id, 'links');
+      }
+    },
+    
+    // Make all but 'selected_id' link semi-transparent. If 'selected_id' is null
+    // revert selection.
+    //
+    _render_selected_link: function(selected_id) {
+      if (selected_id == null || selected_id == '_NONE_') {
+        if (this.selected_link) {
+          this._report_deselected(this.selected_link, 'links');          
+          this.selected_link = null;
+        }
+      } else { 
+        this.selected_link = selected_id;
+      }
+
+      var key_f = this.mapping.links.key;
+      if (selected_id) {
+        // grey out non-selected
+        this.graph_layer.selectAll("path.link")
+         .filter(function(d) {
+           var key = key_f(d);
+           return selected_id == '_NONE_' || key != selected_id;
+         })
+         .transition()
+           .style("opacity", 0.1)
+           .delay(0)
+           .duration(300);
+      }
+      // Ensure that selected link is shown fully
       this.graph_layer.selectAll("path.link")
        .filter(function(d) {
          var key = key_f(d);
-         return ! _.include(names, key);
+         return selected_id == null || key == selected_id;
        })
        .transition()
-         .style("opacity", 0.1)
+         .style("opacity", 1.0)
          .delay(0)
          .duration(300);
+         
     },
 
-    _on_links_dehighlighted: function() {
-      var vis = this.base_layer;
-      this.graph_layer.selectAll("path.link")
+    _set_node_interaction_mode: function(en) {
+      var self = this;
+      var o = this.opts;
+      
+      var msg_frag = {type: 'node', data_source: this.data_source.nodes}
+      if (o.interaction_mode == 'hover') {
+        en.on("mouseover", function(d) {
+          self._on_node_selected(d);
+        })
+        .on("mouseout", function(d) {
+          self._on_node_selected(d);
+        })         
+        ;
+      } else if (o.interaction_mode == 'click') {   
+        en.on("click", function(d) {
+          self._on_node_selected(d);
+        })
+        .style('cursor', 'hand')
+      }
+      
+    },
+    
+    _on_node_selected: function(d) {
+      var key_f = this.mapping.nodes.key;
+      var id = key_f(d);      
+      var msg = {id: id, type: 'node', source: this, data_source: this.data_source.nodes};
+
+      if (this.selected_node == id) {
+        // if same link is clicked twice, unselect it
+        this._render_selected_link(null);      
+        this._render_selected_node(null);
+      } else {
+        this._render_selected_link('_NONE_');      
+        this._render_selected_node(id);
+        this._report_selected(id, 'nodes');
+      }
+    },
+    
+    // Make all but 'selected_id' node semi-transparent. If 'selected_id' is null
+    // revert selection.
+    //
+    _render_selected_node: function(selected_id) {
+      if (selected_id == null || selected_id == '_NONE_') {
+        if (this.selected_node) {
+          this._report_deselected(this.selected_node, 'nodes');          
+          this.selected_node = null;
+        }
+      } else { 
+        this.selected_node = selected_id;
+      }
+      var key_f = this.mapping.nodes.key;
+      if (selected_id) {
+        // grey out non-selected
+        this.graph_layer.selectAll("circle.node")
+         .filter(function(d) {
+           var key = key_f(d);
+           return selected_id == '_NONE_' || key != selected_id;
+         })
+         .transition()
+           .style("opacity", 0.1)
+           .delay(0)
+           .duration(300);
+      }
+      // Ensure that selected node is shown fully
+      this.graph_layer.selectAll("circle.node")
+       .filter(function(d) {
+         var key = key_f(d);
+         return selected_id == null || key == selected_id;
+       })
        .transition()
-         .style("opacity", 1.0)         
+         .style("opacity", 1.0)
          .delay(0)
-         .duration(300)
-    }
-   
+         .duration(300);
+         
+    },
+    
+    _report_selected: function(selected_id, type) {
+      var ds = this.data_source[type];
+      var msg = {id: selected_id, type: type, source: this, data_source: ds};
+      OHUB.trigger("graph.selected", msg);          
+      OHUB.trigger("graph." + ds.name + ".selected", msg);  
+    },    
+
+    _report_deselected: function(selected_id, type) {
+      var ds = this.data_source[type];
+      var msg = {id: selected_id, type: type, source: this, data_source: ds};
+      OHUB.trigger("graph.deselected", msg);          
+      OHUB.trigger("graph." + ds.name + ".deselected", msg);  
+    }    
+       
   })
 })
 

@@ -2,7 +2,7 @@
 require 'omf_common/lobject'
 
 use ::Rack::ShowExceptions
-use ::Rack::Lint
+#use ::Rack::Lint
 
 OMF::Web::Runner.instance.life_cycle(:pre_rackup)
 options = OMF::Web::Runner.instance.options
@@ -15,7 +15,7 @@ end
 map '/_ws' do
   begin
     require 'omf-web/rack/websocket_handler'
-    run OMF::Web::Rack::WebsocketHandler.new # :backend => { :debug => true }
+    run OMF::Web::Rack::WebsocketHandler.new #:backend => { :debug => true }
   rescue Exception => ex
     OMF::Common::Loggable.logger('web').error "#{ex}"
   end

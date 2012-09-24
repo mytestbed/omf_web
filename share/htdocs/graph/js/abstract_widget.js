@@ -46,11 +46,6 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
       if (typeof(base_el) == "string") base_el = d3.select(base_el);
       this.base_el = base_el;
     
-      // this.init_data_source();
-      // this.process_schema();
-// 
-  
-      //o.offset = _.defaults(opts.offset || {}, this.defaults.offset);
       this.init_data_source();
       this.process_schema();
       this.resize();
@@ -68,8 +63,8 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
       }
       
       var data;
-      if ((data = this.data_source.events) == null) {
-        throw "Missing events array in data source"
+      if ((data = this.data_source.rows()) == null) {
+        throw "Missing rows in data source"
       }
       if (data.length == 0) return;
       
@@ -142,11 +137,9 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
     init_single_data_source: function(ds_descr) {
       var ds = OML.data_sources.lookup(ds_descr.stream);
       var self = this;
-      if (ds.is_dynamic()) {
-        ds.on_changed(function(evt) {
-          self.update();
-        });
-      }
+      OHUB.bind(ds.event_name, function() {
+        self.update();;
+      })
       return ds;
     },
     
@@ -256,12 +249,12 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
          if (jcol_schema == undefined) {
            throw "Unknown stream element '" + jkey + "' in '" + jstream + "'.";
          }
-         var jindex = jcol_schema.index;
-         jstream.create_index(jindex);
+         var index_f = jstream.index_for_column(jcol_schema);
          
          return function(d) {
            var join = d[vindex];
-           var t = jstream.get_indexed_row(jindex, join); //self.get_indexed_table(jstream, jindex);
+           //var t = jstream.get_indexed_row(jindex, join); //self.get_indexed_table(jstream, jindex);
+           var t = index_f(join);
            //var r = t[join];
            return t;
          }

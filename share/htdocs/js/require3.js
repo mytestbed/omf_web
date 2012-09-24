@@ -113,16 +113,35 @@ L = new function() {
       }; 
       
     } else { // css
-      sel = document.createElement("link");      
+      var sel = document.createElement("link");      
       sel.href = url;
       sel.rel = "stylesheet";
       sel.type ="text/css";
-      // there is no consistent support for detecting the successful loading of
-      // a css file. Not sure what happens if we simply don't care.
-      this._onLoad(url);
-      //this._css_el = sel;
+      this._monitor_css_loaded(sel, url)
     }
     return sel;
+  }
+  
+  this._monitor_css_loaded = function(sel, url) {
+    var href = sel.href;
+    var self = this;
+    window.setTimeout(function() {
+      var sheets = document.styleSheets;
+      for (var i = 0; i < sheets.length; i++) {
+        var sheet = sheets[i];
+        if (sheet.href == href) {
+          // TODO: HACK ALLERT
+          // OK, stylesheet is loaded but we are having issues with SLickgrid and Chrome
+          // recoginisng it immediately, maybe a delay helps
+          window.setTimeout(function() {
+            self._onLoad(url);
+          }, 200);
+          return;
+        }
+      }
+      // still not loaded, try again
+      self._monitor_css_loaded(sel, url);
+    }, 100) ; 
   }
 
   this._getAbsoluteUrl = function(url) {
@@ -248,56 +267,7 @@ L = new function() {
     }
     return true;
   };
-  
-  // Report that an URL has been loaded through some other means
-  var self = this;
-  $(document).ready(function() {
-    self._loaded['#DOM_LOADED'] = true;
-    self._checkAllPending();
-  });
-  
-  
-  // this._checkOnePending = function(p) {
-    // var deps = p.deps;
-    // var loaded = this._loaded;
-    // var l = deps.length;
-    // for (; l;) {
-      // var name = deps[--l];
-      // if (loaded[name] != true) {
-        // return p;
-      // }
-    // }
-    // // OK, all dependencies fulfilled.
-    // var op = p.op;
-    // switch (op) {
-      // case "load":
-        // var next = p.next;
-        // var url = next.shift();
-        // var new_pending = null;
-        // if (next.length > 0) {
-          // // load next one
-          // new_pending = {op: 'load', deps: [url], next: next};
-        // }
-        // this._loadOne(url);
-        // return new_pending;
-      // case "provide":
-        // if (p.onReady) {
-          // p.onReady();
-        // }
-        // this._provided[p.obj_name] = true;
-        // return null;
-      // case "require":
-        // if (this._provided[p.obj_name] == true) {
-          // if (p.onReady) {
-            // p.onReady();
-          // }
-          // return null; // done
-        // }
-        // return p;
-    // }
-    // return null; // not sure what op that is, let's remove it    
-  // }
-  
+    
   this._arr_flatten = function(array) {
     // http://tech.karbassi.com/2009/12/17/pure-javascript-flatten-array/
     var flat = [];
@@ -307,6 +277,16 @@ L = new function() {
     }
     return flat;
   }
+  
+  // Report that an URL has been loaded through some other means
+  var self = this;
+  //this.require(['vendor/jquery/jquery.js'], function() {  
+    $(document).ready(function() {
+      self._loaded['#DOM_LOADED'] = true;
+      self._checkAllPending();
+    });
+  //});
+  
 };
-//L.deps = {};
+
 
