@@ -20,7 +20,7 @@ For additional options start the server with -h.
 
 ## Design Notes
 
-** These notes are way out of date. Look at the 'demo' example for some guidance **
+ ** These notes are way out of date. Look at the 'demo' example for some guidance **
 
 This module is used to define and run a web server which allows a user to explore and
 intereact with various experiments. It is a stand-alone unit communicating through
