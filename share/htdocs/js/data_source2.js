@@ -99,12 +99,12 @@ OML.data_source = function(opts) {
     }
   }
     
+  var ws = null; // Websocket identifier
   function start_web_socket() {
     if (ws) return; // already running
     
     var url = 'ws://' + window.location.host + '/_ws?sid=' + opts.sid;
-    var ws = new WebSocket(url);
-    var self = this;
+    ws = new WebSocket(url);
     ws.onopen = on_open;
     ws.onmessage = on_message;
     ws.onclose = function() {
@@ -115,9 +115,24 @@ OML.data_source = function(opts) {
     };
   } 
   
+  // Send a message to the server
+  // 
+  // @params type - Type of message
+  // @params args - Hash of additional args ('ds_name' of this data source will be added)
+  //
+  // TODO: Would need to cache messages if connection isn't established yet
+  //
+  function send_server_msg(type, args) {
+    args.ds_name = name;
+    msg = {type: type, args: args}
+    ws.send(JSON.stringify(msg));
+  }
+
+  
   function on_open() {
-    msg = {type: 'register_data_source', args: {name: name, offset: offset + rows.length}}
-    // ws.send(JSON.stringify(msg));
+    if (!active_slice_col_name) {
+      send_server_msg('register_data_source', {offset: offset + rows.length})
+    }
   };
   
   function on_message(evt) {
@@ -158,6 +173,20 @@ OML.data_source = function(opts) {
     OHUB.trigger(event_name, evt);
     OHUB.trigger("data_source.changed", evt);
   }
+  
+  // Request a new slice from the server. Clear existing state
+  function set_slice_column(col_value) {
+    if (active_slice_value == col_value) return;
+    
+    active_slice_column_id = col_value;
+    // Reset state
+    rows = [];
+    update_indexes();
+    sm = {col_name: active_slice_col_name, col_value: col_value}
+    send_server_msg('request_slice', {slice: sm})
+  }
+  var active_slice_col_name = null;
+  var active_slice_value = null;
  
   function start_polling_backend() {   
     var first_time = this.update_interval < 0;
@@ -231,17 +260,16 @@ OML.data_source = function(opts) {
   //      event:
   //        name: graph.static_network.links.changed
   //        key: id
-  var slice_column = null;
-  var slice_column_value = null;  
   if (opts.slice) {
     var so = opts.slice;
-    slice_column = so.slice_column;
+    active_slice_col_name = so.slice_column;
+    
     if (so.event) {
       var evt_name = so.event.name;
       if (! evt_name) 
         throw "Missing event name in slice definition for data source '" + name + "'.";
       OHUB.bind(evt_name, function(evt) {
-        var i = 0;
+        set_slice_column(evt.id);        
       })
     }
   }

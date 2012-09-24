@@ -66,8 +66,9 @@ widget:
       type: data/line_chart3
       #area: true # color the area between line and zero line
       data_source:
-        id: individual_link
-        name: static_network/links
+        name: link_history
+        #name: static_network/links   
+        
         # Only fetch a 'slice' of the underlying data source. A slice
         # is defined by specific value in the 'slice_column' of all rows
         slice:

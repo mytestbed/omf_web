@@ -59,10 +59,23 @@ module OMF::OML
       @on_before_row_added = callback
     end
     
-    def on_row_added(key, &proc)
+    # Register callback for when new rows are being added. The key
+    # allows for the callback to be removed by calling this method
+    # without a block. . If the 
+    # optional 'offset' value is set to zero or a positive value,
+    # then the currently stored values starting at this index are being 
+    # immediately sent to 'proc'. 
+    #
+    def on_row_added(key, offset = -1, &proc)
       #debug "on_row_added: #{proc.inspect}"
       if proc
         @on_row_added[key] = proc
+        if offset >= 0
+          with_offset = proc.arity == 2
+          rows[offset .. -1].each_with_index do |r, i|
+            with_offset ? proc.call(r, offset + i) : proc.call(r)
+          end
+        end
       else
         @on_row_added.delete key
       end
@@ -86,6 +99,30 @@ module OMF::OML
       synchronize do
         rows.each { |row| _add_row(row, needs_casting) }
       end
+    end
+    
+    # Return a new table which only contains the rows of this
+    # table whose value in column 'col_name' is equal to 'col_value'
+    #
+    def create_sliced_table(col_name, col_value, table_opts = {})
+      debug "Create sliced table from '#{@name}' (rows: #{@rows.length})"
+      sname = "#{@name}_slice_#{Kernel.rand}"
+
+      st = self.class.new(name, @schema, table_opts)
+      st.instance_variable_set(:@sname, sname)
+      st.instance_variable_set(:@master_ds, self)      
+      def st.release
+        @master_ds.on_row_added(@sname) # release callback
+      end
+
+      index = @schema.index_for_col(col_name)
+      on_row_added(sname, 0) do |row|
+        if row[index] == col_value
+          debug "Add row '#{row.inspect}'"
+          st.add_row(row)
+        end
+      end
+      st
     end
     
     def describe()

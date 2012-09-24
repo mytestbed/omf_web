@@ -47,7 +47,7 @@ module OMF::Web::Widget
         ds_descr[:alias] = "#{name}_#{self.object_id}"
         {:stream => ds_descr, :name => name}
       end
-      puts "DTA_WIDGTE>>> #{opts[:data_sources].inspect}"
+      #puts "DTA_WIDGTE>>> #{opts[:data_sources].inspect}"
     end
     
     # This is the DOM id which should be used by the renderer for this widget. 

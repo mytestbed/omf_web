@@ -77,7 +77,7 @@ module OMF::Web::Theme
       data_source_widgets.each do |w|
         w.collect_data_sources(dss)
       end
-      puts ">>>>>>>>>>> #{dss.inspect}"
+      #puts ">>>>>>>>>>> #{dss.inspect}"
       # dsh = {}
       # dss.each do |ds|
         # name = ds[:name].to_s

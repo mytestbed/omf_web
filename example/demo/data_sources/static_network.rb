@@ -17,14 +17,18 @@ nw.create_node :n4, :x => 0.2, :y => 0.8, :capacity =>  0.8
 
 nw.link_schema [[:ts, :float], [:load, :float]]
 links = []
-links << nw.create_link(:l02, :n0, :n2, :ts => 0, :load => 0.8)
-links << nw.create_link(:l12, :n1, :n2, :ts => 0, :load => 0.8)
-links << nw.create_link(:l23, :n2, :n3, :ts => 0, :load => 0.8)
-links << nw.create_link(:l24, :n2, :n4, :ts => 0, :load => 0.8)
-
+links << nw.create_link(:l02, :n0, :n2, :ts => 0, :load => 0.0)
+links << nw.create_link(:l12, :n1, :n2, :ts => 0, :load => 0.25)
+links << nw.create_link(:l23, :n2, :n3, :ts => 0, :load => 0.5)
+links << nw.create_link(:l24, :n2, :n4, :ts => 0, :load => 0.75)
 
 require 'omf_web'
 OMF::Web.register_datasource nw, :index => :id
+
+# Create a table which serves the history of an individual link as a slice
+#
+link_history = nw.to_table(:links)
+OMF::Web.register_datasource link_history, :name => 'link_history'
 
 # Change load
 Thread.new do

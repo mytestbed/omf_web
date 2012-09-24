@@ -166,7 +166,7 @@ module OMF::OML
       end
     end
     
-    def node_schema(schema = null)
+    def node_schema(schema = nil)
       if schema
         @node_schema = OmlSchema.create(schema)
         @node_schema.insert_column_at(0, :id)
@@ -175,7 +175,7 @@ module OMF::OML
       @node_schema
     end
       
-    def link_schema(schema = null)
+    def link_schema(schema = nil)
       if schema
         @link_schema = OmlSchema.create(schema)
         @link_schema.insert_column_at(0, :id)
@@ -224,7 +224,7 @@ module OMF::OML
     
     # Create a table to track and aspect of this network. 
     #
-    # @param aspect - Eitherr nodes or links 
+    # @param aspect - Either nodes or links 
     #
     def to_table(aspect, table_opts = {})
       aspect = aspect.to_sym

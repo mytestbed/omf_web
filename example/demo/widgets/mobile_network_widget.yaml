@@ -7,7 +7,7 @@ widget:
   width: 1.0
   data_source: 
     name: mobile_network
-    dynamic: 1
+    unique_column: id  # only use the latest link and row descriptions
   mapping:
     nodes:
       x:

@@ -13,8 +13,14 @@ module OMF::Web
     
     @@datasources = {}
     
+    # Register a data source.
+    #
+    # params data_source - Data source to register
+    # params opts:
+    #          name - Name to use instead of data source's native name
+    #
     def self.register_datasource(data_source, opts = {})
-      name = data_source.name.to_sym
+      name = (opts[:name] || data_source.name).to_sym
       if (@@datasources.key? name)
         raise "Repeated try to register data source '#{name}'"
       end
@@ -31,6 +37,8 @@ module OMF::Web
       unless dsp = OMF::Web::SessionStore[name, :dsp]
         if ds = @@datasources[name]
           dsp = OMF::Web::SessionStore[name, :dsp] = self.new(name, ds)
+        else
+          warn "Requesting unknown datasource '#{name}', only know about '#{@@datasources.keys.join(', ')}'."
         end
       end
       dsp
@@ -49,16 +57,16 @@ module OMF::Web
       unless ds_descr.is_a? Hash
         raise "Expected Hash, but got '#{ds_descr.class}::#{ds_descr.inspect}'"
       end
-      ds_name = ds_descr[:name].to_sym
+      unless ds_name = ds_descr[:name]
+        raise "Missing 'name' attribute in datasource description. (#{ds_descr.inspect})"
+      end
+      ds_name = ds_name.to_sym
       ds = @@datasources[ds_name]
-      puts "FOR SOURCE>>>>> #{ds_descr.inspect}::#{ds.inspect}"
       unless ds
         # let's check for sub table, such as network/nodes
         main, sub = ds_descr[:name].split('/')
-        puts "1>>> main #{main}, sub: #{sub}"
         if (sub)
           if ds_top = @@datasources[main.to_sym]
-            puts "2>>>>> ds_top #{ds_top}"
             ds = ds_top[sub.to_sym]
           end
         end
@@ -89,6 +97,8 @@ module OMF::Web
       return [proxy]
     end
     
+    attr_reader :name
+    
     def reset()
       # TODO: Figure out partial sending 
     end
@@ -117,18 +127,27 @@ module OMF::Web
       end
     end
     
+    # Create a new data source which only contains a slice of the underlying data source
+    def create_slice(col_name, col_value)
+      ds = @data_source.create_sliced_table(col_name, col_value)
+      dsp = self.class.new(ds.name, ds)
+      def dsp.release; @data_source.release end
+      dsp
+    end
     
     def to_javascript(opts)
-      puts "to_java>>>>> #{opts.inspect}"
+      #puts "to_java>>>>> #{opts.inspect}"
       sid = Thread.current["sessionID"]
       opts = opts.dup
       opts[:name] = @name
       opts[:schema] = @data_source.schema
       opts[:update_url] = "/_update/#{@name}?sid=#{sid}"
       opts[:sid] = sid
-      opts[:rows] = @data_source.rows[0 .. 20]
-      opts[:offset] = @data_source.offset
-      puts "to_java2>>>>> #{opts.to_json.inspect}"
+      unless opts[:slice] # don't send any data if this is a sliced one
+        opts[:rows] = @data_source.rows[0 .. 20]
+        opts[:offset] = @data_source.offset
+      end
+      #puts "to_java2>>>>> #{opts.to_json.inspect}"
       
       %{
         OML.data_sources.register(#{opts.to_json});
