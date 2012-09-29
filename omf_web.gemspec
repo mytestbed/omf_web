@@ -5,7 +5,7 @@ require "omf-web/version"
 Gem::Specification.new do |s|
   s.name        = "omf_web"
 #  s.version     = OmfWeb::VERSION
-  s.version     = '0.9.1'
+  s.version     = OMF::Web::VERSION
   s.authors     = ["NICTA"]
   s.email       = ["omf-user@lists.nicta.com.au"]
   s.homepage    = "https://www.mytestbed.net"
@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
 
   # specify any dependencies here; for example:
 #  s.add_development_dependency "minitest", "~> 2.11.3"
+  s.add_runtime_dependency "omf-web", "~> 0.9"
   s.add_runtime_dependency "erector", "~> 0.8.3"
   s.add_runtime_dependency "activesupport", "~> 3.0.0" # required by erector:table
   s.add_runtime_dependency "rack", "~> 1.3.5"
