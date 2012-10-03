@@ -38,7 +38,8 @@ OML.data_source = function(opts) {
   var name = opts.id || opts.name;
   var event_name = "data_source." + name + ".changed";
   var rows = opts.rows || [];
-  var offset = opts.offset || -1; // Number of (initial) rows skipped (count towards 'max_rows')
+  //var offset = opts.offset || -1; // Number of (initial) rows skipped (count towards 'max_rows')
+  var offset = opts.offset || 0; // Number of (initial) rows skipped (count towards 'max_rows')  
   var schema = opts.schema;
   
   var data_source = {
@@ -103,7 +104,7 @@ OML.data_source = function(opts) {
   function start_web_socket() {
     if (ws) return; // already running
     
-    var url = 'ws://' + window.location.host + '/_ws?sid=' + opts.sid;
+    var url = 'ws://' + window.location.host + '/_ws?sid=' + (opts.sid || OML.session_id);
     ws = new WebSocket(url);
     ws.onopen = on_open;
     ws.onmessage = on_message;

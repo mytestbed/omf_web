@@ -59,8 +59,9 @@ module OMF::Common
     #
     def self.init_log(appName, opts = {})
   	  
-      @@logger = ::Log4r::Logger.new(appName)
+      #@@logger = ::Log4r::Logger.new(appName)
       set_environment(opts[:environment] || 'development')
+      @@logger = ::Log4r::Logger.new(@@rootLoggerName)
       
       configFile = opts[:configFile]
       if (configFile == nil && logEnv = opts[:env])
@@ -82,10 +83,6 @@ module OMF::Common
       end
       #puts "config file '#{configFile}'"
       if !(configFile || '').empty?
-        # if (appInstance == nil)
-          # appInstance = DateTime.now.strftime("%F-%T").split(':').join('-')
-        # end
-        # ::Log4r::Configurator['appInstance'] = opts[:appInstance] || 'default'
         ::Log4r::Configurator['appName'] = appName
         begin
           ycfg = YAML.load_file(configFile)
@@ -98,7 +95,12 @@ module OMF::Common
         end
       else
         # set default behavior
-        @@logger.outputters = ::Log4r::Outputter.stdout
+        ::Log4r::Logger.global.level = ::Log4r::ALL
+        formatter = ::Log4r::PatternFormatter.new(:pattern => "%l %c: %m")
+        ::Log4r::StdoutOutputter.new('console', :formatter => formatter)
+        @@logger.add 'console'
+        #@@logger.outputters = ::Log4r::StdoutOutputter.new('console') #Outputter.stdout
+        ##@@logger.outputters = ::Log4r::Outputter.stdout
       end
     end
     

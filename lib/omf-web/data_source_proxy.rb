@@ -135,7 +135,7 @@ module OMF::Web
       dsp
     end
     
-    def to_javascript(opts)
+    def to_javascript(opts = {})
       #puts "to_java>>>>> #{opts.inspect}"
       sid = Thread.current["sessionID"]
       opts = opts.dup
