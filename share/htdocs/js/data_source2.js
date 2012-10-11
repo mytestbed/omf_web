@@ -183,7 +183,7 @@ OML.data_source = function(opts) {
     // Reset state
     rows = [];
     update_indexes();
-    sm = {col_name: active_slice_col_name, col_value: col_value}
+    var sm = {col_name: active_slice_col_name, col_value: col_value}
     send_server_msg('request_slice', {slice: sm})
   }
   var active_slice_col_name = null;
@@ -269,8 +269,15 @@ OML.data_source = function(opts) {
       var evt_name = so.event.name;
       if (! evt_name) 
         throw "Missing event name in slice definition for data source '" + name + "'.";
-      OHUB.bind(evt_name, function(evt) {
-        set_slice_column(evt.id);        
+      OHUB.bind(evt_name, function(msg) {
+        var col = msg.schema[so.event.key];
+        if (col) {
+          var event = msg.event;
+          var col_id = event[col.index];        
+          if (col_id) {
+            set_slice_column(col_id);        
+          }
+        }
       })
     }
   }

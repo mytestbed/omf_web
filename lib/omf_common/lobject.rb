@@ -150,9 +150,12 @@ module OMF::Common
     end
 
     def _logger(category = nil)
-      unless @logger && category.nil?
-        category ||= self.class.to_s 
-        @logger = OMF::Common::Loggable.logger(category)
+      unless @logger #&& category.nil?
+        cat = self.class.to_s 
+        if category
+          cat = "#{cat}-#{category}"
+        end
+        @logger = OMF::Common::Loggable.logger(cat)
       end
       return @logger
     end

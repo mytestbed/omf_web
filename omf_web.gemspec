@@ -33,4 +33,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "json", "~> 1.7.3"
   s.add_runtime_dependency "grit", "~> 2.5.0"
   s.add_runtime_dependency "sqlite3", "~> 1.3.6"
+  s.add_runtime_dependency "postgres-pr", "~> 0.6.3" 
+  s.add_runtime_dependency "websocket-rack", "~> 0.4.0"
 end

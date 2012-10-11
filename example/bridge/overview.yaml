@@ -54,6 +54,13 @@ widget:
           title: Sensor Reading
           data_source:
             name: sensors
+            # Only fetch a 'slice' of the underlying data source. A slice
+            # is defined by specific value in the 'slice_column' of all rows
+            slice:
+              slice_column: eventID
+              event:
+                name: bridge.event_selected
+                key: eventID
           mapping:
             x_axis: time
             y_axis: 

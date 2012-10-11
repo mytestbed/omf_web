@@ -3,6 +3,24 @@ require 'omf_common/lobject'
 require 'omf-oml/table'
 require 'omf-oml/sql_source'
 
+class LazySlicableTable < OMF::Common::LObject
+
+  attr_reader :name
+#  attr_accessor :max_size
+  attr_reader :schema
+#  attr_reader :offset
+
+  def initialize(name, schema, &block)
+    @name = name
+    @schema = schema
+    @block = block
+  end
+  
+  def create_sliced_table(col_name, col_value, table_opts = {})
+    @block.call(col_name, col_value, table_opts)
+  end
+
+end
 
 class BridgeSensor < OMF::Common::LObject
   attr_reader :table
@@ -14,8 +32,12 @@ class BridgeSensor < OMF::Common::LObject
   # oml_sender_id INTEGER, oml_seq INTEGER, oml_ts_client REAL, oml_ts_server REAL, "eventID" TEXT, "sensorID" TEXT, "time" REAL, "x" REAL, "y" REAL, "z" REAL, "v1" REAL, "v2" REAL
   def process_acceleration(stream)
     #puts stream.class
-    @table = stream.to_table(:sensors, :include_oml_internals => true)
-    OMF::Web.register_datasource @table    
+    @table = stream.to_table(:sensors_raw, :include_oml_internals => true)
+    
+    #OMF::Web.register_datasource @table    
+    OMF::Web.register_datasource(LazySlicableTable.new(:sensors, @table.schema) do |col_name, col_value, table_opts|
+      @table.create_sliced_table(col_name, col_value, table_opts)
+    end)
   end
 
   def process_health(stream)
@@ -60,7 +82,7 @@ class BridgeSensor < OMF::Common::LObject
         loop do
           #2012-07-21-17:03:25|node49|0.600000023841858
           ev_id = Time.now.iso8601
-          [['node47', 0, '2012-07-21-00:48:46'], ['node48', 0.2, ev_id], ['node49', 0.6, ev_id]].each do |r|
+          [['node47', 0, '2012-07-21-17:04:22'], ['node48', 0.2, ev_id], ['node49', 0.6, ev_id]].each do |r|
             joint_id, health, ev_id = r
             table.add_row [0, seq_no, 0.0, 0.0, ev_id, joint_id, health]
           end
