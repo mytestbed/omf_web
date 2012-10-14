@@ -161,13 +161,35 @@ OML.data_source = function(opts) {
       });          
     } else {
       // need to append to 'rows' as it's referenced in other closures
-      _.each(msg.rows, function(r) { rows.push(r) });
-      var chop = msg.offset - offset;
-      if (offset >= 0 && chop > 0) {
-        rows = _.rest(rows, chop);
+      // _.each(msg.rows, function(r) { rows.push(r) });
+      // var chop = msg.offset - offset;
+      // if (offset >= 0 && chop > 0) {
+        // rows = _.rest(rows, chop);
+      // }
+      switch (msg.action) {
+        case 'added': 
+          _.each(msg.rows, function(r) { rows.push(r) });
+          break;
+        case 'removed':
+          // This could most likely be made a bit faster.
+          _.each(msg.rows, function(row) {
+            var id = row[0]; // first column is ALWAYS a unique row id
+            var l = rows.length;
+            var row_no;
+            for (row_no = 0; row_no < l; row_no++) {
+              if (rows[row_no][0] == id) break;
+            }
+            if (row_no < l) {
+              rows.splice(row_no, 1);
+            } else {
+              var xxx = 0; // Removing non existing row
+            }
+          });
+          break;
+        default:
+          throw "Unknown message action '" + msg.action + "'.";
       }
     }
-    offset = msg.offset;
       
     update_indexes();
     var evt = {data_source: data_source};
@@ -270,9 +292,12 @@ OML.data_source = function(opts) {
       if (! evt_name) 
         throw "Missing event name in slice definition for data source '" + name + "'.";
       OHUB.bind(evt_name, function(msg) {
-        var col = msg.schema[so.event.key];
+        var schema = msg.data_source.schema;
+        
+        var key = so.event.key;
+        var col = _.find(schema, function(cd) { return cd.name == key });
         if (col) {
-          var event = msg.event;
+          var event = msg.datum;
           var col_id = event[col.index];        
           if (col_id) {
             set_slice_column(col_id);        

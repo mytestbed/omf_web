@@ -1,0 +1,12 @@
+
+#
+
+widget:
+  id: configure
+  name: Configure
+  top_level: true
+  priority: 300
+  type: layout/one_column
+  chrome: false  # don't show title
+  widgets:
+    - type: configure

@@ -74,7 +74,7 @@ widget:
         slice:
           slice_column: id
           event:
-            name: graph.static_network_links.selected
+            name: graph.static_network/links.selected
             key: id
       group_by: name
       mapping:

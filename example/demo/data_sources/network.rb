@@ -17,7 +17,8 @@ nw.create_link :l12, :n1, :n2, :load => 0.4
 nw.create_link :l21, :n2, :n1, :load => 0.9
 
 require 'omf_web'
-OMF::Web.register_datasource nw
+OMF::Web.register_datasource nw.to_table(:nodes, :index => :id)
+OMF::Web.register_datasource nw.to_table(:links, :index => :id)
 
 # opts = {
   # #:data_sources => table,

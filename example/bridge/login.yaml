@@ -1,0 +1,16 @@
+
+#
+
+widget:
+  id: login
+  top_level: true
+  priority: -1
+  type: layout/one_column
+  chrome: false  # don't show title
+  render:
+    title: false
+  widgets:
+    - type: moustache
+      template: template/login.html
+      margin:
+        top: 30

@@ -23,7 +23,8 @@ links << nw.create_link(:l23, :n2, :n3, :ts => 0, :load => 0.5)
 links << nw.create_link(:l24, :n2, :n4, :ts => 0, :load => 0.75)
 
 require 'omf_web'
-OMF::Web.register_datasource nw, :index => :id
+OMF::Web.register_datasource nw.to_table(:nodes, :index => :id)
+OMF::Web.register_datasource nw.to_table(:links, :index => :id)
 
 # Create a table which serves the history of an individual link as a slice
 #

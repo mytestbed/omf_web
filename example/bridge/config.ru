@@ -1,17 +1,27 @@
 
+require 'rackamole'
 require 'omf_common/lobject'
 
 use ::Rack::ShowExceptions
 #use ::Rack::Lint
+#use Rack::Mole, :app_name => "Bridge"
 
 OMF::Web::Runner.instance.life_cycle(:pre_rackup)
 options = OMF::Web::Runner.instance.options
+                               
+require 'omf-web/rack/session_authenticator'                               
+use OMF::Web::Rack::SessionAuthenticator, #:expire_after => 10, 
+          :login_url => '/tab/login',
+          :no_session => ['^/resource/', '^/login', '^/logout']
 
-require 'auth_basic'
-use Rack::Auth::Basic, "Restricted Area", ['/tab'] do |username, password|
-  #puts ">>> Checking pw '#{password}' for '#{username}'"
-  [username, password] == ['admin', 'admin']
+class Authenticator < OMF::Common::LObject
+  def self.signon(email, pw, remember)
+    OMF::Web::Rack::SessionAuthenticator.authenticate  
+    OMF::Web::Rack::SessionAuthenticator[:name] = email
+    info "Authenticated '#{email}' (#{Thread.current["sessionID"]})"
+  end
 end
+
 
 map "/resource" do
   require 'omf-web/rack/multi_file'
@@ -47,6 +57,28 @@ map "/widget" do
   run OMF::Web::Rack::WidgetMapper.new(options)
 end
 
+map '/login' do
+  handler = Proc.new do |env| 
+    req = ::Rack::Request.new(env)
+    #puts ">>> post?: #{req.post?} - #{req.params.inspect}"
+    if req.post?
+      email = req.params["email"]
+      pw = req.params["password"]
+      remember = req.params["remember"] == "on"
+      Authenticator.signon(email, pw, remember)
+    end
+    [301, {'Location' => '/tab', "Content-Type" => ""}, ['Next window!']]
+  end
+  run handler
+end
+
+map '/logout' do
+  handler = Proc.new do |env| 
+    OMF::Web::Rack::SessionAuthenticator.logout
+    [301, {'Location' => '/tab', "Content-Type" => ""}, ['Next window!']]
+  end
+  run handler
+end
 
 map "/" do
   handler = Proc.new do |env| 

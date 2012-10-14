@@ -168,9 +168,12 @@ L.provide('OML.table2', ["graph/js/abstract_widget", "#OML.abstract_widget", '#s
         var i = 0;
       } else {
         columns = _.map(schema, function(col) {
-                        var i = 0;
                         return { id: col.index, name: col.title, field: col.name, width: 0, sortable: true };
-                      })
+                    });
+        // Remove the leading __id__ column
+        if (columns[0].field == '__id__') {
+          columns.splice(0, 1);
+        }
       }
       return columns;
     },

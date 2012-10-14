@@ -1,9 +1,9 @@
 
-require 'omf-web/theme/bright/widget_chrome'
+require 'omf-web/theme/bright/layout_renderer'
 
 module OMF::Web::Theme
   
-  class OneColumnRenderer < Erector::Widget
+  class OneColumnRenderer < LayoutRenderer
     
     def initialize(widgets, opts)
       super opts

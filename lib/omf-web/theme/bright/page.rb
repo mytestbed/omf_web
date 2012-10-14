@@ -1,4 +1,5 @@
 require 'omf-web/theme/abstract_page'
+require 'omf-web/rack/session_authenticator'   
 
 module OMF::Web::Theme
   class Page < OMF::Web::Theme::AbstractPage
@@ -33,16 +34,25 @@ module OMF::Web::Theme
  
     def content
       super
+      @renderer = @widget.content
       div :id => 'doc3' do
-        div :id => 'hd' do
-          render_top_line
-          h1 @page_title || 'Missing :page_title' 
+        if @renderer.render? :header
+          div :id => 'hd' do
+            if @renderer.render? :top_line
+              render_top_line
+            end
+            if @renderer.render? :title
+              h1 @page_title || 'Missing :page_title'
+            end 
+          end
         end
         div :id => 'bd' do
           render_body
         end
-        div :id => 'ft' do
-          render_footer
+        if @renderer.render? :footer
+          div :id => 'ft' do
+            render_footer
+          end
         end
       end
     end
@@ -59,7 +69,8 @@ module OMF::Web::Theme
         @tabs.each do |h|
           lopts = h[:id] == @tab ? {:class => :current} : {}
           li lopts do 
-            a :href => "#{@prefix}/#{h[:id]}?sid=#{Thread.current["sessionID"]}" do
+            #a :href => "#{@prefix}/#{h[:id]}?sid=#{Thread.current["sessionID"]}" do
+            a :href => "#{@prefix}/#{h[:id]}" do
               span h[:name], :class => :tab_text
             end
           end
@@ -69,8 +80,22 @@ module OMF::Web::Theme
             
     def render_tools_menu
       div :id => :tools_menu do
-        a 'Log in', :href => '/login'
+        render_authentication
       end
+    end
+    
+    def render_authentication
+      if OMF::Web::Rack::SessionAuthenticator.active?
+        if OMF::Web::Rack::SessionAuthenticator.authenticated?
+          # text OMF::Web::Rack::Session[:name]
+          # text ' | '
+          a 'Log out', :href => '/logout'          
+        else
+          a 'Log in', :href => '/tab/login'
+        end
+      end
+        
+      
     end
     
     def render_body
@@ -81,7 +106,7 @@ module OMF::Web::Theme
     def render_card_body
       return unless @widget
       Thread.current["top_renderer"] = self
-      rawtext @widget.content.to_html
+      rawtext @renderer.to_html
     end
         
     def render_footer

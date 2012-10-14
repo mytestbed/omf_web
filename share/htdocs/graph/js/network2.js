@@ -59,8 +59,8 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
             ss = { name: ss };
           }
           var prefix = ss.name;
-          var sn = {}; for (var p in ss) { sn[p] = ss[p]; }; sn.name = prefix + '_nodes';
-          var sl = {}; for (var p in ss) { sl[p] = ss[p]; }; sl.name = prefix + '_links';
+          var sn = {}; for (var p in ss) { sn[p] = ss[p]; }; sn.name = prefix + '/nodes';
+          var sl = {}; for (var p in ss) { sl[p] = ss[p]; }; sl.name = prefix + '/links';
           sources = [
             {name: 'nodes', stream: sn},
             {name: 'links', stream: sl},
@@ -267,7 +267,7 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
       } else {
         this._render_selected_link(id);      
         this._render_selected_node('_NONE_');
-        this._report_selected(id, 'links');
+        this._report_selected(id, 'links', d);
       }
     },
     
@@ -344,7 +344,7 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
       } else {
         this._render_selected_link('_NONE_');      
         this._render_selected_node(id);
-        this._report_selected(id, 'nodes');
+        this._report_selected(id, 'nodes', d);
       }
     },
     
@@ -386,16 +386,16 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
          
     },
     
-    _report_selected: function(selected_id, type) {
+    _report_selected: function(selected_id, type, datum) {
       var ds = this.data_source[type];
-      var msg = {id: selected_id, type: type, source: this, data_source: ds};
+      var msg = {id: selected_id, type: type, source: this, data_source: ds, datum: datum};
       OHUB.trigger("graph.selected", msg);          
       OHUB.trigger("graph." + ds.name + ".selected", msg);  
     },    
 
-    _report_deselected: function(selected_id, type) {
+    _report_deselected: function(selected_id, type, datum) {
       var ds = this.data_source[type];
-      var msg = {id: selected_id, type: type, source: this, data_source: ds};
+      var msg = {id: selected_id, type: type, source: this, data_source: ds, datum: datum};
       OHUB.trigger("graph.deselected", msg);          
       OHUB.trigger("graph." + ds.name + ".deselected", msg);  
     }    

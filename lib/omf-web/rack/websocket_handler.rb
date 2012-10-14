@@ -53,12 +53,13 @@ module OMF::Web::Rack
       dsp = find_data_source(args)
       return unless dsp  # should define appropriate exception
       debug "Received registration for datasource proxy '#{dsp}'"
-      dsp.on_changed(args['offset']) do |new_rows, offset|
+      dsp.on_changed(args['offset']) do |action, rows|
         msg = {
           type: 'datasource_update',
           datasource: dsp.name,
-          rows: new_rows,
-          offset: offset
+          rows: rows,
+          action: action
+          #offset: offset
         }
         send_data(msg.to_json)
       end
@@ -81,14 +82,24 @@ module OMF::Web::Rack
       end
       sdsp = dsp.create_slice(col_name, col_value)
       context[:sliced_datasource] = {:col_name => col_name, :dsp => sdsp}
-      sdsp.on_changed(0) do |new_rows, offset|
+      sdsp.on_changed(0) do |action, rows|
         msg = {
           type: 'datasource_update',
           datasource: args['ds_name'],
-          rows: new_rows,
-          offset: offset
+          rows: rows,
+          action: action
+          #offset: offset
         }
         send_data(msg.to_json)
+#         
+        # do |new_rows, offset|
+        # msg = {
+          # type: 'datasource_update',
+          # datasource: args['ds_name'],
+          # rows: new_rows,
+          # offset: offset
+        # }
+        # send_data(msg.to_json)
       end
     end
     

@@ -25,11 +25,14 @@ module OMF::Web
         raise "Repeated try to register data source '#{name}'"
       end
       if data_source.is_a? OMF::OML::OmlNetwork
-        dsh = data_source.to_tables(opts)
-        @@datasources[name] = dsh
-      else
-        @@datasources[name] = data_source
+        raise "Register link and node table separately "
       end
+        # dsh = data_source.to_tables(opts)
+        # @@datasources[name] = dsh
+      # else
+        # @@datasources[name] = data_source
+      # end
+      @@datasources[name] = data_source      
     end
     
     def self.[](name)
@@ -63,36 +66,35 @@ module OMF::Web
       ds_name = ds_name.to_sym
       ds = @@datasources[ds_name]
       unless ds
-        # let's check for sub table, such as network/nodes
-        main, sub = ds_descr[:name].split('/')
-        if (sub)
-          if ds_top = @@datasources[main.to_sym]
-            ds = ds_top[sub.to_sym]
+        top = "#{ds_name}/"
+        names = @@datasources.keys.find_all { |ds_name| ds_name.to_s.start_with? top }
+        unless names.empty?
+          return names.map do |ds_name| 
+            OMF::Web::SessionStore[ds_name, :dsp] ||= self.new(ds_name, @@datasources[ds_name]) 
           end
         end
+        # debug ">>>> #{dsa}"
+        # # let's check for sub table, such as network/nodes
+        # main, sub = ds_descr[:name].split('/')
+        # if (sub)
+          # if ds_top = @@datasources[main.to_sym]
+            # ds = ds_top[sub.to_sym]
+          # end
+        # end
         unless ds
           raise "Unknown data source '#{ds_name}' (#{@@datasources.keys.inspect})"
         end
       end
       if ds.is_a? Hash
+        raise "Is this actually used anywhere?"
         proxies = ds.map do |name, ds|
           id = "#{ds_name}_#{name}".to_sym
           proxy = OMF::Web::SessionStore[id, :dsp] ||= self.new(id, ds)
         end
         return proxies
-          
-        # n_name = "#{ds_name}_nodes".to_sym
-        # l_name = "#{ds_name}_links".to_sym
-        # if (nodes = OMF::Web::SessionStore[n_name, :dsp])
-          # # assume links exist as well
-          # links = OMF::Web::SessionStore[l_name, :dsp]                
-        # else
-          # nodes = OMF::Web::SessionStore[n_name, :dsp] = self.new(n_name, ds[:nodes])
-          # links = OMF::Web::SessionStore[l_name, :dsp] = self.new(l_name, ds[:links])
-        # end
-        # return [nodes, links]
       end
       
+      #debug ">>>>> DS: #{ds_descr.inspect} - #{ds}"
       proxy = OMF::Web::SessionStore[ds_name, :dsp] ||= self.new(ds_name, ds)
       return [proxy]
     end
@@ -119,11 +121,11 @@ module OMF::Web
       rows = ds.rows[(offset - ds.offset) .. -1]
       if rows && rows.length > 0
         debug "on_changed: sending #{rows.length}"
-        block.call rows, ds.offset
+        block.call :added, rows
       end
-      @data_source.on_row_added(block.object_id) do |row, offset|
-        debug "on_changed: more data: #{row.inspect}"
-        block.call [row], offset
+      @data_source.on_content_changed(block.object_id) do |action, rows|
+        debug "on_changed: #{action}: #{rows.inspect}"
+        block.call action, rows
       end
     end
     
@@ -144,7 +146,8 @@ module OMF::Web
       opts[:update_url] = "/_update/#{@name}?sid=#{sid}"
       opts[:sid] = sid
       unless opts[:slice] # don't send any data if this is a sliced one
-        opts[:rows] = @data_source.rows[0 .. 20]
+        #opts[:rows] = @data_source.rows[0 .. 20]
+        opts[:rows] = []
         opts[:offset] = @data_source.offset
       end
       #puts "to_java2>>>>> #{opts.to_json.inspect}"

@@ -32,12 +32,17 @@ module OMF::Web::Rack
     end
     
     def call(env)
+      #puts env.keys.inspect
+
       req = ::Rack::Request.new(env)
-      sessionID = req.params['sid']
-      if sessionID.nil? || sessionID.empty?
-        sessionID = "s#{(rand * 10000000).to_i}"
-      end
-      Thread.current["sessionID"] = sessionID
+      #puts "COOKIES>>>> #{req.cookies.inspect}"
+      #req.cookies['user'] = 'booo'
+      
+      # sessionID = req.params['sid']
+      # if sessionID.nil? || sessionID.empty?
+        # sessionID = "s#{(rand * 10000000).to_i}"
+      # end
+      # Thread.current["sessionID"] = sessionID
       
       OMF::Web::Theme.require 'page'      
       body, headers = render_page(req)

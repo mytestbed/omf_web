@@ -5,7 +5,8 @@ module OMF::Web::Widget
   
     
     @@widgets = {}
-    @@descriptions = {}    
+    @@descriptions = {}  
+    @@type2class = {}  
     
     def self.register_widget(wdescr)
       unless id = wdescr[:id]
@@ -21,6 +22,15 @@ module OMF::Web::Widget
     def self.registered_widgets()
       @@descriptions
     end
+    
+    def self.register_widget_type(id, widget_class)
+      id = id.to_sym
+      if (@@type2class.key? id)
+        raise "Repeated try to register widget type '#{id}'"
+      end  
+      @@type2class[id] = widget_class
+    end
+    
     
     # Return the number of top level widgets. If 'restrict_to' is an
     # array, only return those. 
@@ -82,6 +92,9 @@ module OMF::Web::Widget
       when /^code/
         require 'omf-web/widget/code_widget'
         w =  OMF::Web::Widget::CodeWidget.create_code_widget(type, wdescr)        
+      when /^moustache/
+        require 'omf-web/widget/mustache_widget'
+        w =  OMF::Web::Widget::MustacheWidget.create_mustache_widget(type, wdescr)        
       else
         raise "Unknown widget type '#{type}' (#{wdescr.inspect})"
       end

@@ -19,7 +19,8 @@ nw.link_schema [[:load, :float]]
 l = nw.create_link :l01, :n0, :m1, :load => 0.8
 
 require 'omf_web'
-OMF::Web.register_datasource nw, :index => :id
+OMF::Web.register_datasource nw.to_table(:nodes, :index => :id)
+OMF::Web.register_datasource nw.to_table(:links, :index => :id)
 
 # Move mobile node
 Thread.new do
