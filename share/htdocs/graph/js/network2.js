@@ -335,7 +335,7 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
     _on_node_selected: function(d) {
       var key_f = this.mapping.nodes.key;
       var id = key_f(d);      
-      var msg = {id: id, type: 'node', source: this, data_source: this.data_source.nodes};
+      //var msg = {id: id, type: 'node', source: this, data_source: this.data_source.nodes};
 
       if (this.selected_node == id) {
         // if same link is clicked twice, unselect it

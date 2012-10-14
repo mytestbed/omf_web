@@ -29,7 +29,7 @@ L.provide('OML.bridge', ["graph/js/abstract_chart", "#OML.abstract_chart"],
       
       var self = this;
       OHUB.bind("bridge.event_selected", function(evt) {
-        var joint_id = evt.event[evt.schema.jointID.index];
+        var joint_id = evt.datum[evt.schema.jointID.index];
         self.redraw_sensor_locator(joint_id);
       });
     },

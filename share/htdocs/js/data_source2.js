@@ -292,7 +292,7 @@ OML.data_source = function(opts) {
       if (! evt_name) 
         throw "Missing event name in slice definition for data source '" + name + "'.";
       OHUB.bind(evt_name, function(msg) {
-        var schema = msg.data_source.schema;
+        var schema = msg.schema || msg.data_source.schema;
         
         var key = so.event.key;
         var col = _.find(schema, function(cd) { return cd.name == key });

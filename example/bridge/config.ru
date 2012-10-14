@@ -22,7 +22,6 @@ class Authenticator < OMF::Common::LObject
   end
 end
 
-
 map "/resource" do
   require 'omf-web/rack/multi_file'
   run OMF::Web::Rack::MultiFile.new(options[:static_dirs])

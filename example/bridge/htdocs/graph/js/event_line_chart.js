@@ -14,8 +14,8 @@ L.provide('OML.event_line_chart', ["graph/js/line_chart3", "#OML.line_chart3"], 
       
       var self = this;
       OHUB.bind("bridge.event_selected", function(evt) {
-        self.event_id = evt.event[evt.schema.eventID.index];
-        self.joint_id = evt.event[evt.schema.jointID.index];
+        self.event_id = evt.datum[evt.schema.eventID.index];
+        self.joint_id = evt.datum[evt.schema.jointID.index];
         self.update();
       });
     },
@@ -29,8 +29,9 @@ L.provide('OML.event_line_chart', ["graph/js/line_chart3", "#OML.line_chart3"], 
         throw "Missing events array in data source"
       }
       
+      var ei = this.schema.eventID.index;
       data = _.filter(data, function(r) {
-        return r[5] == eid;
+        return r[ei] == eid;
       })
       if (data.length == 0) return;
       this.redraw(data);

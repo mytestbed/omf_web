@@ -35,7 +35,7 @@ L.provide('OML.event_table', ["graph/js/table2", "#OML.table2",
         var row = self.data[rindex];
         var event_id = row[self.schema.eventID.index];
         if (event_id) {
-          OHUB.trigger("bridge.event_selected", {event: row, schema: self.schema});
+          OHUB.trigger("bridge.event_selected", {datum: row, schema: self.schema});
         }
       });
     },
