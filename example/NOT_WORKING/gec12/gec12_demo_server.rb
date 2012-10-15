@@ -2,7 +2,7 @@
 require 'omf-common/mobject2'
 OMF::Common::Loggable.init_log 'gec12'
 
-require 'omf-oml/network'
+require 'omf_oml/network'
 
 require 'omf-web/widget/code/code'
 require 'omf-web/widget/graph/graph'

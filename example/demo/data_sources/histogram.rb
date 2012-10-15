@@ -1,5 +1,5 @@
 
-require 'omf-oml/table'
+require 'omf_oml/table'
 
 # Create a table containing 'amplitude' measurements taken at a certain time for two different 
 # devices.

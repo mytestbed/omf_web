@@ -1,5 +1,5 @@
 
-require 'omf-oml/table'
+require 'omf_oml/table'
 
 schema = [[:id, :int], [:name, :string], [:value, :float]]
 table = OMF::OML::OmlTable.new 'financial_returns', schema 

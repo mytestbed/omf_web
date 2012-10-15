@@ -1,7 +1,7 @@
 
 
 require 'omf_common/lobject'
-require 'omf-oml/network'
+require 'omf_oml/network'
 
 module OMF::Web
         

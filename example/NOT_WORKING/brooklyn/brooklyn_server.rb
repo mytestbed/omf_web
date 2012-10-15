@@ -2,8 +2,8 @@
 require 'omf-common/mobject2'
 OMF::Common::Loggable.init_log 'demo'
 
-require 'omf-oml/table'
-require 'omf-oml/sql_source'
+require 'omf_oml/table'
+require 'omf_oml/sql_source'
 
 
 #require 'omf-web/tab/graph/init'

@@ -1,10 +1,9 @@
-
-require 'omf-web/theme/bright/widget_chrome'
+require 'omf-web/theme/bright/layout_renderer'
 
 module OMF::Web::Theme
   
-  class TwoColumnsRenderer < Erector::Widget
-    
+  class TwoColumnsRenderer < LayoutRenderer
+
     DEFAULT_LAYOUT = '66_33'
     
     @@layout2class = {

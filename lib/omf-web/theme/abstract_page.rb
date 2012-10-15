@@ -70,7 +70,7 @@ module OMF::Web::Theme
     def render_data_sources
       return unless @widget
       
-      require 'omf-oml/table'
+      require 'omf_oml/table'
       require 'set'
       
       dss = Set.new

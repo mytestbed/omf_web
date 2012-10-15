@@ -1,6 +1,6 @@
 
 
-require 'omf-oml/table'
+require 'omf_oml/table'
 
 # A simple table holding animal population 
 #

@@ -3,7 +3,7 @@ require 'omf-common/mobject2'
 OMF::Common::Loggable.init_log 'demo'
 
 
-require 'omf-oml/network'
+require 'omf_oml/network'
 
 # require 'omf-web/tabbed_server'
 # require 'omf-web/tab/graph/init'
@@ -47,7 +47,7 @@ nw.create_node :n2, :x => 0.6, :y => 0.8, :capacity =>  0.8
 nw.create_link :l01, :n0, :n1, :load => 0.8
 nw.create_link :l12, :n1, :n2, :load => 0.4
 
-require 'omf-oml/table'
+require 'omf_oml/table'
 
 s = OmlSchema.new [[:ts, :float], [:name, :string], [:capacity, :int]]
 node_table = OMF::OML::OmlTable.new('nodes', s)

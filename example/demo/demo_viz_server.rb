@@ -3,7 +3,7 @@ require 'omf_common/lobject'
 OMF::Common::Loggable.init_log 'demo', :searchPath => File.dirname(__FILE__)
 
 
-require 'omf-oml/table'
+require 'omf_oml/table'
 
 def load_environment
   require 'omf-web/content/file_repository'

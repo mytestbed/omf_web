@@ -1,4 +1,4 @@
-require 'omf-oml/table'
+require 'omf_oml/table'
 
 schema = [[:t, :int], [:volume, :float]]
 table = OMF::OML::OmlTable.new 'downloads', schema

@@ -1,9 +1,8 @@
-
-require 'omf-web/theme/bright/widget_chrome'
+require 'omf-web/theme/bright/layout_renderer'
 
 module OMF::Web::Theme
   
-  class TabbedRenderer < Erector::Widget
+  class TabbedRenderer < LayoutRenderer
     
     def initialize(layout_widget, widgets, opts)
       super opts

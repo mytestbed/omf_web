@@ -2,7 +2,7 @@
 # Provides a table of information about recently released movies
 #
 
-require 'omf-oml/table'
+require 'omf_oml/table'
 
 schema = OMF::OML::OmlSchema.create [
   [:id, :int], 

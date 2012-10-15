@@ -7,6 +7,12 @@ use ::Rack::ShowExceptions
 OMF::Web::Runner.instance.life_cycle(:pre_rackup)
 options = OMF::Web::Runner.instance.options
 
+require 'omf-web/rack/session_authenticator'                               
+use OMF::Web::Rack::SessionAuthenticator, #:expire_after => 10, 
+          #:login_url => '/tab/login',
+          :no_session => ['^/resource/', '^/login', '^/logout']
+
+
 map "/resource" do
   require 'omf-web/rack/multi_file'
   run OMF::Web::Rack::MultiFile.new(options[:static_dirs])
@@ -41,6 +47,28 @@ map "/widget" do
   run OMF::Web::Rack::WidgetMapper.new(options)
 end
 
+map '/login' do
+  handler = Proc.new do |env| 
+    # req = ::Rack::Request.new(env)
+    # #puts ">>> post?: #{req.post?} - #{req.params.inspect}"
+    # if req.post?
+      # email = req.params["email"]
+      # pw = req.params["password"]
+      # remember = req.params["remember"] == "on"
+      # Authenticator.signon(email, pw, remember)
+    # end
+    [301, {'Location' => '/tab', "Content-Type" => ""}, ['Next window!']]
+  end
+  run handler
+end
+
+map '/logout' do
+  handler = Proc.new do |env| 
+    OMF::Web::Rack::SessionAuthenticator.logout
+    [301, {'Location' => '/tab', "Content-Type" => ""}, ['Next window!']]
+  end
+  run handler
+end
 
 map "/" do
   handler = Proc.new do |env| 

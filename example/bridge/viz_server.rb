@@ -13,7 +13,7 @@ $fake_bridge_events = false
 # Path to OML database
 $oml_database = 'example/bridge/data_sources/test3.sq3'
 
-require 'omf-oml/table'
+require 'omf_oml/table'
 
 def load_environment
 

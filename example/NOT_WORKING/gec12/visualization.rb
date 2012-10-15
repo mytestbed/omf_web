@@ -1,7 +1,7 @@
 
 
-require 'omf-oml/table'
-require 'omf-oml/sql_source'
+require 'omf_oml/table'
+require 'omf_oml/sql_source'
 
 include OMF::OML
 

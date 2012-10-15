@@ -2,8 +2,8 @@
 
 
 
-require 'omf-oml/network'
-require 'omf-oml/table'
+require 'omf_oml/network'
+require 'omf_oml/table'
 
 include OMF::OML
   

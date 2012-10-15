@@ -3,7 +3,7 @@ require 'omf-common/mobject2'
 OMF::Common::Loggable.init_log 'demo'
 
 
-require 'omf-oml/table'
+require 'omf_oml/table'
 require 'omf-web/widget/code/code'
 require 'omf-web/widget/graph/graph'
 

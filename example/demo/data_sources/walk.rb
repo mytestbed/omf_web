@@ -1,6 +1,6 @@
 
 
-require 'omf-oml/table'
+require 'omf_oml/table'
 
 # Define a map with a trace on it
 #
