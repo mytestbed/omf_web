@@ -51,8 +51,8 @@ function onMapLoaded() {
                           .attr('id', map_el)
                           ;
         var node = map_layer.node();
-        var center = opts.map_center || [151.197189, -33.895508];
-        var zoom = opts.zoom;
+        var center = opts.map.center || [151.197189, -33.895508];
+        var zoom = opts.map.zoom;
         if (zoom == undefined) zoom = 17;
         var map = this.map = new google.maps.Map(node, {
           zoom: zoom,
@@ -133,7 +133,7 @@ function onMapLoaded() {
           return (typeof m === "function") ? m(d.value) : m;
         }
         
-        var data = d3.entries(this.data_source.events);
+        var data = d3.entries(this.data_source.rows());
         this.draw_layer.selectAll('.marker')
           .data(data)
             .attr("cx", x_f) 
