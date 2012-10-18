@@ -282,6 +282,7 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
          switch (type) {
          case 'int': 
          case 'float':        
+         case 'key' :
            var scale = descr.scale;
            var min_value = descr.min;
            var max_value = descr.max;
@@ -311,10 +312,10 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
              var color = color_f(v);
              return color;
            };
-         case 'key' :
-           return function(d) {
-             return d[index];
-           }
+         // case 'key' :
+           // return function(d) {
+             // return d[index];
+           // }
          default:    
            throw "Unknown mapping type '" + type + "'";
          }

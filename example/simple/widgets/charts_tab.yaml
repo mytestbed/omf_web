@@ -1,0 +1,32 @@
+
+
+
+# Simple tab showing a line chart with supporting table
+#
+
+widget:
+  id: main
+  name: Main
+  top_level: true
+  priority: 900
+  type: layout/tabbed
+  widgets: 
+    
+    - name: Ping Line
+      type: data/line_chart3
+      data_source: 
+        name: ping
+      mapping:
+        x_axis: 
+          property: oml_ts_client
+        y_axis: 
+          property: rtt
+          max: 2.0
+        group_by: link
+                
+    - name: Table
+      type: data/table2
+      data_source: 
+        name: ping
+        
+

@@ -58,8 +58,12 @@ L.provide('OML.scatter_plot', ["graph/js/abstract_chart", "#OML.abstract_chart",
       var r_f = typeof(r_m) != 'function' ? d3.functor(r_m) : r_m;
       var w_f = typeof(r_m) != 'function' ? (2 * r_m) : function(d) { return 2 * r_m(d); }
                 
-      var x = function(d) { return x_f(x_m(d)) + ca.x - r_f(d); };
-      var y = function(d) { return ca.ty + ca.h - y_f(y_m(d)) - r_f(d); };
+      var x = function(d) { 
+        return x_f(x_m(d)) + ca.x - r_f(d); 
+      };
+      var y = function(d) { 
+        return ca.ty + ca.h - y_f(y_m(d)) - r_f(d); 
+      };
       var rects = this.chart_layer.selectAll("rect").data(data);
       rects.transition().duration(o.transition)
         .attr("x", x)
