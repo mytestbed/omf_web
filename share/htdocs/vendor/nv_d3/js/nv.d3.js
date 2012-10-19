@@ -3228,7 +3228,8 @@ nv.models.lineChart = function() {
       var linesWrap = g.select('.nv-linesWrap')
           .datum(data.filter(function(d) { return !d.disabled }))
 
-      d3.transition(linesWrap).call(lines);
+      //d3.transition(linesWrap).call(lines);
+      linesWrap.call(lines); 
 
 
 
@@ -3239,7 +3240,9 @@ nv.models.lineChart = function() {
 
       g.select('.nv-x.nv-axis')
           .attr('transform', 'translate(0,' + y.range()[0] + ')');
-      d3.transition(g.select('.nv-x.nv-axis'))
+      // d3.transition(g.select('.nv-x.nv-axis'))
+          // .call(xAxis);
+      g.select('.nv-x.nv-axis')
           .call(xAxis);
 
 
@@ -3248,7 +3251,9 @@ nv.models.lineChart = function() {
         .ticks( availableHeight / 36 )
         .tickSize( -availableWidth, 0);
 
-      d3.transition(g.select('.nv-y.nv-axis'))
+      // d3.transition(g.select('.nv-y.nv-axis'))
+          // .call(yAxis);
+      g.select('.nv-y.nv-axis')
           .call(yAxis);
 
 
