@@ -1,0 +1,36 @@
+
+
+
+# Simple tab showing a line chart with supporting table
+#
+
+widget:
+  id: code
+  name: Code
+  top_level: true
+  priority: 600
+  type: layout/tabbed
+  widgets: 
+    
+
+    - name: OIDL
+      type: code
+      width: 1.0
+      #height: 800
+      content:
+        url: file:code:of-exp.rb 
+        
+    - name: Trema
+      type: code
+      width: 1.0
+      #height: 800
+      content:
+        url: file:code:trema-ctl6.rb 
+        
+
+
+
+
+
+
+

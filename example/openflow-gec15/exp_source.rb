@@ -4,13 +4,16 @@ require 'omf_oml/network'
 require 'omf_oml/table'
 require 'omf_oml/sql_source'
 
+require 'em-postgresql-sequel'
+
+
 include OMF::OML
 
 class ExpDB < OMF::Common::LObject
   
   
-  def initialize(db_name)
-    @db_name = db_name
+  def initialize(db_opts)
+    @db_opts = db_opts
     init_network
   end
   
@@ -58,8 +61,10 @@ class ExpDB < OMF::Common::LObject
     
     stream.on_new_tuple() do |v|
       r = v.to_a(true)
+      #puts "RRR >> #{r.inspect}"
       t.add_row(r)
       ts = r[ts_i]; name = r[name_i].to_sym; tx = r[tx_i]; rx = r[rx_i]
+      #puts "VVV(#{ts}) >> #{v.row.inspect}"
       @nw.transaction do
         case name
         when :eth0
@@ -71,7 +76,7 @@ class ExpDB < OMF::Common::LObject
           process @links[:l32], ts, rx, 4e6
         end
       end
-      sleep 0.3 if ts > 7300
+      sleep 0.5 if ts > 7300
     end
     
       # nw.transaction do
@@ -85,7 +90,7 @@ class ExpDB < OMF::Common::LObject
   end
   
   def run
-    ep = OMF::OML::OmlSqlSource.new(@db_name, :check_interval => 3.0)
+    ep = OMF::OML::OmlSqlSource.new(@db_opts, :check_interval => 3.0)
     ep.on_new_stream() do |stream|
       info "Stream: #{stream.stream_name}"
       if stream.stream_name == 'nmetrics_net_if'
@@ -97,4 +102,3 @@ class ExpDB < OMF::Common::LObject
   end
   
 end
-wv = ExpDB.new('example/openflow-gec15/openflow-demo.sq3').run()

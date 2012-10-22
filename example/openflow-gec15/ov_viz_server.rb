@@ -7,6 +7,7 @@ require 'omf_oml/table'
 
 def load_environment
   require 'omf-web/content/file_repository'
+  OMF::Web::FileContentRepository.register_file_repo(:code, File.join(File.dirname(__FILE__), 'repository'), true)
   
 
   Dir.glob("#{File.dirname(__FILE__)}/*_source.rb").each do |fn|
@@ -22,6 +23,20 @@ def load_environment
       MObject.error "Don't know what to do with '#{fn}'"
     end
   end
+   
+  EM.next_tick do
+    EM::run do
+#    Fiber.new do
+      puts "FIBBBB"
+      wv = ExpDB.new(:adapter=>'sqlite', :database=>'example/openflow-gec15/openflow-demo.sq3')
+      #wv = ExpDB.new(:adapter=>'postgres', :host=>'norbit.npc.nicta.com.au', :user=>'oml2', :password=>'omlisgoodforyou', :database=>'openflow-demo')
+      wv.run
+      puts "FIBBBB!!"      
+#    end
+    end
+  end
+  puts "BOO!!!!"  
+
 end
 
 
