@@ -118,7 +118,7 @@ L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_ch
     redraw: function(data) {
       this.base_layer//.select(".chart_layer")
         .datum(this._datum(data, this.chart))
-        .transition().duration(500)
+        //.transition().duration(500)
           .call(this.chart);
     },
     

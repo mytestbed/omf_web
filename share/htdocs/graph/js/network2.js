@@ -10,7 +10,12 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
                ['stroke_width', 'int', 1], 
                ['stroke_color', 'color', 'black'], 
                ['x', 'int', 10],
-               ['y', 'int', 10]
+               ['y', 'int', 10],
+               ['label_text', 'key', {property: 'name'}], 
+               ['label_font', 'string', null], 
+               ['label_size', 'int', 16],                
+               ['label_color', 'color', 'white'], 
+               
               ],
       links:  [['key', 'key', {property: 'id'}], 
                ['stroke_width', 'int', 2], 
@@ -204,20 +209,29 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
           ;
 
       
+      function node_f(sel) {
+        sel.attr("cx", function(d) { return x(nmapping.x(d)) }) 
+          .attr("cy", function(d) { return y(nmapping.y(d)) })
+          .attr("r", nmapping.radius)
+          .style("fill", nmapping.fill_color)
+          .style("stroke", nmapping.stroke_color)
+          .style("stroke-width", nmapping.stroke_width)
+          ; 
+      }
       var node = this.graph_layer.selectAll("circle.node")
                         .data(ndata, function(d) {
                             return nmapping.key(d);
                             });
                         //.data(d3.values(ndata));
                         //function(d) { return d.time; }
-      node
-        .attr("cx", function(d) { return x(nmapping.x(d)) }) 
-        .attr("cy", function(d) { return y(nmapping.y(d)) })
-        .attr("r", nmapping.radius)
-        .style("fill", nmapping.fill_color)
-        .style("stroke", nmapping.stroke_color)
-        .style("stroke-width", nmapping.stroke_width)
-        ;
+      var enx = node.call(node_f);
+      // node.enter().append("svg:circle")
+        // .call(node_f)
+        // .attr("fixed", true)
+        // .transition()
+          // .attr("r", nmapping.radius)
+          // .delay(0)
+        // ;
       var en = node.enter().append("svg:circle");
       en.attr("class", "node")
         .attr("cx", function(d) { return x(nmapping.x(d)) }) 
@@ -231,7 +245,25 @@ L.provide('OML.network2', ["graph/js/abstract_chart", "#OML.abstract_chart"], fu
           .attr("r", nmapping.radius)
           .delay(0)
         ;
-      this._set_node_interaction_mode(en);
+      this._set_node_interaction_mode(node);
+        
+      function label_f(sel) {
+        sel.attr("class", "node_label")
+          .attr('dy', '0.4em')
+          .attr("x", function(d) { return x(nmapping.x(d)) }) 
+          .attr("y", function(d) { return y(nmapping.y(d)) })
+          .attr('text-anchor', 'middle')
+          .style("fill", nmapping.label_color)
+          .style("font-size", nmapping.label_size)        
+          .text(function(d) { return nmapping.label_text(d); });
+      }    
+      var label = this.graph_layer.selectAll("text.node_label")
+                        .data(ndata, function(d) {
+                            return nmapping.key(d);
+                            });
+      label.call(label_f);
+      label.enter().append("svg:text").call(label_f);
+
     },
     
     _set_link_interaction_mode: function(le) {
