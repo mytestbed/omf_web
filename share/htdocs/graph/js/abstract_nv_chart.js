@@ -26,7 +26,14 @@ L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_ch
       margin: {
         top: 0, right: 0, bottom: 0, left: 50 // not sure what impact this really has?
       }    
+    },
+    
+    defaults: function() {
+      return this.deep_defaults({
+        transition_duration: 500
+      }, OML.abstract_nv_chart.__super__.defaults.call(this));      
     },    
+      
 
     configure_base_layer: function(vis) {
       this.base_layer = vis;
@@ -116,10 +123,13 @@ L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_ch
     },
   
     redraw: function(data) {
-      this.base_layer//.select(".chart_layer")
-        .datum(this._datum(data, this.chart))
-        //.transition().duration(500)
-          .call(this.chart);
+      var bl = this.base_layer//.select(".chart_layer")
+                  .datum(this._datum(data, this.chart))
+                  ;
+      if (this.opts.transition_duration > 0) {
+        bl = bl.transition().duration(500)
+      }
+      bl.call(this.chart);
     },
     
   })

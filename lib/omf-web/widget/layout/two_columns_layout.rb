@@ -8,8 +8,9 @@ module OMF::Web::Widget::Layout
 
     def initialize(type, opts)
       super opts
-      @left = (opts[:left] || []).map {|w| OMF::Web::Widget.create_widget(w)}
-      @right = (opts[:right] || []).map {|w| OMF::Web::Widget.create_widget(w)}      
+      wt = opts[:widgets] || opts # support opts[:left] as well as opts[:widgets][:left]
+      @left = (wt[:left] || []).map {|w| OMF::Web::Widget.create_widget(w)}
+      @right = (wt[:right] || []).map {|w| OMF::Web::Widget.create_widget(w)}      
     end
 
     def content()

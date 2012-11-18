@@ -44,6 +44,8 @@ L.provide('OML.line_chart3', ["graph/js/abstract_nv_chart", "#OML.abstract_nv_ch
         // .showValues(opts.show_values)
         // .margin(opts.margin)
         // ;
+        
+      this.opts.transition_duration = 0; // force no smooth transition
       this._configure_xy_axis(opts, chart)
     },
         

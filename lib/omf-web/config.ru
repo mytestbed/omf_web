@@ -42,10 +42,10 @@ map "/tab" do
   run OMF::Web::Rack::TabMapper.new(options)
 end
 
-map "/widget" do
-  require 'omf-web/rack/widget_mapper'
-  run OMF::Web::Rack::WidgetMapper.new(options)
-end
+# map "/widget" do
+  # require 'omf-web/rack/widget_mapper'
+  # run OMF::Web::Rack::WidgetMapper.new(options)
+# end
 
 map '/login' do
   handler = Proc.new do |env| 
