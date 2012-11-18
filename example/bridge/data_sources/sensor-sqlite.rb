@@ -54,7 +54,7 @@ class BridgeSensor < OMF::Common::LObject
     #ep = OMF::OML::OmlSqlSource.new(@db_name, :offset => -500, :check_interval => 1.0)
     ep = OMF::OML::OmlSqlSource.new(@db_name, :check_interval => 3.0)
     ep.on_new_stream() do |stream|
-      #puts stream.inspect
+      #puts "NEW STREAM: #{stream.inspect}"
       case stream.stream_name
       when 'SydneyHarbourBridge_acceleration'
         process_acceleration(stream)

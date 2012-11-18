@@ -20,6 +20,6 @@ For additional options start the server with -h.
 
 ## What's next
 
-To learn how to use this gem and what is happening under the hood, check out the [docs|doc/index.html]
+To learn how to use this gem and what is happening under the hood, check out the [docs](doc/index.html)
 
 
