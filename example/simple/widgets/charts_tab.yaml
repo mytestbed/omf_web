@@ -23,6 +23,12 @@ widget:
           property: rtt
           max: 2.0
         group_by: link
+      axis:
+        x:
+          legend: Time (sec)
+        y:
+          legend: RTT (ms)
+        
                 
     - name: Table
       type: data/table2

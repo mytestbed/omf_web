@@ -8,7 +8,7 @@ class PingDB < OMF::Common::LObject
   
   LINKS = {'Source1::192.168.4.11' => 'link 4',
             'Source1::192.168.5.11' => 'link 5',
-            'Source2::192.168.1.10' => 'link 1',
+            'Source2::192.168.1.13' => 'link 1',
             'Source2::192.168.2.10' => 'link 2',
             'Source2::192.168.4.10' => 'link 4',
             'Source3::192.168.2.12' => 'link 2',
@@ -17,7 +17,7 @@ class PingDB < OMF::Common::LObject
             'Source3::192.168.6.12' => 'link 6',
             'Source4::192.168.1.13' => 'link 1',
             'Source4::192.168.3.12' => 'link 3',
-            'Source5::192.168.6.14' => 'link 6'
+            'Source5::192.168.6.12' => 'link 6'
           }
   
   def initialize(db_name)
@@ -25,14 +25,16 @@ class PingDB < OMF::Common::LObject
   end
   
   def setup_table(stream)
-    schema = stream.schema
+    schema = stream.schema.clone
     schema.insert_column_at(0, :link)
+    puts stream.schema.names.inspect
+    
     t = OMF::OML::OmlTable.new(:ping, schema)
     stream.on_new_tuple() do |v|
       r = v.to_a(true)
-      link_name = "#{r[0]}::#{r[5]}"
-      #puts "'#{link_name}', "
-      r.insert 0, LINKS[link_name] || "XXX - #{link_name}"
+      link_name = "#{v[:oml_sender]}::#{v[:dest_addr]}"
+      #r.insert 0, LINKS[link_name] || "XXX - #{link_name}"
+      r.insert 0, link_name
       t.add_row(r)   
     end
     OMF::Web.register_datasource t 
@@ -44,8 +46,6 @@ class PingDB < OMF::Common::LObject
       info "Stream: #{stream.stream_name}"
       if stream.stream_name == 'pingmonitor_myping'
         setup_table(stream)
-        # table = stream.to_table(:ping, :include_oml_internals => true)
-        # OMF::Web.register_datasource table 
       end
     end
     ep.run    
@@ -53,4 +53,4 @@ class PingDB < OMF::Common::LObject
   end
   
 end
-wv = PingDB.new('example/simple/data_sources/gimi31.sq3').run()
+wv = PingDB.new('sqlite://example/simple/data_sources/gimi31.sq3').run()
