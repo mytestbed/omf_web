@@ -87,9 +87,9 @@ module OMF::Web
     def create_content_proxy_for(content_descr)
       path = _get_path(content_descr)
       # TODO: Make sure that key is really unique across multiple repositories
-      descr = descr ? descr.dup : {}
       url = @url_prefix + path
       key = Digest::MD5.hexdigest(url)
+      descr = {}
       descr[:url] = url      
       descr[:url_key] = key
       descr[:path] = path      
@@ -117,6 +117,12 @@ module OMF::Web
         # TODO: Should set info about committing user which should be in thread context
         @repo.commit_index(message || 'no message') 
       end
+    end
+    
+    # Return a URL for a path in this repo
+    # 
+    def get_url_for_path(path)
+      "git:#{@name}:#{path}"
     end
     
     

@@ -43,6 +43,7 @@ module MaRuKu; module Out; module HTML
 	
 	# Render as an HTML fragment (no head, just the content of BODY). (returns a string)
 	def to_html(context={})
+	  Thread.current['maruku_context'] = context
 		indent = context[:indent] || -1
 		ie_hack = context[:ie_hack] || true
 		
@@ -803,6 +804,7 @@ of the form `#ff00ff`.
 				 " Using SPAN element as replacement."
 				return wrap_as_element('span')
 		end
+    raise "IMAGE: #{url}"
 		return a
 	end
 	
@@ -813,10 +815,14 @@ of the form `#ff00ff`.
 				" Using SPAN element as replacement."
 			return wrap_as_element('span')
 		end
+		if url_resolver = (Thread.current['maruku_context'] || {})[:img_url_resolver]
+		  url = url_resolver.call(url)
+		end
+
 		title = self.title
 		a =  create_html_element 'img'
-			a.attributes['src'] = url.to_s
-			a.attributes['alt'] = children_to_s 
+		a.attributes['src'] = url.to_s
+		a.attributes['alt'] = children_to_s 
 		return a
 	end
 

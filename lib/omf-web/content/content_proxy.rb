@@ -39,10 +39,6 @@ module OMF::Web
     def on_post(req)
       data = req.POST
       write(data['content'], data['message'])
-      # if (content = data['content']) != @content
-        # @content = content
-        # @repository.add_and_commit(@content_handle, content, data['message'], req)
-      # end
       [true.to_json, "text/json"]
     end
     
@@ -62,6 +58,19 @@ module OMF::Web
     end
     alias :read :content 
     
+    # Return a new proxy for a url relative to this one
+    def create_proxy_for_url(url)
+      unless url.match ':'
+        unless url.start_with? '/'
+          # relative
+          ap = @repository.path(@content_descriptor)
+          url = File.join(File.dirname(ap), url)
+        end
+        url = @repository.get_url_for_path(url)
+      end
+      @repository.create_content_proxy_for(url)
+    end
+
     private
     
     def initialize(content_descriptor, repository)

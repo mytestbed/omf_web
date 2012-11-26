@@ -126,7 +126,14 @@ module OMF::Web
       File.join(@top_dir, path)
     end
     
+    def path(content_descr)
+      path = _get_path(content_descr)
+    end
     
-          
+    # Return a URL for a path in this repo
+    # 
+    def get_url_for_path(path)
+      raise "Missing implementation"
+    end
   end # class
 end # module
