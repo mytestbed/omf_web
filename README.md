@@ -1,6 +1,6 @@
 # OMF Web
 
-This gem provides the componetes for building a web-based data visualization service. 
+This Ruby 1.9 gem provides the components for building a web-based data visualization service. 
 The typical use case is to allow a user to investigate a data set stored in one or more databases
 as well as life data streams.
 
