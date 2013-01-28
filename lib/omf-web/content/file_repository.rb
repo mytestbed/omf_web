@@ -103,7 +103,7 @@ module OMF::Web
     # Return a URL for a path in this repo
     # 
     def get_url_for_path(path)
-      "file:#{path}
+      "file:#{path}"
     end
     
     

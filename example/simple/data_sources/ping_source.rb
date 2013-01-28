@@ -53,4 +53,4 @@ class PingDB < OMF::Common::LObject
   end
   
 end
-wv = PingDB.new('sqlite://example/simple/data_sources/gimi31.sq3').run()
+wv = PingDB.new("sqlite://#{File.dirname(__FILE__)}/gimi31.sq3").run()
