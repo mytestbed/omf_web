@@ -73,9 +73,12 @@ module OMF::Web
       if ph = @options[:handlers][:pre_parse]
         ph.call(p)
       end
-      
-      parse!
 
+      parse!
+      unless life_cycle(:post_parse)
+        puts p.to_s
+        abort()
+      end
       if sopts
         @options[:ssl] = true
         @options[:ssl_key_file] ||= sopts[:key_file]
@@ -96,14 +99,23 @@ module OMF::Web
       @@instance = self
     end
     
-    def life_cycle(step)
+    def life_cycle(step, &exception_block)
       begin
         if (p = @options[:handlers][step])
           p.call()
         end
       rescue => ex
-        error ex
-        debug "#{ex.backtrace.join("\n")}"
+        if exception_block
+          begin 
+            exception_block.call(ex)
+          rescue => ex2
+            error ex2
+            debug "#{ex2.backtrace.join("\n")}"
+          end
+        else
+          error ex
+          debug "#{ex.backtrace.join("\n")}"
+        end
       end
     end    
     
