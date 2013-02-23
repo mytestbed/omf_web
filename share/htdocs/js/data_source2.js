@@ -6,7 +6,10 @@ OML.data_sources = function() {
   function context() {};
   
   context.register = function(opts) {
-    sources[opts.id || opts.name] = new OML.data_source(opts);
+    var id = opts.id || opts.name;
+    if (sources[id] == null) {
+      sources[id] = new OML.data_source(opts);
+    }
     return context;
   };
   
