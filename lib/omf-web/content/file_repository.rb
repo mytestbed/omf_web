@@ -106,49 +106,6 @@ module OMF::Web
       "file:#{path}"
     end
     
-    
-    
-    #
-    # Return an array of file names which are in the repository and
-    # match 'search_pattern'
-    #
-    # def find_files(search_pattern, opts = {})
-      # search_pattern = Regexp.new(search_pattern)
-      # tree = @repo.tree
-      # res = []
-      # fs = _find_files(search_pattern, tree, nil, res)
-#       
-      # if (mt = opts[:mime_type])
-        # fs = fs.select { |f| f[:mime_type] == mt }
-      # end
-      # fs
-    # end
-#     
-    # def _find_files(search_pattern, tree, dir_path, res)
-      # tree.contents.each do |e|
-        # d = e.name
-        # long_name = dir_path ? "#{dir_path}/#{d}" : d
-# 
-        # if e.is_a? Grit::Tree
-          # _find_files(search_pattern, e, long_name, res)
-        # else
-          # if long_name.match(search_pattern)
-            # mt = mime_type_for_file(e.name)
-            # path = @url_prefix + long_name
-            # res << {:path => path, :name => e.name,
-                    # :mime_type => mt,
-                    # #:id => Base64.encode64(long_name).gsub("\n", ''), 
-                    # :size => e.size, :blob => e.id}
-          # end
-          # # name = e.name
-          # # if File.fnmatch(search_pattern, long_name)
-            # # res << long_name
-          # # end
-        # end
-      # end
-      # res
-    # end
-    
     def _get_path(content_descr)
       if content_descr.is_a? String
         path = content_descr.to_s

@@ -39,7 +39,13 @@ module OMF::Web
       if url_or_descr.is_a? String
         url = url_or_descr
       else
-        url = url_or_descr[:url]
+        if (text = url_or_descr[:text])
+          # a bit of a hack for small static text blocks
+          # Much better for maintenance is to use a separate file
+          url = "static:-"
+        else
+          url = url_or_descr[:url]
+        end
       end
       unless url
         throw "Can't find url in '#{url_or_descr.inspect}"
@@ -58,6 +64,9 @@ module OMF::Web
       when 'file'
         require 'omf-web/content/file_repository' 
         return FileContentRepository[parts[1]]
+      when 'static'
+        require 'omf-web/content/static_repository' 
+        return StaticContentRepository.instance
       else
         raise "Unknown repo type '#{type}'"
       end
@@ -105,7 +114,8 @@ module OMF::Web
     end
     
     
-    def mime_type_for_file(fname)
+    def mime_type_for_file(content_descriptor)
+      fname = content_descriptor[:path]
       ext = fname.split('.')[-1]
       mt = MIME_TYPE[ext.to_sym] || 'text'
     end

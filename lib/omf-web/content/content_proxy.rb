@@ -81,7 +81,7 @@ module OMF::Web
       @content_id = content_descriptor[:url_key]
       @content_url = "/_content/#{@content_id}"  # That most likley should come from the content handler
       
-      @mime_type = @content_descriptor[:mime_type] ||= repository.mime_type_for_file(content_descriptor[:path])
+      @mime_type = @content_descriptor[:mime_type] ||= repository.mime_type_for_file(content_descriptor)
       @name = content_descriptor[:name]
 
       @@proxies[@content_id] = self
