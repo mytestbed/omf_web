@@ -2,12 +2,16 @@
 require 'rack/websocket'
 require 'omf_common/lobject'
 require 'omf-web/session_store'
+require 'thread'
 
 module OMF::Web::Rack
   
   class WebsocketHandler < ::Rack::WebSocket::Application
     include OMF::Common::Loggable
     extend OMF::Common::Loggable 
+    
+    MESSAGE_DELAY = 0.5 # Delay in pushing action message to browser 
+                        # after receiving a 'on_change' from monitored data proxy 
     
     def on_open(env)
       #puts ">>>>> OPEN"
@@ -36,7 +40,6 @@ module OMF::Web::Rack
         debug "#{ex.backtrace.join("\n")}"
         send_data({type: 'reply', status: 'exception', err_msg: ex.to_s}.to_json)
       end
-      #puts "message processed"      
     end
   
     def on_close(env)
@@ -53,17 +56,53 @@ module OMF::Web::Rack
       dsp = find_data_source(args)
       return unless dsp  # should define appropriate exception
       debug "Received registration for datasource proxy '#{dsp}'"
-      dsp.on_changed(args['offset']) do |action, rows|
-        msg = {
-          type: 'datasource_update',
-          datasource: dsp.name,
-          rows: rows,
-          action: action
-          #offset: offset
-        }
-        send_data(msg.to_json)
-      end
       send_data({type: 'reply', status: 'ok'}.to_json)
+      
+      mutex = Mutex.new
+      semaphore = ConditionVariable.new
+      action_queue = {}
+      
+      dsp.on_changed(args['offset']) do |action, rows|
+        mutex.synchronize do
+          (action_queue[action] ||= []).concat(rows)
+          semaphore.signal
+        end
+      end
+      
+      # Send the rows in a separate thread, waiting a bit after the first one arriving
+      # to 'bunch' things into more manageable number of messages
+      Thread.new do
+        begin 
+          loop do 
+            # Now lets send them
+            mutex.synchronize do
+              action_queue.each do |action, rows|
+                next if rows.empty?
+                debug "Sending '#{action}' message with #{rows.length} rows"
+                msg = {
+                  type: 'datasource_update',
+                  datasource: dsp.name,
+                  rows: rows,
+                  action: action
+                  #offset: offset
+                }
+                send_data(msg.to_json)
+                rows.clear
+              end
+
+              # wait until there is more to send
+              semaphore.wait(mutex)
+            end
+            
+            # OK, there is something to do, but let's wait a bit, maybe there is more
+            sleep MESSAGE_DELAY
+          end
+        rescue Exception => ex
+          error "on_register_data_source - #{ex}"
+          debug "#{ex.backtrace.join("\n")}"
+        end
+      end
+      
     end
     
     # args {"slice"=>{"col_name"=>"id", "col_value"=>"e8..."}, "ds_name"=>"individual_link"}}

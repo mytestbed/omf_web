@@ -75,10 +75,11 @@ module OMF::Web
       end
 
       parse!
-      unless life_cycle(:post_parse)
-        puts p.to_s
-        abort()
-      end
+      # WHY IS THIS HERE
+      # unless life_cycle(:post_parse)
+        # puts p.to_s
+        # abort()
+      # end
       if sopts
         @options[:ssl] = true
         @options[:ssl_key_file] ||= sopts[:key_file]

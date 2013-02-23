@@ -124,7 +124,7 @@ module OMF::Web
         block.call :added, rows
       end
       @data_source.on_content_changed(block.object_id) do |action, rows|
-        debug "on_changed: #{action}: #{rows.inspect}"
+        #debug "on_changed: #{action}: #{rows.inspect}"
         block.call action, rows
       end
     end
