@@ -4,30 +4,52 @@ require 'rack'
 require 'omf-web/session_store'
 
       
-module OMF::Web::Rack      
+module OMF::Web::Rack   
+  # This rack module maintains a session cookie and 
+  # redirects any requests to protected pages to a 
+  # 'login' page at the beginning of a session
+  #
+  # Calls to the class methods are resolved inthe context
+  # of a Session using 'OMF::Web::SessionStore'
+  #
   class SessionAuthenticator < OMF::Common::LObject
     
+    # Returns true if this Rack module has been instantiated
+    # in the current Rack stack.
+    #
     def self.active?
       @@active
     end
 
+    # Return true if the session is authenticated
+    #
     def self.authenticated?
-      self[:authenticated]
+      debug "AUTH: #{self[:authenticated] == true}"
+      self[:authenticated] == true
     end
 
+    # Calling this method will authenticate the current session
+    #
     def self.authenticate
       self[:authenticated] = true
       self[:valid_until] = Time.now + @@expire_after
     end
     
+    # Logging out will un-authenticate this session
+    #
     def self.logout
+      debug "LOGOUT"
       self[:authenticated] = false
     end
 
+    # DO NOT CALL DIRECTLY
+    #
     def self.[](key)
       OMF::Web::SessionStore[key, :authenticator]
     end
     
+    # DO NOT CALL DIRECTLY
+    #
     def self.[]=(key, value)
       OMF::Web::SessionStore[key, :authenticator] = value
     end
@@ -38,7 +60,9 @@ module OMF::Web::Rack
     
     #
     # opts -
-    #   :no_session - Array of regexp to ignore
+    #   :login_url - URL to redirect if session is not authenticated  
+    #   :no_session - Array of regexp on 'path_info' which do not require an authenticated session
+    #   :expire_after - Idle time in sec after which to expire a session
     #
     def initialize(app, opts = {})
       @app = app
@@ -64,8 +88,8 @@ module OMF::Web::Rack
         # If 'login_url' is defined, check if this session is authenticated
         login_url = @opts[:login_url] 
         if login_url && login_url != req.path_info
-          if authenticated = self.class[:authenticated]
-            # Check if it hasn't imed out
+          if authenticated = self.class.authenticated?
+            # Check if it hasn't timed out
             if self.class[:valid_until] < Time.now
               debug "Session '#{sid}' expired"
               authenticated = false
