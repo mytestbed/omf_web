@@ -62,7 +62,7 @@ site_description = {
 #
 opts = {
   :app_name => 'tut02',
-  :page_title => 'Tutorial02: Hello Graph'
+  :page_title => 'Tutorial03: Hello Database'
 }
 
 OMF::Web.register_widget(site_description)
