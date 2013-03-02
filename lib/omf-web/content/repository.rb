@@ -115,7 +115,10 @@ module OMF::Web
     
     
     def mime_type_for_file(content_descriptor)
-      fname = content_descriptor[:path]
+      fname = content_descriptor
+      if content_descriptor.is_a? Hash
+        fname = content_descriptor[:path]
+      end
       ext = fname.split('.')[-1]
       mt = MIME_TYPE[ext.to_sym] || 'text'
     end
