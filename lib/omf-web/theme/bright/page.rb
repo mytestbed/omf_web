@@ -114,7 +114,7 @@ module OMF::Web::Theme
         widget(Erector.inline(&@footer_right))
       else
         span :style => 'float:right;margin-right:10pt' do
-          text @footer_right || OMF::Web::VERSION
+          text @footer_right || "omf-web V#{OMF::Web::VERSION}"
         end
       end
       if @footer_left.is_a? Proc

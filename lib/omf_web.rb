@@ -1,4 +1,5 @@
 
+require 'omf-web/version'
 
 module OMF
   module Web
@@ -6,7 +7,7 @@ module OMF
     module Rack; end
     module Widget; end
     
-    VERSION = 'git:release-5.4'
+    #VERSION = 'git:release-5.4'
     
     def self.start(opts, &block)
       require 'omf-web/thin/runner'
