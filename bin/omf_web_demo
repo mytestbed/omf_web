@@ -1,0 +1,3 @@
+
+load File.join(File.dirname(__FILE__), '../example/demo/demo_viz_server.rb')
+OmfWebDemo.start
