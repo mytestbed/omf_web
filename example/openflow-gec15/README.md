@@ -16,6 +16,8 @@ This will start a web server at port 3000. Point your browser there and you shou
 Clicking on the 'Code' tab will show the 'OIDL' script describing the experiment, and the 'Trema' code of the Openflow controller
 used in the experiment.
  
+For reference, this is the topology used in the experiment:
 
+![Topology](https://raw.github.com/mytestbed/omf_web/master/example/openflow-gec15/doc/gec15_topo.png "Topology")
 
 
