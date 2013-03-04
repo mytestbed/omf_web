@@ -146,7 +146,9 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
     
     process_schema: function() {
       this.schema = this.process_single_schema(this.data_source);
-      this.mapping = this.process_single_mapping(null, this.opts.mapping, this.decl_properties);
+      if (typeof(this.decl_properties) != "undefined") {
+        this.mapping = this.process_single_mapping(null, this.opts.mapping, this.decl_properties);
+      }
     },
     
     process_single_schema: function(data_source) {
