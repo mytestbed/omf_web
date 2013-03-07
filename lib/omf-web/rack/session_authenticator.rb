@@ -4,7 +4,11 @@ require 'rack'
 require 'omf-web/session_store'
 
       
-module OMF::Web::Rack   
+module OMF::Web::Rack  
+  class AuthenticationFailedException < Exception
+    
+  end
+   
   # This rack module maintains a session cookie and 
   # redirects any requests to protected pages to a 
   # 'login' page at the beginning of a session
@@ -74,38 +78,42 @@ module OMF::Web::Rack
       @@active = true
     end
     
+    def check_authenticated
+      authenticated = self.class[:authenticated] == true
+      #puts "AUTHENTICATED: #{authenticated}" 
+      raise AuthenticationFailedException.new unless authenticated
+      #self.class[:valid_until] = Time.now + @@expire_after
+      
+    end
     
     def call(env)
       #puts env.keys.inspect
       req = ::Rack::Request.new(env)
-      sid = nil
       path_info = req.path_info
-      #puts "REQUEST: #{path_info}"
+      unless sid = req.cookies['sid']
+        sid = "s#{(rand * 10000000).to_i}_#{(rand * 10000000).to_i}"
+      end
+      Thread.current["sessionID"] = sid  # needed for Session Store
       unless @opts[:no_session].find {|rx| rx.match(path_info) }
-        sid = req.cookies['sid'] || "s#{(rand * 10000000).to_i}_#{(rand * 10000000).to_i}"
-        debug "Setting session for '#{req.path_info}' to '#{sid}'"
-        Thread.current["sessionID"] = sid
-        # If 'login_url' is defined, check if this session is authenticated
-        login_url = @opts[:login_url] 
+
+        # If 'login_page_url' is defined, check if this session is authenticated
+        login_url = @opts[:login_page_url] 
         if login_url && login_url != req.path_info
-          if authenticated = self.class.authenticated?
-            # Check if it hasn't timed out
-            if self.class[:valid_until] < Time.now
-              debug "Session '#{sid}' expired"
-              authenticated = false
-            end    
-          end
-          unless authenticated
-            return [301, {'Location' => login_url, "Content-Type" => ""}, ['Login first']]
+          begin 
+            check_authenticated
+          rescue AuthenticationFailedException => ex
+            if err = self.class[:login_error]
+              login_url = login_url + "?msg=#{err}"
+            end
+            headers = {'Location' => login_url, "Content-Type" => ""}
+            Rack::Utils.set_cookie_header!(headers, 'sid', sid)
+            return [301, headers, ['Login first']]
           end
         end
-        self.class[:valid_until] = Time.now + @@expire_after
       end
             
       status, headers, body = @app.call(env)
-      if sid
-        headers['Set-Cookie'] = "sid=#{sid}"  ##: name2=value2; Expires=Wed, 09-Jun-2021 ]
-      end
+      Rack::Utils.set_cookie_header!(headers, 'sid', sid) if sid
       [status, headers, body]      
     end
   end # class
