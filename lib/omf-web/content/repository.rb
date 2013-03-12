@@ -22,8 +22,46 @@ module OMF::Web
       :txt => 'text' 
     }
     
+    REPO_PLUGINS = {
+      git: lambda do |name, opts|
+              require 'omf-web/content/git_repository' 
+              return GitContentRepository.new(name, opts)
+          end,
+      file: lambda do |name, opts|
+              require 'omf-web/content/file_repository' 
+              return FileContentRepository.new(name, opts)
+          end,
+      irods: lambda do |name, opts|
+              require 'omf-web/content/irods_repository' 
+              return IRodsContentRepository.new(name, opts)
+          end,
+      static: lambda do |name, opts|
+              require 'omf-web/content/static_repository' 
+              return StaticContentRepository.new(name, opts)
+          end
+    }
+    
     # Repo to be used for all newly created content
     @@primary_repository = nil
+    @@repositories = {}
+    
+    def self.register_repo(name, opts)
+      name = name.to_sym
+      if @@repositories[name]
+        warn "Ignoring repeated registration of repo '#{name}'"
+        return
+      end
+      
+      unless type = opts[:type]
+        raise "Missing type in repo opts (#{opts})"
+      end
+      unless repo_creator = REPO_PLUGINS[type.to_sym]
+        raise "Unknown repository type '#{type}'"
+      end
+      @@repositories[name] = r = repo_creator.call(name, opts)
+      @@primary_repository = r if opts[:is_primary]
+    end
+    
      
     # Load content described by either a hash or a straightforward url
     # and return a 'ContentProxy' holding it.
@@ -55,22 +93,6 @@ module OMF::Web
       repo.create_content_proxy_for(url_or_descr)
     end
     
-    def self.find_repo_for(url)
-      parts = url.split(':')
-      case type = parts[0]
-      when 'git'
-        require 'omf-web/content/git_repository' 
-        return GitContentRepository[parts[1]]
-      when 'file'
-        require 'omf-web/content/file_repository' 
-        return FileContentRepository[parts[1]]
-      when 'static'
-        require 'omf-web/content/static_repository' 
-        return StaticContentRepository.instance
-      else
-        raise "Unknown repo type '#{type}'"
-      end
-    end
     
     def self.absolute_path_for(url)
       find_repo_for(url).absolute_path(url)
@@ -79,6 +101,16 @@ module OMF::Web
     def self.read_content(url, opts)
       find_repo_for(url).read(url)
     end
+    
+    def self.find_repo_for(url)
+      parts = url.split(':')
+      name = parts[1]
+      unless repo = @@repositories[name.to_sym]
+        raise "Unknown repo '#{name}'"
+      end
+      return repo
+    end
+    
     
     # Find files whose file name matches 'selector'. 
     # 
@@ -105,12 +137,21 @@ module OMF::Web
     end
     
     
-
-    attr_reader :top_dir
+    attr_reader :name, :top_dir
     
-    def initialize(top_dir)
-      @top_dir = top_dir
-      @repo = Grit::Repo.new(top_dir)
+    def initialize(name, opts)
+      @name = name
+      if @top_dir = opts[:top_dir]
+        @top_dir = File.expand_path(@top_dir)
+      end
+    end
+    
+    #
+    # Return an array of file names which are in the repository and
+    # match 'search_pattern'
+    #
+    def find_files(search_pattern, opts = {})
+      raise "Missing implementation"
     end
     
     

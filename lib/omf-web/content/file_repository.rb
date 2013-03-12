@@ -12,41 +12,39 @@ module OMF::Web
   #
   class FileContentRepository < ContentRepository  
     
-    @@file_repositories = {}
+    # @@file_repositories = {}
+#     
+    # # Return the repository which is referenced to by elements in 'opts'.
+    # #
+    # #
+    # def self.[](name)
+      # unless repo = @@file_repositories[name.to_sym]
+        # raise "Unknown file repo '#{name}'"
+      # end
+      # repo
+    # end
+#       
+    # # Register an existing directory to the system. It will be 
+    # # consulted for all content url's strarting with
+    # # 'file:_top_dir_:'. If 'is_primary' is set to true, it will
+    # # become the default repo for all newly created content
+    # # in this app.
+    # #
+    # def self.register_file_repo(name, top_dir, is_primary = false)
+      # name = name.to_sym
+      # if @@file_repositories[name]
+        # warn "Ignoring repeated registration of file rep '#{name}'"
+        # return
+      # end
+      # repo = @@file_repositories[name] = FileContentRepository.new(name, top_dir)
+      # if is_primary
+        # @@primary_repository = repo
+      # end
+    # end
     
-    # Return the repository which is referenced to by elements in 'opts'.
-    #
-    #
-    def self.[](name)
-      unless repo = @@file_repositories[name.to_sym]
-        raise "Unknown file repo '#{name}'"
-      end
-      repo
-    end
-      
-    # Register an existing directory to the system. It will be 
-    # consulted for all content url's strarting with
-    # 'file:_top_dir_:'. If 'is_primary' is set to true, it will
-    # become the default repo for all newly created content
-    # in this app.
-    #
-    def self.register_file_repo(name, top_dir, is_primary = false)
-      name = name.to_sym
-      if @@file_repositories[name]
-        warn "Ignoring repeated registration of file rep '#{name}'"
-        return
-      end
-      repo = @@file_repositories[name] = FileContentRepository.new(name, top_dir)
-      if is_primary
-        @@primary_repository = repo
-      end
-    end
     
-    attr_reader :name, :top_dir
-    
-    def initialize(name, top_dir)
-      @name = name
-      @top_dir = top_dir
+    def initialize(name, opts)
+      super
       @url_prefix = "file:#{name}:"
     end
     

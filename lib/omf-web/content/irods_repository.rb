@@ -1,0 +1,155 @@
+
+require 'find'
+require 'omf_common/lobject'
+require 'omf_web'
+require 'omf-web/content/content_proxy'
+require 'omf-web/content/repository'
+require 'irods4r'
+
+module OMF::Web
+
+  # This class provides an interface to a directory based repository
+  # It retrieves, archives and versions content.
+  #
+  class IRodsContentRepository < ContentRepository  
+    
+    @@irods_repositories = {}
+    
+    # Return the repository which is referenced to by elements in 'opts'.
+    #
+    #
+    def self.[](name)
+      unless repo = @@irods_repositories[name.to_sym]
+        raise "Unknown iRODS repo '#{name}'"
+      end
+      repo
+    end
+      
+    # Register an existing directory to the system. It will be 
+    # consulted for all content url's starting with
+    # 'irods:_top_dir_:'. If 'is_primary' is set to true, it will
+    # become the default repo for all newly created content
+    # in this app.
+    #
+    def self.register_file_repo(name, top_dir, is_primary = false)
+      name = name.to_sym
+      if @@irods_repositories[name]
+        warn "Ignoring repeated registration of iRODS rep '#{name}'"
+        return
+      end
+      repo = @@irods_repositories[name] = self.new(name, top_dir)
+      if is_primary
+        @@primary_repository = repo
+      end
+    end
+    
+    attr_reader :name, :top_dir
+    
+    def initialize(name, opts)
+      super
+      @top_dir ||= '.'
+      @url_prefix = "irods:#{name}:"
+    end
+    
+    # Load content described by either a hash or a straightforward path
+    # and return a 'ContentProxy' holding it.
+    #
+    # If descr[:strictly_new] is true, return nil if file for which proxy is requested
+    # already exists.
+    #
+    # @return: Content proxy
+    #
+    def create_content_proxy_for(content_descr)
+      path = _get_path(content_descr)
+      # TODO: Make sure that key is really unique across multiple repositories
+      descr = descr ? descr.dup : {}
+      url = @url_prefix + path
+      key = Digest::MD5.hexdigest(url)
+      descr[:url] = url      
+      descr[:url_key] = key
+      descr[:path] = path      
+      descr[:name] = url # Should be something human digestable
+      if (descr[:strictly_new])
+       return nil if IRODS4r.exists?(path)
+      end
+      proxy = ContentProxy.create(descr, self)
+      return proxy
+    end
+        
+    def write(content_descr, content, message)
+      path = _get_path(content_descr)
+      #puts "WRITE PATHS>>> #{path}"
+      f = IRODS4r::File.create(path, false)
+      f.write(content)
+    end
+    
+    def read(content_descr)
+      path = _get_path(content_descr)
+      #puts "READ PATHS>>> #{path}"
+      f = IRODS4r::File.create(path, false)
+      f.read()
+    end    
+    
+    #
+    # Return an array of file names which are in the repository and
+    # match 'search_pattern'
+    #
+    def find_files(search_pattern, opts = {})
+      dir = IRODS4r.find(@top_dir)
+      res = []
+      _find_files(search_pattern, dir, res, opts[:mime_type])
+      res
+    end
+    
+    def _find_files(search_pattern, dir, res, mime_type)
+      dir.list.each do |e|
+        if e.directory?
+          _find_files(search_pattern, e, res, mime_type)
+        else
+          path = e.path
+          if path.match(search_pattern)
+            mt = mime_type_for_file(path)
+            next if mime_type != nil && mime_type != mt 
+            res << {:path => @url_prefix + path, #:name => 'foo',
+                    :mime_type => mt}
+          end
+        end
+      end
+      res
+    end
+    
+    
+    # Return a URL for a path in this repo
+    # 
+    def get_url_for_path(path)
+      @url_prefix + path
+    end
+    
+    def _get_path(content_descr)
+      if content_descr.is_a? String
+        path = content_descr.to_s
+        if path.start_with? 'irods:'
+          path = path.split(':')[2]
+        end
+      elsif content_descr.is_a? Hash
+        descr = content_descr
+        if (url = descr[:url])
+          path = url.split(':')[2] # git:repo_name:path
+        else
+          path = descr[:path]
+        end
+        unless path
+          raise "Missing 'path' or 'url' in content description (#{descr.inspect})"
+        end
+        path = path.to_s
+      else
+        raise "Unsupported type '#{content_descr.class}'"
+      end
+      unless path
+        raise "Can't find path information in '#{content_descr.inspect}'"
+      end
+      return path
+    end
+              
+  end # class
+end # module

@@ -14,17 +14,17 @@ module OMF::Web
   #
   class GitContentRepository < ContentRepository  
     
-    @@git_repositories = {}
-    
-    # Return the repository which is referenced to by elements in 'opts'.
-    #
-    #
-    def self.[](name)
-      unless repo = @@git_repositories[name.to_sym]
-        raise "Unknown git repo '#{name}'"
-      end
-      repo
-    end
+    # @@git_repositories = {}
+#     
+    # # Return the repository which is referenced to by elements in 'opts'.
+    # #
+    # #
+    # def self.[](name)
+      # unless repo = @@git_repositories[name.to_sym]
+        # raise "Unknown git repo '#{name}'"
+      # end
+      # repo
+    # end
       
     # Register an existing GIT repo to the system. It will be 
     # consulted for all content url's strarting with
@@ -32,17 +32,17 @@ module OMF::Web
     # become the default repo for all newly created content
     # in this app.
     #
-    def self.register_git_repo(name, top_dir, is_primary = false)
-      name = name.to_sym
-      if @@git_repositories[name]
-        warn "Ignoring repeated registration of git rep '#{name}'"
-        return
-      end
-      repo = @@git_repositories[name] = GitContentRepository.new(name, top_dir)
-      if is_primary
-        @@primary_repository = repo
-      end
-    end
+    # def self.register_git_repo(name, top_dir, is_primary = false)
+      # name = name.to_sym
+      # if @@git_repositories[name]
+        # warn "Ignoring repeated registration of git rep '#{name}'"
+        # return
+      # end
+      # repo = @@git_repositories[name] = GitContentRepository.new(name, top_dir)
+      # if is_primary
+        # @@primary_repository = repo
+      # end
+    # end
     
     # def self.read_content(url, opts)
       # unless (a = url.split(':')).length == 3
@@ -57,23 +57,21 @@ module OMF::Web
 
     attr_reader :name, :top_dir
     
-    def initialize(name, top_dir)
-      @name = name
-      @top_dir = top_dir
-      @repo = Grit::Repo.new(top_dir)
-      @url_prefix = "git:#{name}:"
-      #@@git_repositories['git:foo'] = self
+    def initialize(name, opts)
+      super
+      @repo = Grit::Repo.new(@top_dir)
+      @url_prefix = "git:#{@name}:"
     end
     
     #
     # Create a URL for a file with 'path' in.
     # If 'strictly_new' is true, returns nil if 'path' already exists.
     #
-    def create_url(path, strictly_new = true)
-      return "git:"
-      # TODO: Need to add code to select proper repository
-      return GitContentRepository.create_url(path, strictly_new)
-    end
+    # def create_url(path, strictly_new = true)
+      # return "git:"
+      # # TODO: Need to add code to select proper repository
+      # return GitContentRepository.create_url(path, strictly_new)
+    # end
     
     
     # Load content described by either a hash or a straightforward path
@@ -122,7 +120,7 @@ module OMF::Web
     # Return a URL for a path in this repo
     # 
     def get_url_for_path(path)
-      "git:#{@name}:#{path}"
+      @url_prefix + path
     end
     
     

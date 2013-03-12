@@ -11,7 +11,6 @@ module OMF::Web
   # preloaded content.
   #
   class StaticContentRepository < ContentRepository  
-    include Singleton
       
     
     # Load content described by either a hash or a straightforward path
@@ -51,11 +50,11 @@ module OMF::Web
       content_descriptor[:mime_type] || 'text'
     end
 
-    
-    private
-    def initialize()
+    def initialize(name, opts)
+      super
       @content = {}
     end
+    
     
               
   end # class
