@@ -1,4 +1,5 @@
 
+require 'irods4r'
 
 module IRODS4r
   

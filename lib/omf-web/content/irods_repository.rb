@@ -95,7 +95,11 @@ module OMF::Web
     # match 'search_pattern'
     #
     def find_files(search_pattern, opts = {})
-      dir = IRODS4r.find(@top_dir)
+      begin
+        dir = IRODS4r.find(@top_dir)
+      rescue IRODS4r::IRODS4rException
+        return []
+      end
       res = []
       _find_files(search_pattern, dir, res, opts[:mime_type])
       res
@@ -124,6 +128,31 @@ module OMF::Web
     def get_url_for_path(path)
       @url_prefix + path
     end
+    
+    # HACK ALERT!!!
+    # 
+    # This method may be called by an entity which wants to access the content
+    # directly through the file system. In the absence of a FUSE mounted iRODS 
+    # repo, we 'iget' the resource to a temporary directory and return that 
+    # path. The calling entity needs to be aware that any changes to that file
+    # will NOT show up in iRODS without an iput.
+    #
+    # This should really NOT be necessary. Use FUSE
+    #
+    def absolute_path(content_descr)
+      path = _get_path(content_descr)
+      
+      require 'etc'
+      tmp_dir = "#{Dir::tmpdir}/LabWiki-#{Etc.getlogin}"
+      # unless Dir.exists? tmp_dir
+        # Dir.mkdir tmp_dir, 0700
+      # end
+      
+      target = File.join(tmp_dir, path)
+      IRODS4r::ICommands.export(path, target)
+      target
+    end
+
     
     def _get_path(content_descr)
       if content_descr.is_a? String
