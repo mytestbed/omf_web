@@ -46,6 +46,8 @@ module OMF::Web
     @@repositories = {}
     
     def self.register_repo(name, opts)
+      raise "ArgumentMismatch: Expected Hash, but got #{opts}" unless opts.is_a? Hash
+      
       name = name.to_sym
       if @@repositories[name]
         warn "Ignoring repeated registration of repo '#{name}'"
