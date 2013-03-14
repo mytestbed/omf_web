@@ -1,6 +1,6 @@
 require 'rubygems'
-require 'omf-oml/endpoint'
-require 'omf-oml/table'
+require 'omf_oml/endpoint'
+require 'omf_oml/table'
 require 'omf_common/lobject'
 
 OMLPORT=5000
