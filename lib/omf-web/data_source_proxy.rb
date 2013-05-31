@@ -142,7 +142,7 @@ module OMF::Web
       sid = Thread.current["sessionID"]
       opts = opts.dup
       opts[:name] = @name
-      opts[:schema] = @data_source.schema
+      opts[:schema] = @data_source.schema.describe
       opts[:update_url] = "/_update/#{@name}?sid=#{sid}"
       opts[:sid] = sid
       unless opts[:slice] # don't send any data if this is a sliced one
@@ -150,7 +150,7 @@ module OMF::Web
         opts[:rows] = []
         opts[:offset] = @data_source.offset
       end
-      #puts "to_java2>>>>> #{opts.to_json.inspect}"
+      #puts "to_java2>>>>> #{opts.inspect}"
       
       %{
         OML.data_sources.register(#{opts.to_json});
