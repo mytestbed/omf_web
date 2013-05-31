@@ -7,10 +7,15 @@ use ::Rack::ShowExceptions
 OMF::Web::Runner.instance.life_cycle(:pre_rackup)
 options = OMF::Web::Runner.instance.options
 
-require 'omf-web/rack/session_authenticator'                               
-use OMF::Web::Rack::SessionAuthenticator, #:expire_after => 10, 
+require 'omf-web/rack/session_authenticator'
+use OMF::Web::Rack::SessionAuthenticator, #:expire_after => 10,
           #:login_url => '/tab/login',
           :no_session => ['^/resource/', '^/login', '^/logout']
+
+map "/resource/vendor/" do
+  require 'omf-web/rack/multi_file'
+  run OMF::Web::Rack::MultiFile.new(options[:static_dirs], :sub_path => 'vendor', :version => true)
+end
 
 
 map "/resource" do
@@ -48,7 +53,7 @@ end
 # end
 
 map '/login' do
-  handler = Proc.new do |env| 
+  handler = Proc.new do |env|
     # req = ::Rack::Request.new(env)
     # #puts ">>> post?: #{req.post?} - #{req.params.inspect}"
     # if req.post?
@@ -63,7 +68,7 @@ map '/login' do
 end
 
 map '/logout' do
-  handler = Proc.new do |env| 
+  handler = Proc.new do |env|
     OMF::Web::Rack::SessionAuthenticator.logout
     [301, {'Location' => '/tab', "Content-Type" => ""}, ['Next window!']]
   end
@@ -71,7 +76,7 @@ map '/logout' do
 end
 
 map "/" do
-  handler = Proc.new do |env| 
+  handler = Proc.new do |env|
     req = ::Rack::Request.new(env)
     case req.path_info
     when '/'
@@ -81,7 +86,7 @@ map "/" do
     else
       OMF::Common::Loggable.logger('rack').warn "Can't handle request '#{req.path_info}'"
       [401, {"Content-Type" => ""}, "Sorry!"]
-    end 
+    end
   end
   run handler
 end
