@@ -47,7 +47,9 @@ module OMF::Web
     
     def initialize(name, opts)
       super
-      @top_dir ||= '.'
+      unless @top_dir
+        raise "No top_dir defined (#{opts.keys.inspect})"
+      end
       @url_prefix = "irods:#{name}:"
     end
     
@@ -63,7 +65,7 @@ module OMF::Web
       path = _get_path(content_descr)
       # TODO: Make sure that key is really unique across multiple repositories
       descr = descr ? descr.dup : {}
-      url = @url_prefix + path
+      url = get_url_for_path(path)
       key = Digest::MD5.hexdigest(url)
       descr[:url] = url      
       descr[:url_key] = key
@@ -114,7 +116,7 @@ module OMF::Web
           if path.match(search_pattern)
             mt = mime_type_for_file(path)
             next if mime_type != nil && mime_type != mt 
-            res << {:path => @url_prefix + path, #:name => 'foo',
+            res << {:url => get_url_for_path(path), :path => path, #:name => 'foo',
                     :mime_type => mt}
           end
         end
@@ -126,7 +128,11 @@ module OMF::Web
     # Return a URL for a path in this repo
     # 
     def get_url_for_path(path)
-      @url_prefix + path
+      puts "PATH>>>>> '#{path}:#{path.class}'-'#{@top_dir}:#{@top_dir.class}'"
+      if m = path.match("#{@top_dir}(.*)")
+        path = m[1]
+      end
+      url = @url_prefix + path
     end
     
     # HACK ALERT!!!
@@ -155,17 +161,18 @@ module OMF::Web
 
     
     def _get_path(content_descr)
+      #puts ">>>GET PATH #{content_descr.inspect}"
       if content_descr.is_a? String
         path = content_descr.to_s
         if path.start_with? 'irods:'
-          path = path.split(':')[2]
+          path = File.join(@top_dir, path.split(':')[2])
         end
       elsif content_descr.is_a? Hash
         descr = content_descr
-        if (url = descr[:url])
-          path = url.split(':')[2] # git:repo_name:path
-        else
-          path = descr[:path]
+        unless path = descr[:path]
+          if url = descr[:url]
+            path = File.join(@top_dir, url.split(':')[2]) # irods:repo_name:path
+          end
         end
         unless path
           raise "Missing 'path' or 'url' in content description (#{descr.inspect})"

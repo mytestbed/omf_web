@@ -152,7 +152,7 @@ module OMF::Web
           if long_name.match(search_pattern)
             mt = mime_type_for_file(e.name)
             path = @url_prefix + long_name
-            res << {:path => path, :name => e.name,
+            res << {:path => path, url => url_for_path(path), :name => e.name,
                     :mime_type => mt,
                     #:id => Base64.encode64(long_name).gsub("\n", ''), 
                     :size => e.size, :blob => e.id}
