@@ -60,8 +60,8 @@ class ExpDB < OMF::Common::LObject
     end
     
     stream.on_new_tuple() do |v|
-      r = v.to_a(true)
-      #puts "RRR >> #{r.inspect}"
+      r = v.to_a(schema)
+      
       t.add_row(r)
       ts = r[ts_i]; name = r[name_i].to_sym; tx = r[tx_i]; rx = r[rx_i]
       #puts "VVV(#{ts}) >> #{v.row.inspect}"
@@ -89,15 +89,54 @@ class ExpDB < OMF::Common::LObject
     OMF::Web.register_datasource t 
   end
   
-  def run
-    ep = OMF::OML::OmlSqlSource.new(@db_opts, :check_interval => 3.0)
-    ep.on_new_stream() do |stream|
-      info "Stream: #{stream.stream_name}"
-      if stream.stream_name == 'nmetrics_net_if'
-        setup_nmetric(stream)
+  def process_nmetric(table)
+    schema = table.schema
+    ts_i = schema.index_for_col(:oml_ts_server)
+    name_i = schema.index_for_col(:name)
+    tx_i = schema.index_for_col(:tx_bytes)    
+    rx_i = schema.index_for_col(:rx_bytes)        
+    
+    def process(l, ts, bytes, max_rate)
+      if (delta_t = ts - l[:ts]) > 0
+        old_v = l[:bytes]
+        delta_v = bytes >= old_v ? bytes - old_v : bytes
+        l[:ts] = ts
+        l[:bytes] = bytes
+        l[:rate] = rate = 1.0 * delta_v / delta_t
+        #l[:rate] = rate = 230000
+        l[:load] = 1.0 * rate / max_rate
       end
     end
-    ep.run    
+
+    table.on_row_added(self) do |r|
+      ts = r[ts_i]; name = r[name_i].to_sym; tx = r[tx_i]; rx = r[rx_i]
+      @nw.transaction do
+        case name
+        when :eth0
+          process @links[:l20], ts, tx, 120e3 #1e6
+        when :wlan0
+          process @links[:l21], ts, tx, 4e6
+          process @links[:l10], ts, tx, 4e6
+        when :wlan1
+          process @links[:l32], ts, rx, 4e6
+        end
+      end
+      sleep 0.5 if ts > 7300
+    end
+    OMF::Web.register_datasource table, name: 'nmetric'
+  end
+  
+  def run
+    ep = OMF::OML::OmlSqlSource.new(@db_opts, :check_interval => 3.0)
+    t = ep.create_table('nmetrics_net_if', include_oml_internals: true, max_size: 1000)
+    process_nmetric(t)
+    # ep.on_new_stream() do |stream|
+      # info "Stream: #{stream.stream_name}"
+      # if stream.stream_name == 'nmetrics_net_if'
+        # setup_nmetric(stream)
+      # end
+    # end
+    # ep.run    
     self
   end
   

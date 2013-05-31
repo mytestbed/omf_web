@@ -59,7 +59,7 @@ end
 map '/login' do
   handler = Proc.new do |env| 
     req = ::Rack::Request.new(env)
-    #puts ">>> post?: #{req.post?} - #{req.params.inspect}"
+    puts ">>> post?: #{req.post?} - #{req.params.inspect}"
     if req.post?
       email = req.params["email"]
       pw = req.params["password"]
@@ -73,6 +73,7 @@ end
 
 map '/logout' do
   handler = Proc.new do |env| 
+    puts ">>>> LOGOUT"
     OMF::Web::Rack::SessionAuthenticator.logout
     [301, {'Location' => '/tab', "Content-Type" => ""}, ['Next window!']]
   end

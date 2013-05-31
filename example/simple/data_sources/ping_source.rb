@@ -27,7 +27,7 @@ class PingDB < OMF::Common::LObject
   def setup_table(stream)
     schema = stream.schema.clone
     schema.insert_column_at(0, :link)
-    puts stream.schema.names.inspect
+    #puts stream.schema.names.inspect
     
     t = OMF::OML::OmlTable.new(:ping, schema)
     stream.on_new_tuple() do |v|

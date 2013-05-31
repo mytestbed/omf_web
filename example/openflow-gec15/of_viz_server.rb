@@ -10,7 +10,7 @@ $oml_database = 'postgres://norbit.npc.nicta.com.au/openflow-demo?user=oml2&pass
 
 def load_environment
   require 'omf-web/content/file_repository'
-  OMF::Web::FileContentRepository.register_file_repo(:code, File.join(File.dirname(__FILE__), 'repository'), true)
+  OMF::Web::ContentRepository.register_repo(:code, type: 'file', path: File.join(File.dirname(__FILE__), 'repository'))
   
 
   Dir.glob("#{File.dirname(__FILE__)}/*_source.rb").each do |fn|
