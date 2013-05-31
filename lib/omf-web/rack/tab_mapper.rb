@@ -57,11 +57,12 @@ module OMF::Web::Rack
         comp_name = ((@opts[:tabs] || [])[0] || {})[:id]
       end
       comp_name = comp_name.to_sym if comp_name
+      #puts "PATH: #{path} - #{comp_name}"
       comp_name
     end
     
     def render_card(req)
-      #puts ">>>> REQ: #{req.script_name}::#{req.inspect}"
+      #puts ">>>> REQ: #{req.path_info}::#{req.inspect}"
       
       opts = @opts.dup
       opts[:prefix] = req.script_name
