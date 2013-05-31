@@ -3,21 +3,21 @@ require 'omf_common/lobject'
 require 'rack'
 require 'omf-web/session_store'
 
-      
-module OMF::Web::Rack  
+
+module OMF::Web::Rack
   class AuthenticationFailedException < Exception
-    
+
   end
-   
-  # This rack module maintains a session cookie and 
-  # redirects any requests to protected pages to a 
+
+  # This rack module maintains a session cookie and
+  # redirects any requests to protected pages to a
   # 'login' page at the beginning of a session
   #
   # Calls to the class methods are resolved inthe context
   # of a Session using 'OMF::Web::SessionStore'
   #
   class SessionAuthenticator < OMF::Common::LObject
-    
+
     # Returns true if this Rack module has been instantiated
     # in the current Rack stack.
     #
@@ -38,7 +38,7 @@ module OMF::Web::Rack
       self[:authenticated] = true
       self[:valid_until] = Time.now + @@expire_after
     end
-    
+
     # Logging out will un-authenticate this session
     #
     def self.logout
@@ -51,7 +51,7 @@ module OMF::Web::Rack
     def self.[](key)
       OMF::Web::SessionStore[key, :authenticator]
     end
-    
+
     # DO NOT CALL DIRECTLY
     #
     def self.[]=(key, value)
@@ -61,10 +61,10 @@ module OMF::Web::Rack
     @@active = false
     # Expire authenticated session after being idle for that many seconds
     @@expire_after = 2592000
-    
+
     #
     # opts -
-    #   :login_url - URL to redirect if session is not authenticated  
+    #   :login_url - URL to redirect if session is not authenticated
     #   :no_session - Array of regexp on 'path_info' which do not require an authenticated session
     #   :expire_after - Idle time in sec after which to expire a session
     #
@@ -77,15 +77,15 @@ module OMF::Web::Rack
       end
       @@active = true
     end
-    
+
     def check_authenticated
       authenticated = self.class[:authenticated] == true
-      #puts "AUTHENTICATED: #{authenticated}" 
+      #puts "AUTHENTICATED: #{authenticated}"
       raise AuthenticationFailedException.new unless authenticated
       #self.class[:valid_until] = Time.now + @@expire_after
-      
+
     end
-    
+
     def call(env)
       #puts env.keys.inspect
       req = ::Rack::Request.new(env)
@@ -97,9 +97,9 @@ module OMF::Web::Rack
       unless @opts[:no_session].find {|rx| rx.match(path_info) }
 
         # If 'login_page_url' is defined, check if this session is authenticated
-        login_url = @opts[:login_page_url] 
+        login_url = @opts[:login_page_url]
         if login_url && login_url != req.path_info
-          begin 
+          begin
             check_authenticated
           rescue AuthenticationFailedException => ex
             if err = self.class[:login_error]
@@ -111,15 +111,15 @@ module OMF::Web::Rack
           end
         end
       end
-            
+
       status, headers, body = @app.call(env)
       Rack::Utils.set_cookie_header!(headers, 'sid', sid) if sid
-      [status, headers, body]      
+      [status, headers, body]
     end
   end # class
-  
+
 end # module
 
 
-      
-        
+
+
