@@ -12,6 +12,10 @@ module OMF
     def self.start(opts, &block)
       require 'omf-web/thin/runner'
       
+      if layout = opts.delete(:layout)
+        load_widget_from_file(layout)
+      end
+      
       #Thin::Logging.debug = true
       runner = OMF::Web::Runner.new(ARGV, opts)
       block.call if block
@@ -31,7 +35,17 @@ module OMF
       wdescr = deep_symbolize_keys widget_descr
       OMF::Web::Widget.register_widget(wdescr)
     end
-    
+
+    def self.load_widget_from_file(file_name)
+      require 'yaml'
+      y = YAML.load_file(file_name)
+      if w = y['widget']
+        OMF::Web.register_widget w
+      else
+        OMF::Common::LObject.error "Doesn't seem to be a widget definition. Expected 'widget' but found '#{y.keys.join(', ')}'"
+      end
+    end
+  
     def self.use_tab(tab_id)
       OMF::Web::Tab.use_tab tab_id.to_sym          
     end
