@@ -7,7 +7,8 @@ require 'omf_web'
 OMF::Web.register_datasource table
 
 skip_first_line = true
-File.open("#{File.dirname(__FILE__)}/downloads.csv", "r").read.gsub!(/\r\n?/, "\n").each_line do |line|
+#puts File.open("#{File.dirname(__FILE__)}/downloads.csv", "r").read.gsub(/\r\n?/, "\n")
+File.open("#{File.dirname(__FILE__)}/downloads.csv", "r").read.gsub(/\r\n?/, "\n").each_line do |line|
   if skip_first_line
     skip_first_line = false
   else
