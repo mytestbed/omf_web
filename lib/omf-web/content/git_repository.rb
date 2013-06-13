@@ -12,10 +12,10 @@ module OMF::Web
   # This class provides an interface to a GIT repository
   # It retrieves, archives and versions content.
   #
-  class GitContentRepository < ContentRepository  
-    
+  class GitContentRepository < ContentRepository
+
     # @@git_repositories = {}
-#     
+#
     # # Return the repository which is referenced to by elements in 'opts'.
     # #
     # #
@@ -25,8 +25,8 @@ module OMF::Web
       # end
       # repo
     # end
-      
-    # Register an existing GIT repo to the system. It will be 
+
+    # Register an existing GIT repo to the system. It will be
     # consulted for all content url's strarting with
     # 'git:_top_dir_:'. If 'is_primary' is set to true, it will
     # become the default repo for all newly created content
@@ -43,7 +43,7 @@ module OMF::Web
         # @@primary_repository = repo
       # end
     # end
-    
+
     # def self.read_content(url, opts)
       # unless (a = url.split(':')).length == 3
         # raise "Expected 'git:some_name:some_path', but got '#{url}'"
@@ -56,13 +56,13 @@ module OMF::Web
     # end
 
     attr_reader :name, :top_dir
-    
+
     def initialize(name, opts)
       super
       @repo = Grit::Repo.new(@top_dir)
       @url_prefix = "git:#{@name}:"
     end
-    
+
     #
     # Create a URL for a file with 'path' in.
     # If 'strictly_new' is true, returns nil if 'path' already exists.
@@ -72,8 +72,8 @@ module OMF::Web
       # # TODO: Need to add code to select proper repository
       # return GitContentRepository.create_url(path, strictly_new)
     # end
-    
-    
+
+
     # Load content described by either a hash or a straightforward path
     # and return a 'ContentProxy' holding it.
     #
@@ -88,9 +88,9 @@ module OMF::Web
       url = @url_prefix + path
       key = Digest::MD5.hexdigest(url)
       descr = {}
-      descr[:url] = url      
+      descr[:url] = url
       descr[:url_key] = key
-      descr[:path] = path      
+      descr[:path] = path
       descr[:name] = url # Should be something human digestable
       if (descr[:strictly_new])
         Dir.chdir(@top_dir) do
@@ -100,7 +100,7 @@ module OMF::Web
       proxy = ContentProxy.create(descr, self)
       return proxy
     end
-        
+
     def write(content_descr, content, message)
       path = _get_path(content_descr)
       Dir.chdir(@top_dir) do
@@ -110,21 +110,21 @@ module OMF::Web
         f = File.open(path, 'w')
         f.write(content)
         f.close
-        
+
         @repo.add(path)
         # TODO: Should set info about committing user which should be in thread context
-        @repo.commit_index(message || 'no message') 
+        @repo.commit_index(message || 'no message')
       end
     end
-    
+
     # Return a URL for a path in this repo
-    # 
+    #
     def get_url_for_path(path)
       @url_prefix + path
     end
-    
-    
-    
+
+
+
     #
     # Return an array of file names which are in the repository and
     # match 'search_pattern'
@@ -134,13 +134,13 @@ module OMF::Web
       tree = @repo.tree
       res = []
       fs = _find_files(search_pattern, tree, nil, res)
-      
+
       if (mt = opts[:mime_type])
         fs = fs.select { |f| f[:mime_type] == mt }
       end
       fs
     end
-    
+
     def _find_files(search_pattern, tree, dir_path, res)
       tree.contents.each do |e|
         d = e.name
@@ -151,11 +151,12 @@ module OMF::Web
         else
           if long_name.match(search_pattern)
             mt = mime_type_for_file(e.name)
-            path = @url_prefix + long_name
-            res << {:path => path, url => url_for_path(path), :name => e.name,
-                    :mime_type => mt,
-                    #:id => Base64.encode64(long_name).gsub("\n", ''), 
-                    :size => e.size, :blob => e.id}
+            #path = @url_prefix + long_name
+            path = long_name
+            res << {path: path, url: get_url_for_path(path), name: e.name,
+                    mime_type: mt,
+                    #:id => Base64.encode64(long_name).gsub("\n", ''),
+                    size: e.size, blob: e.id}
           end
           # name = e.name
           # if File.fnmatch(search_pattern, long_name)
@@ -165,7 +166,7 @@ module OMF::Web
       end
       res
     end
-    
+
     def _get_path(content_descr)
       if content_descr.is_a? String
         path = content_descr.to_s
@@ -191,6 +192,6 @@ module OMF::Web
       end
       return path
     end
-              
+
   end # class
 end # module
