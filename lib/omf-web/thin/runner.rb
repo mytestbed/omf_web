@@ -11,26 +11,27 @@ module Thin
       true # will be verified later
     end
   end
-end 
+end
 
 module OMF::Web
   class Runner < Thin::Runner
     include OMF::Common::Loggable
-    
+
     @@instance = nil
-    
+
     def self.instance
       @@instance
     end
-  
+
     attr_reader :options
-    
+
     def initialize(argv, opts = {})
       raise "SINGLETON" if @@instance
-      
+      @@instance = self
+
       @argv = argv
       sopts = opts.delete(:ssl) # runner has it's own idea of ssl options
-      
+
       # Default options values
       app_name = opts[:app_name] || 'omf_web_app'
       @options = {
@@ -46,29 +47,29 @@ module OMF::Web
         :max_persistent_conns => Thin::Server::DEFAULT_MAXIMUM_PERSISTENT_CONNECTIONS,
         :require              => [],
         :wait                 => Thin::Controllers::Cluster::DEFAULT_WAIT_TIME,
- 
+
         :rackup               => File.dirname(__FILE__) + '/../config.ru',
         :static_dirs          => ["#{File.dirname(__FILE__)}/../../../share/htdocs"],
         :static_dirs_pre      => ["./resources"],  # directories to prepend to 'static_dirs'
-        
+
         :handlers             => {}  # procs to call at various times of the server's life cycle
       }.merge(opts)
       # Search path for resource files is concatination of 'pre' and 'standard' static dirs
       @options[:static_dirs] = @options[:static_dirs_pre].concat(@options[:static_dirs])
-        
- 
- 
+
+
+
       print_options = false
       p = parser
       p.separator ""
       p.separator "OMF options:"
-      p.on("--theme THEME", "Select web theme") do |t| OMF::Web::Theme.theme = t end                
-      
+      p.on("--theme THEME", "Select web theme") do |t| OMF::Web::Theme.theme = t end
+
       p.separator ""
       p.separator "Testing options:"
-      p.on("--disable-https", "Run server without SSL") do sopts = nil end                
-      p.on("--print-options", "Print option settings after parsing command lines args") do print_options = true end                      
-  
+      p.on("--disable-https", "Run server without SSL") do sopts = nil end
+      p.on("--print-options", "Print option settings after parsing command lines args") do print_options = true end
+
       # Allow application to add it's own parsing options
       if ph = @options[:handlers][:pre_parse]
         ph.call(p)
@@ -88,18 +89,17 @@ module OMF::Web
       end
 
       # Change the name of the root logger so we can apply different logging
-      # policies depending on environment. 
+      # policies depending on environment.
       #
       OMF::Common::Loggable.set_environment @options[:environment]
 
       if print_options
         require 'pp'
         pp @options
-      end            
-      
-      @@instance = self
+      end
+
     end
-    
+
     def life_cycle(step, &exception_block)
       begin
         if (p = @options[:handlers][step])
@@ -107,7 +107,7 @@ module OMF::Web
         end
       rescue => ex
         if exception_block
-          begin 
+          begin
             exception_block.call(ex)
           rescue => ex2
             error ex2
@@ -118,8 +118,8 @@ module OMF::Web
           debug "#{ex.backtrace.join("\n")}"
         end
       end
-    end    
-    
+    end
+
     def run!
       if theme = @options[:theme]
         require 'omf-web/theme'
@@ -131,4 +131,3 @@ module OMF::Web
 end
 
 
-  
