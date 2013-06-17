@@ -12,48 +12,48 @@ module OMF::Web
   # It retrieves, archives and versions content.
   #
   class ContentRepository < OMF::Common::LObject
-    
+
     MIME_TYPE = {
-      :js => 'text/javascript',       
+      :js => 'text/javascript',
       :md => 'text/markup',
-      :rb => 'text/ruby',       
-      :r => 'text/r',       
-      :svg => 'text/svg',       
-      :txt => 'text' 
+      :rb => 'text/ruby',
+      :r => 'text/r',
+      :svg => 'text/svg',
+      :txt => 'text'
     }
-    
+
     REPO_PLUGINS = {
       git: lambda do |name, opts|
-              require 'omf-web/content/git_repository' 
+              require 'omf-web/content/git_repository'
               return GitContentRepository.new(name, opts)
           end,
       file: lambda do |name, opts|
-              require 'omf-web/content/file_repository' 
+              require 'omf-web/content/file_repository'
               return FileContentRepository.new(name, opts)
           end,
       irods: lambda do |name, opts|
-              require 'omf-web/content/irods_repository' 
+              require 'omf-web/content/irods_repository'
               return IRodsContentRepository.new(name, opts)
           end,
       static: lambda do |name, opts|
-              require 'omf-web/content/static_repository' 
+              require 'omf-web/content/static_repository'
               return StaticContentRepository.new(name, opts)
           end
     }
-    
+
     # Repo to be used for all newly created content
     @@primary_repository = nil
     @@repositories = {}
-    
+
     def self.register_repo(name, opts)
       raise "ArgumentMismatch: Expected Hash, but got #{opts}" unless opts.is_a? Hash
-      
+
       name = name.to_sym
       if @@repositories[name]
         warn "Ignoring repeated registration of repo '#{name}'"
         return
       end
-      
+
       unless type = opts[:type]
         raise "Missing type in repo opts (#{opts})"
       end
@@ -63,8 +63,8 @@ module OMF::Web
       @@repositories[name] = r = repo_creator.call(name, opts)
       @@primary_repository = r if opts[:is_primary]
     end
-    
-     
+
+
     # Load content described by either a hash or a straightforward url
     # and return a 'ContentProxy' holding it.
     #
@@ -75,7 +75,7 @@ module OMF::Web
       if url_or_descr.is_a? ContentProxy
         return url_or_descr
       end
-      
+
       if url_or_descr.is_a? String
         url = url_or_descr
       else
@@ -90,20 +90,20 @@ module OMF::Web
       unless url
         throw "Can't find url in '#{url_or_descr.inspect}"
       end
-      
+
       repo = find_repo_for(url)
       repo.create_content_proxy_for(url_or_descr)
     end
-    
-    
+
+
     def self.absolute_path_for(url)
       find_repo_for(url).absolute_path(url)
     end
-    
+
     def self.read_content(url, opts)
       find_repo_for(url).read(url)
     end
-    
+
     def self.find_repo_for(url)
       parts = url.split(':')
       name = parts[1]
@@ -112,23 +112,26 @@ module OMF::Web
       end
       return repo
     end
-    
-    
-    # Find files whose file name matches 'selector'. 
-    # 
+
+
+    # Find files whose file name matches 'selector'.
+    #
     # Supported options:
     #   * :max - Maximum numbers of matches to return
     #   * :mime_type - Only return files with that specific mime type.
+    #   * :repo_iterator [Iterator] - Iterator over repos to search
     #
     def self.find_files(selector, opts = {})
-      # TODO: Search across ALL registered repos
-      fs = @@primary_repository.find_files(selector, opts)
+      fsa = (opts[:repo_iterator] || [@@primary_repository]).map do |repo|
+        repo.find_files(selector, opts)
+      end
+      fs = fsa.flatten
       if (max = opts[:max])
         fs = fs[0, max]
       end
       fs
-    end    
-    
+    end
+
     #
     # Create a URL for a file with 'path' in the user's primary repository.
     # If 'strictly_new' is true, returns nil if 'path' already exists.
@@ -137,17 +140,17 @@ module OMF::Web
       # TODO: Need to add code to select proper repository
       return GitContentRepository.create_url(path, strictly_new)
     end
-    
-    
+
+
     attr_reader :name, :top_dir
-    
+
     def initialize(name, opts)
       @name = name
       if @top_dir = opts[:top_dir]
         @top_dir = File.expand_path(@top_dir)
       end
     end
-    
+
     #
     # Return an array of file names which are in the repository and
     # match 'search_pattern'
@@ -155,8 +158,8 @@ module OMF::Web
     def find_files(search_pattern, opts = {})
       raise "Missing implementation"
     end
-    
-    
+
+
     def mime_type_for_file(content_descriptor)
       fname = content_descriptor
       if content_descriptor.is_a? Hash
@@ -165,7 +168,7 @@ module OMF::Web
       ext = fname.split('.')[-1]
       mt = MIME_TYPE[ext.to_sym] || 'text'
     end
-    
+
     def read(content_descr)
       path = _get_path(content_descr)
       Dir.chdir(@top_dir) do
@@ -175,19 +178,19 @@ module OMF::Web
         content = File.open(path).read
         return content
       end
-    end    
-    
+    end
+
     def absolute_path(content_descr)
       path = _get_path(content_descr)
       File.join(@top_dir, path)
     end
-    
+
     def path(content_descr)
       path = _get_path(content_descr)
     end
-    
+
     # Return a URL for a path in this repo
-    # 
+    #
     def get_url_for_path(path)
       raise "Missing implementation"
     end
