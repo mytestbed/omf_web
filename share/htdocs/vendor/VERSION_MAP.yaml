@@ -1,4 +1,4 @@
-backbone:     backbone-0.5.3
+backbone:     backbone-1.0.0
 bootstrap:    bootstrap-2.3.1
 codemirror:   CodeMirror-2.32
 d3:           d3-2.9.2
@@ -9,4 +9,4 @@ raphael:      raphael-2.1.0
 silk_icons:   silk_icons_v013
 slickgrid:    slickgrid-200512
 stacktrace:   stacktrace-0.3
-underscore:   underscore-1.2.1
+underscore:   underscore-1.4.4
