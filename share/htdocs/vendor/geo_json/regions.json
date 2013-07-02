@@ -1,0 +1,41 @@
+/***
+ * These are the codes for the regions and subregions in the world.json file
+ *
+ * "properties": { 
+        "ISO2": "AG", "ISO3": "ATG", 
+        "NAME": "Antigua and Barbuda", 
+        "REGION": 19, # 019 ... Americas
+        "SUBREGION": 29, # 029 ... Caribbian
+        ... 
+**/
+[
+  "001": "World",
+  "002": "Africa",
+       "014": "Eastern Africa",
+       "017": "Middle Africa",
+       "015": "Northern Africa",
+       "018": "Southern Africa",
+       "011": "Western Africa",
+  "019": "Americas",
+    "419": "Latin America and the Caribbean",
+       "029": "Caribbean",
+       "013": "Central America",
+       "005": "South America",
+    "021": "Northern America",
+  "142": "Asia",
+       "143": "Central Asia",
+       "030": "Eastern Asia",
+       "034": "Southern Asia",
+       "035": "South-Eastern Asia",
+       "145": "Western Asia",
+  "150": "Europe",
+       "151": "Eastern Europe",
+       "154": "Northern Europe",
+       "039": "Southern Europe",
+       "155": "Western Europe",
+  "009": "Oceania",
+       "053": "Australia and New Zealand",
+       "054": "Melanesia",
+       "057": "Micronesia",
+       "061": "Polynesia"
+]
