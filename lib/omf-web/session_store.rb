@@ -44,6 +44,10 @@ module OMF::Web
       end
       {:sid => sid, :tab_inst => tab_inst, :sub_path => comp_path}
     end
+
+    def self.find_across_sessions(&block)
+      @@sessions.values.map { |v| v[:content] }.find(&block)
+    end
   end # SessionStore
 
 end # OMF:Web
