@@ -11,10 +11,10 @@ module OMF::Web
   # This class provides an interface to a directory based repository
   # It retrieves, archives and versions content.
   #
-  class IRodsContentRepository < ContentRepository  
-    
+  class IRodsContentRepository < ContentRepository
+
     @@irods_repositories = {}
-    
+
     # Return the repository which is referenced to by elements in 'opts'.
     #
     #
@@ -24,8 +24,8 @@ module OMF::Web
       end
       repo
     end
-      
-    # Register an existing directory to the system. It will be 
+
+    # Register an existing directory to the system. It will be
     # consulted for all content url's starting with
     # 'irods:_top_dir_:'. If 'is_primary' is set to true, it will
     # become the default repo for all newly created content
@@ -42,17 +42,18 @@ module OMF::Web
         @@primary_repository = repo
       end
     end
-    
+
     attr_reader :name, :top_dir
-    
+
     def initialize(name, opts)
       super
       unless @top_dir
         raise "No top_dir defined (#{opts.keys.inspect})"
       end
       @url_prefix = "irods:#{name}:"
+      @ticket = opts[:ticket]
     end
-    
+
     # Load content described by either a hash or a straightforward path
     # and return a 'ContentProxy' holding it.
     #
@@ -67,38 +68,38 @@ module OMF::Web
       descr = descr ? descr.dup : {}
       url = get_url_for_path(path)
       key = Digest::MD5.hexdigest(url)
-      descr[:url] = url      
+      descr[:url] = url
       descr[:url_key] = key
-      descr[:path] = path      
+      descr[:path] = path
       descr[:name] = url # Should be something human digestable
       if (descr[:strictly_new])
-       return nil if IRODS4r.exists?(path)
+       return nil if IRODS4r.exists?(path, @ticket)
       end
       proxy = ContentProxy.create(descr, self)
       return proxy
     end
-        
+
     def write(content_descr, content, message)
       path = _get_path(content_descr)
       #puts "WRITE PATHS>>> #{path}"
-      f = IRODS4r::File.create(path, false)
+      f = IRODS4r::File.create(path, false, ticket: @ticket)
       f.write(content)
     end
-    
+
     def read(content_descr)
       path = _get_path(content_descr)
       #puts "READ PATHS>>> #{path}"
-      f = IRODS4r::File.create(path, false)
+      f = IRODS4r::File.create(path, false, ticket: @ticket)
       f.read()
-    end    
-    
+    end
+
     #
     # Return an array of file names which are in the repository and
     # match 'search_pattern'
     #
     def find_files(search_pattern, opts = {})
       begin
-        dir = IRODS4r.find(@top_dir)
+        dir = IRODS4r.find(@top_dir, {}, @ticket)
       rescue IRODS4r::IRODS4rException
         return []
       end
@@ -106,7 +107,7 @@ module OMF::Web
       _find_files(search_pattern, dir, res, opts[:mime_type])
       res
     end
-    
+
     def _find_files(search_pattern, dir, res, mime_type)
       dir.list.each do |e|
         if e.directory?
@@ -115,7 +116,7 @@ module OMF::Web
           path = e.path
           if path.match(search_pattern)
             mt = mime_type_for_file(path)
-            next if mime_type != nil && mime_type != mt 
+            next if mime_type != nil && mime_type != mt
             res << {:url => get_url_for_path(path), :path => path, #:name => 'foo',
                     :mime_type => mt}
           end
@@ -123,10 +124,10 @@ module OMF::Web
       end
       res
     end
-    
-    
+
+
     # Return a URL for a path in this repo
-    # 
+    #
     def get_url_for_path(path)
       puts "PATH>>>>> '#{path}:#{path.class}'-'#{@top_dir}:#{@top_dir.class}'"
       if m = path.match("#{@top_dir}(.*)")
@@ -134,12 +135,12 @@ module OMF::Web
       end
       url = @url_prefix + path
     end
-    
+
     # HACK ALERT!!!
-    # 
+    #
     # This method may be called by an entity which wants to access the content
-    # directly through the file system. In the absence of a FUSE mounted iRODS 
-    # repo, we 'iget' the resource to a temporary directory and return that 
+    # directly through the file system. In the absence of a FUSE mounted iRODS
+    # repo, we 'iget' the resource to a temporary directory and return that
     # path. The calling entity needs to be aware that any changes to that file
     # will NOT show up in iRODS without an iput.
     #
@@ -147,19 +148,19 @@ module OMF::Web
     #
     def absolute_path(content_descr)
       path = _get_path(content_descr)
-      
+
       require 'etc'
       tmp_dir = "#{Dir::tmpdir}/LabWiki-#{Etc.getlogin}"
       # unless Dir.exists? tmp_dir
         # Dir.mkdir tmp_dir, 0700
       # end
-      
+
       target = File.join(tmp_dir, path)
-      IRODS4r::ICommands.export(path, target)
+      IRODS4r::ICommands.export(path, target, true, @ticket)
       target
     end
 
-    
+
     def _get_path(content_descr)
       #puts ">>>GET PATH #{content_descr.inspect}"
       if content_descr.is_a? String
@@ -186,6 +187,6 @@ module OMF::Web
       end
       return path
     end
-              
+
   end # class
 end # module
