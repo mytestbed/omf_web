@@ -62,6 +62,7 @@ module OMF::Web
       end
       @@repositories[name] = r = repo_creator.call(name, opts)
       @@primary_repository = r if opts[:is_primary]
+      r
     end
 
 
