@@ -1,0 +1,47 @@
+
+
+
+# Simple tab showing a line chart with supporting table
+#
+
+server:
+  name: 'Simple Demo'
+  port: 4050
+
+data_sources:
+  - id: signal
+    table: wave
+    database:
+      id: sample
+      url: sqlite://sample.sq3
+
+widgets:
+  - id: main
+    name: Main
+    top_level: true
+    priority: 900
+    type: layout/tabbed
+    widgets:
+      - name: Signal
+        type: data/line_chart3
+        data_source:
+          name: signal
+        mapping:
+          x_axis:
+            property: t
+          y_axis:
+            property: y
+            max: 2.0
+          group_by: oml_sender
+        axis:
+          x:
+            legend: Time (sec)
+          y:
+            legend: V
+            ticks:
+              format: ".1s"
+
+      - name: Table
+        type: data/table2
+        data_source:
+          name: signal

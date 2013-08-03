@@ -62,31 +62,29 @@ module OMF::Web
       print_options = false
       p = parser
       p.separator ""
-      p.separator "OMF options:"
+      p.separator "OMF Web options:"
       p.on("--theme THEME", "Select web theme") do |t| OMF::Web::Theme.theme = t end
+
+      # Allow application to add it's own parsing options
+      if ph = @options[:handlers][:pre_parse]
+        ph.arity == 1 ? ph.call(p) : ph.call(p, self)
+      end
 
       p.separator ""
       p.separator "Testing options:"
       p.on("--disable-https", "Run server without SSL") do sopts = nil end
       p.on("--print-options", "Print option settings after parsing command lines args") do print_options = true end
-
-      # Allow application to add it's own parsing options
-      if ph = @options[:handlers][:pre_parse]
-        ph.call(p)
-      end
+      p.separator ""
 
       parse!
-      # WHY IS THIS HERE
-      # unless life_cycle(:post_parse)
-        # puts p.to_s
-        # abort()
-      # end
+
       if sopts
         @options[:ssl] = true
         @options[:ssl_key_file] ||= sopts[:key_file]
         @options[:ssl_cert_file] ||= sopts[:cert_file]
         @options[:ssl_verify] ||= sopts[:verify_peer]
       end
+      life_cycle(:post_parse)
 
       # Change the name of the root logger so we can apply different logging
       # policies depending on environment.
@@ -103,7 +101,7 @@ module OMF::Web
     def life_cycle(step, &exception_block)
       begin
         if (p = @options[:handlers][step])
-          p.call()
+          p.arity == 0 ? p.call() : p.call(self)
         end
       rescue => ex
         if exception_block
