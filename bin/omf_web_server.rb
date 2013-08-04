@@ -98,6 +98,11 @@ def get_database(config, databases)
     puts "Missing URL for database '#{id}'"
     abort
   end
+  if url.start_with?('sqlite://') && ! url.start_with?('sqlite:///')
+    # inject top dir
+    url.insert('sqlite://'.length, $config_file_dir + '/')
+  end
+  puts "URL: #{url}"
   begin
     return databases[id] = OMF::OML::OmlSqlSource.new(url, :check_interval => 3.0)
   rescue Exception => ex

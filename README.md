@@ -4,6 +4,33 @@ This Ruby 1.9 gem provides the components for building a web-based data visualiz
 The typical use case is to allow a user to investigate a data set stored in one or more databases
 as well as life data streams.
 
+Installation
+------------
+
+At this stage the best course of action is to clone the repository
+
+    % git clone https://github.com/mytestbed/omf_web.git
+    % cd omf_web
+    % export OMF_WEB_HOME=`pwd`
+    % bundle install
+
+
+Getting Started
+---------------
+
+There are a few example sites in the 'example' directory. They have been developed in the context of various demos and 
+may not always be kept up to date. The one which should always work is 'example/simple'. Try it out.
+
+    % $OMF_WEB/bin/omf_web_server.rb --config $OMF_WEB/example/simple/simple.yaml
+    
+This starts a webserver which can be accessed locally via 'http:localhost:4050'. Connecting to it through your favorite 
+web browser should display a web page approx. looking like:
+
+![Screenshot of starting page](https://raw.github.com/mytestbed/omf_web/master/doc/screenshot2.png "Screenshot")
+
+Overview
+--------
+
 The core components are:
 
 * A **DataSource** which holds a specific data set organised as a table. It is defined
