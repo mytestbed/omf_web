@@ -14,6 +14,7 @@ require 'omf_oml/sql_source'
 
 OMF::Common::Loggable.init_log 'omf_web'
 
+$config_file_dir = nil
 
 require 'omf_oml/table'
 
@@ -28,6 +29,7 @@ def load_environment(opts)
     abort
   end
 
+  $config_file_dir = File.dirname(cf)
   cfg = YAML.load_file(cf)
   (cfg['server'] || {}).each do |k, v|
     k = k.to_sym
@@ -42,6 +44,10 @@ def load_environment(opts)
   (cfg['data_sources'] || []).each do |ds|
     load_datasource(ds, databases)
   end
+  (cfg['repositories'] || []).each do |repo|
+    load_repository(repo)
+  end
+
   unless wa = cfg['widgets']
     puts "Can't find 'widgets' section in config file '#{cf}' - #{cfg.keys}"
     abort
@@ -100,6 +106,32 @@ def get_database(config, databases)
   end
 end
 
+def load_repository(config)
+  unless id = config['id']
+    puts "Missing id in respository configuration"
+    abort
+  end
+  unless type = config['type']
+    puts "Missing 'type' in respository configuration '#{id}'"
+    abort
+  end
+
+  require 'omf-web/content/repository'
+  case type
+  when 'file'
+    unless top_dir = config['top_dir']
+      puts "Missing 'top_dir' in respository configuration '#{id}'"
+      abort
+    end
+    unless top_dir.start_with? '/'
+      top_dir = File.join($config_file_dir, top_dir)
+    end
+    OMF::Web::ContentRepository.register_repo(id, type: :file, top_dir: top_dir)
+  else
+    puts "Unknown repository type '#{type}'. Only supporting 'file'."
+    abort
+  end
+end
 
 # Configure the web server
 #

@@ -15,33 +15,48 @@ data_sources:
       id: sample
       url: sqlite://sample.sq3
 
+repositories:
+  - id: simple
+    type: file
+    top_dir: .
+
 widgets:
   - id: main
     name: Main
     top_level: true
     priority: 900
-    type: layout/tabbed
-    widgets:
-      - name: Signal
-        type: data/line_chart3
-        data_source:
-          name: signal
-        mapping:
-          x_axis:
-            property: t
-          y_axis:
-            property: y
-            max: 2.0
-          group_by: oml_sender
-        axis:
-          x:
-            legend: Time (sec)
-          y:
-            legend: V
-            ticks:
-              format: ".1s"
+    type: layout/two_columns/33_66
+    left:
+      - name: Introduction
+        type: text
+        content:
+          url: file:simple:introduction.md
+    right:
+      - type: layout/stacked
+        info: This widget shows the output measurements of three stacked generators.
+        widgets:
+          - name: Signal
+            type: data/line_chart3
+            data_source:
+              name: signal
+            mapping:
+              x_axis:
+                property: t
+              y_axis:
+                property: y
+                max: 2.0
+              group_by: oml_sender
+            axis:
+              x:
+                legend: Time (sec)
+              y:
+                legend: V
+                ticks:
+                  format: ".1f"
 
-      - name: Table
-        type: data/table2
-        data_source:
-          name: signal
+          - name: Table
+            type: data/table2
+            data_source:
+              name: signal
+
+
