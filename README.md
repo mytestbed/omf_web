@@ -28,6 +28,10 @@ web browser should display a web page approx. looking like:
 
 ![Screenshot of starting page](https://raw.github.com/mytestbed/omf_web/master/doc/screenshot2.png "Screenshot")
 
+Don't forget to press the icon buttons 
+![icon buttons](https://raw.github.com/mytestbed/omf_web/master/doc/widget_detail.png "icon buttons")
+on the left widget header.
+
 Overview
 --------
 
