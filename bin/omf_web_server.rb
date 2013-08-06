@@ -71,10 +71,11 @@ def load_datasource(config, databases)
     abort
   end
   db = get_database(db_cfg, databases)
-  unless table = db.create_table(table_name)
+  unless table = db.create_table(table_name, :limit => config['limit'], :check_interval => config['dynamic'])
     puts "Can't find table '#{table_name}' in database '#{db}'"
     abort
   end
+
   OMF::Web.register_datasource table, name: id
 end
 
