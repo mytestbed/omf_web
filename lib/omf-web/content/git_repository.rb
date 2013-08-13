@@ -104,7 +104,7 @@ module OMF::Web
     def write(content_descr, content, message)
       path = _get_path(content_descr)
       Dir.chdir(@top_dir) do
-        unless File.writable?(path)
+        unless File.writable?(path) || File.writable?(File.dirname(path))
           raise "Cannot write to file '#{path}'"
         end
         f = File.open(path, 'w')
