@@ -1,7 +1,7 @@
 backbone:     backbone-1.0.0
 bootstrap:    bootstrap-2.3.1
 codemirror:   CodeMirror-2.32
-d3:           d3-2.9.2
+d3:           d3-3.0
 jquery:       jquery-1.7.2
 jquery-ui:    jquery-ui-1.8.23
 mustache:     mustache-0.7.0
