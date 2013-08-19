@@ -4,40 +4,45 @@ require 'omf-web/data_source_proxy'
 
 module OMF::Web::Theme
   class AbstractPage < Erector::Widget
-    
+
     depends_on :js,  '/resource/vendor/stacktrace/stacktrace.js'
     depends_on :js, '/resource/vendor/jquery/jquery.js'
     #depends_on :js, '/resource/js/stacktrace.js'
     depends_on :js, '/resource/vendor/underscore/underscore.js'
-    depends_on :js, '/resource/vendor/backbone/backbone.js'    
+    depends_on :js, '/resource/vendor/backbone/backbone.js'
     depends_on :js, "/resource/js/require3.js"
 
     depends_on :js, "/resource/theme/abstract/abstract.js"
-    depends_on :js, "/resource/js/data_source2.js"    
+    depends_on :js, "/resource/js/data_source2.js"
 
     attr_reader :opts
-    
+
+    def self.add_depends_on(type, url)
+      depends_on type.to_sym, url
+    end
+
     def initialize(widget, opts)
       #puts "KEYS>>>>> #{opts.keys.inspect}"
       super opts
       @widget = widget
       @opts = opts
     end
-    
+
     def content
       javascript %{
         if (typeof(LW) == "undefined") LW = {};
         LW.session_id = OML.session_id = '#{Thread.current["sessionID"]}';
-        
-        L.provide('jquery', ['vendor/jquery/jquery.js']);
-        //L.provide('jquery.periodicalupdater', ['vendor/jquery/jquery.periodicalupdater.js']);   
+
+        //L.provide('jquery', ['vendor/jquery/jquery.js']);
+        L.already_loaded('/resource/vendor/jquery/jquery.js');
+        //L.provide('jquery.periodicalupdater', ['vendor/jquery/jquery.periodicalupdater.js']);
         //L.provide('jquery.ui', ['vendor/jquery-ui/js/jquery-ui.min.js']);
-      }    
+      }
     end
 
     def render_flash
       return unless @flash
-      if @flash[:notice] 
+      if @flash[:notice]
         div :class => 'flash_notice flash' do
           text @flash[:notice]
         end
@@ -55,7 +60,7 @@ module OMF::Web::Theme
         end
       end
     end # render_flesh
-    
+
     # Return an array of widgets to collect data sources from
     #
     def data_source_widgets
@@ -66,13 +71,13 @@ module OMF::Web::Theme
         [@widget]
       # end
     end
-    
+
     def render_data_sources
       return unless @widget
-      
+
       require 'omf_oml/table'
       require 'set'
-      
+
       dss = Set.new
       data_source_widgets.each do |w|
         w.collect_data_sources(dss)
@@ -86,11 +91,11 @@ module OMF::Web::Theme
 
       #puts ">>>> #{dsh.inspect}"
       return if dss.empty?
-      
+
       js = dss.map do |ds|
         render_data_source(ds)
       end
-      
+
       # js = dsh.values.to_a.collect do |ds|
         # render_data_source(ds)
       # end
@@ -103,7 +108,7 @@ module OMF::Web::Theme
         </script>
       }
     end
-    
+
     def render_data_source(ds)
       dspa = OMF::Web::DataSourceProxy.for_source(ds)
       dspa.collect do |dsp|
@@ -111,7 +116,7 @@ module OMF::Web::Theme
         dsp.to_javascript(ds)
       end.join("\n")
     end
-    
+
     def render_additional_headers
       #"\n\n<link href='/resource/css/incoming.css' media='all' rel='stylesheet' type='text/css' />\n"
     end
@@ -119,9 +124,9 @@ module OMF::Web::Theme
     def collect_data_sources(dsa)
       dsa
     end
-  
+
     def to_html(opts = {})
-      page_title = @title  # context may get screwed up below, so put title into scope
+      page_title = @page_title  # context may get screwed up below, so put title into scope
       b = super
       if @opts[:request].params.key?('embedded')
         b
@@ -141,9 +146,8 @@ module OMF::Web::Theme
             end
           end
         end
-        r.to_html(opts)  
+        r.to_html(opts)
       end
     end
   end # class AbstractPage
 end # OMF::Web::Theme
-  
