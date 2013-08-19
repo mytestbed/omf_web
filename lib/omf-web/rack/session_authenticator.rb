@@ -28,15 +28,53 @@ module OMF::Web::Rack
     # Return true if the session is authenticated
     #
     def self.authenticated?
-      debug "AUTH: #{self[:authenticated] == true}"
-      self[:authenticated] == true
+      auth = self[:authenticated] == true && self[:valid_until] > Time.now
+      #debug "AUTH: #{auth}"
+      auth
     end
 
     # Calling this method will authenticate the current session
     #
-    def self.authenticate
+    def self.authenticate(expires = nil)
       self[:authenticated] = true
       self[:valid_until] = Time.now + @@expire_after
+    end
+
+    # Information about the authenticated user
+    #
+    def self.user()
+      self[:user]
+    end
+
+    # Attempt to authenticate with the provided 'req'
+    def self.authenticate_with(req)
+      p = req.params
+      #puts ">>>>>>> AA(#{req.host_with_port}): #{p}"
+      case t = p['method']
+      when 'persona'
+        require 'net/http'
+        unless assertion = p['assertion']
+          raise AuthenticationFailedException.new("Missing assertion")
+        end
+
+        http = Net::HTTP.new('verifier.login.persona.org', 443)
+        http.use_ssl = true
+        data = "assertion=#{assertion}&audience=#{req.host_with_port}"
+        headers = {'Content-Type' => 'application/x-www-form-urlencoded'}
+        reply = http.post('/verify', data, headers)
+        unless reply.code_type == Net::HTTPOK && reply.content_type == "application/json"
+          raise AuthenticationFailedException.new("Could not verify Persona - '#{reply.body}'")
+        end
+        debug "Persona reply: '#{reply.body}'"
+        r = JSON.load(reply.body)
+        unless ((email = r['email']) && (expires = r['expires']))
+          raise AuthenticationFailedException.new("Could not verify Persona - '#{r}'")
+        end
+        self[:user] = {name: email, email: email, method: 'persona'}
+        authenticate(Time.at(expires))
+      else
+        raise AuthenticationFailedException.new("Unsupported authentication type '#{t}'")
+      end
     end
 
     # Logging out will un-authenticate this session
@@ -44,6 +82,7 @@ module OMF::Web::Rack
     def self.logout
       debug "LOGOUT"
       self[:authenticated] = false
+      self[:user] = nil
     end
 
     # DO NOT CALL DIRECTLY
@@ -79,23 +118,20 @@ module OMF::Web::Rack
     end
 
     def check_authenticated
-      authenticated = self.class[:authenticated] == true
-      #puts "AUTHENTICATED: #{authenticated}"
+      authenticated = self.class.authenticated?
       raise AuthenticationFailedException.new unless authenticated
-      #self.class[:valid_until] = Time.now + @@expire_after
-
     end
 
     def call(env)
-      #puts env.keys.inspect
       req = ::Rack::Request.new(env)
       path_info = req.path_info
-      unless sid = req.cookies['sid']
+      sid = req.cookies['sid']
+      unless sid
         sid = "s#{(rand * 10000000).to_i}_#{(rand * 10000000).to_i}"
       end
       Thread.current["sessionID"] = sid  # needed for Session Store
+      debug "Request for '#{path_info}' - sid: #{sid} - #{self.class.authenticated?}"
       unless @opts[:no_session].find {|rx| rx.match(path_info) }
-
         # If 'login_page_url' is defined, check if this session is authenticated
         login_url = @opts[:login_page_url]
         if login_url && login_url != req.path_info
@@ -107,13 +143,13 @@ module OMF::Web::Rack
             end
             headers = {'Location' => login_url, "Content-Type" => ""}
             Rack::Utils.set_cookie_header!(headers, 'sid', sid)
-            return [301, headers, ['Login first']]
+            return [307, headers, ['Login first']]
           end
         end
       end
 
       status, headers, body = @app.call(env)
-      Rack::Utils.set_cookie_header!(headers, 'sid', sid) if sid
+      Rack::Utils.set_cookie_header!(headers, 'sid', sid) # if sid
       [status, headers, body]
     end
   end # class

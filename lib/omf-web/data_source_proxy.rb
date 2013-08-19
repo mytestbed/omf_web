@@ -4,20 +4,30 @@ require 'omf_common/lobject'
 require 'omf_oml/network'
 
 module OMF::Web
-        
-  # This object maintains synchronization between a JS DataSource object 
+
+  # This object maintains synchronization between a JS DataSource object
   # in a web browser and the corresponding +OmlTable+ in this server.
   #
   #
   class DataSourceProxy < OMF::Common::LObject
-    
+
     @@datasources = {}
-    
+
     # Register a data source.
     #
     # params data_source - Data source to register
     # params opts:
     #          name - Name to use instead of data source's native name
+
+    #
+    # A data_source needs to support eh following methods:
+    #
+    #  * rows Returns an array of rows
+    #  * on_content_changed(lambda{action, rows}) Call provided block with actions :added, :removed
+    #  * create_sliced_table (optional)
+    #  * release Not exactly sure when that is being used
+    #  * schema Schema of row
+    #  * offset
     #
     def self.register_datasource(data_source, opts = {})
       name = (opts[:name] || data_source.name).to_sym
@@ -32,9 +42,9 @@ module OMF::Web
       # else
         # @@datasources[name] = data_source
       # end
-      @@datasources[name] = data_source      
+      @@datasources[name] = data_source
     end
-    
+
     def self.[](name)
       name = name.to_sym
       unless dsp = OMF::Web::SessionStore[name, :dsp]
@@ -46,7 +56,7 @@ module OMF::Web
       end
       dsp
     end
-    
+
     # Return proxies for 'ds_name'. Note, there can be more then
     # one proxy be needed for a datasource, such as a network which
     # has one ds for the nodes and one for the links
@@ -69,8 +79,8 @@ module OMF::Web
         top = "#{ds_name}/"
         names = @@datasources.keys.find_all { |ds_name| ds_name.to_s.start_with? top }
         unless names.empty?
-          return names.map do |ds_name| 
-            OMF::Web::SessionStore[ds_name, :dsp] ||= self.new(ds_name, @@datasources[ds_name]) 
+          return names.map do |ds_name|
+            OMF::Web::SessionStore[ds_name, :dsp] ||= self.new(ds_name, @@datasources[ds_name])
           end
         end
         # debug ">>>> #{dsa}"
@@ -93,25 +103,25 @@ module OMF::Web
         end
         return proxies
       end
-      
+
       #debug ">>>>> DS: #{ds_descr.inspect} - #{ds}"
       proxy = OMF::Web::SessionStore[ds_name, :dsp] ||= self.new(ds_name, ds)
       return [proxy]
     end
-    
+
     attr_reader :name
-    
+
     def reset()
-      # TODO: Figure out partial sending 
+      # TODO: Figure out partial sending
     end
-    
+
     def on_update(req)
       res = {:events => @data_source.rows}
       [res.to_json, "text/json"]
     end
-    
+
     # Register callback to be informed of changes to the underlying data source.
-    # Call block when new rows are becoming available. Block needs ot return 
+    # Call block when new rows are becoming available. Block needs ot return
     # true if it wants to continue receiving updates.
     #
     # offset: Number of records already downloaded
@@ -128,7 +138,7 @@ module OMF::Web
         block.call action, rows
       end
     end
-    
+
     # Create a new data source which only contains a slice of the underlying data source
     def create_slice(col_name, col_value)
       ds = @data_source.create_sliced_table(col_name, col_value)
@@ -136,7 +146,7 @@ module OMF::Web
       def dsp.release; @data_source.release end
       dsp
     end
-    
+
     def to_javascript(opts = {})
       #puts "to_java>>>>> #{opts.inspect}"
       sid = Thread.current["sessionID"]
@@ -145,23 +155,24 @@ module OMF::Web
       opts[:schema] = @data_source.schema.describe
       opts[:update_url] = "/_update/#{@name}?sid=#{sid}"
       opts[:sid] = sid
+      #opts[:is_static] = (@data_source.respond_to? :static?) ? @data_source.static? : false
       unless opts[:slice] # don't send any data if this is a sliced one
         #opts[:rows] = @data_source.rows[0 .. 20]
         opts[:rows] = []
         opts[:offset] = @data_source.offset
       end
       #puts "to_java2>>>>> #{opts.inspect}"
-      
+
       %{
         OML.data_sources.register(#{opts.to_json});
       }
-     
+
     end
-    
+
     def initialize(name, data_source)
       @name = name
       @data_source = data_source
     end
   end
-  
+
 end
