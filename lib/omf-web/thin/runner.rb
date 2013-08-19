@@ -91,6 +91,11 @@ module OMF::Web
       #
       OMF::Common::Loggable.set_environment @options[:environment]
 
+      if css = opts[:include_css]
+        require 'omf-web/theme'
+        OMF::Web::Theme.include_css(css)
+      end
+
       if print_options
         require 'pp'
         pp @options

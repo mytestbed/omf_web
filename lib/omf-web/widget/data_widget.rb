@@ -28,8 +28,8 @@ module OMF::Web::Widget
       opts[:js_url] = "graph/js/#{vizType}.js"
       opts[:js_class] = "OML.#{vizType}"
       opts[:base_el] = "\##{dom_id}"
-      super opts      
-      
+      super opts
+
       if (ds = opts.delete(:data_source))
         # single source
         data_sources = {:default => ds}
@@ -49,10 +49,10 @@ module OMF::Web::Widget
       end
       #puts "DTA_WIDGTE>>> #{opts[:data_sources].inspect}"
     end
-    
-    # This is the DOM id which should be used by the renderer for this widget. 
+
+    # This is the DOM id which should be used by the renderer for this widget.
     # We need to keep this here as various renderes at various levels may need
-    # to get a reference to it to allow for such functionalities as 
+    # to get a reference to it to allow for such functionalities as
     # hiding, stacking, ...
     def dom_id
       "w#{object_id.abs}"
@@ -86,7 +86,7 @@ module OMF::Web::Widget
         # end
       # end
     # end
-# 
+#
     # def on_ws_close(ws)
       # raise "ARE WE STILL NEEDING THIS"
       # @ws = nil
