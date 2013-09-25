@@ -1,7 +1,4 @@
-
-L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
-
-  if (typeof(OML) == "undefined") OML = {};
+define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
 
   if (typeof(d3.each) == 'undefined') {
     d3.each = function(array, f) {
@@ -15,10 +12,10 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
       return a;
     };
   };
-  
-  
-  OML['abstract_widget'] = Backbone.Model.extend({
-    
+
+
+  var abstract_widget = Backbone.Model.extend({
+
     defaults: function() {
       return {
         base_el: "body",
@@ -34,44 +31,44 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
           x: 0,
           y: 0
         },
-      }     
+      }
     },
-    
+
     //base_css_class: 'oml-chart',
-    
+
     initialize: function(opts) {
       var o = this.opts = this.deep_defaults(opts, this.defaults());
-    
+
       var base_el = o.base_el;
       if (typeof(base_el) == "string") base_el = d3.select(base_el);
       this.base_el = base_el;
-    
+
       this.init_data_source();
       this.process_schema();
       this.resize();
-      
+
       var self = this;
       OHUB.bind('layout.resize', function(e) {
         self.resize();
         self.update();
-      });  
+      });
     },
-    
+
     update: function() {
       if ($(this.opts.base_el).is(':hidden')) {
         return;
       }
-      
+
       var data;
       if ((data = this.data_source.rows()) == null) {
         throw "Missing rows in data source"
       }
       if (data.length == 0) return;
-      
+
       this.redraw(data);
-      
+
     },
-    
+
     resize: function() {
       var o = this.opts;
       var w = o.width;
@@ -87,9 +84,9 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
         var elw = bel.width();
         w = w * elw;
         //w = w * this.base_el[0][0].clientWidth;
-        if (isNaN(w)) w = 800; 
+        if (isNaN(w)) w = 800;
       }
-      
+
       var h = o.height;
       if (h <= 1.0) {
         h = h * w;
@@ -98,30 +95,30 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
 
       return this;
     },
-    
-    
-    _resize_base_el: function(w, h) {  
+
+
+    _resize_base_el: function(w, h) {
       var m = this.opts.margin;
       this.w = w - m.left - m.right; // take away the margins
       this.h = h - m.top - m.bottom;
       this.base_el
         .style('height', this.h + 'px')
-        .style('width', this.w + 'px')        
+        .style('width', this.w + 'px')
         .style('margin-left', m.left + 'px')
-        .style('margin-right', m.right + 'px') 
-        .style('margin-top', m.top + 'px')        
-        .style('margin-bottom', m.bottom + 'px')                
+        .style('margin-right', m.right + 'px')
+        .style('margin-top', m.top + 'px')
+        .style('margin-bottom', m.bottom + 'px')
         ;
     },
-    
-    
+
+
     // Find the appropriate data source and bind to it
     //
     init_data_source: function() {
       var o = this.opts;
       var sources = o.data_sources;
       var self = this;
-      
+
       if (! (sources instanceof Array)) {
         throw "Expected an array"
       }
@@ -130,27 +127,27 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
       }
       this.data_source = this.init_single_data_source(sources[0]);
     },
-    
-    
+
+
     // Find the appropriate data source and bind to it
     //
     init_single_data_source: function(ds_descr) {
-      var ds = OML.data_sources.lookup(ds_descr.stream);
+      var ds = ds_repo.lookup(ds_descr.stream);
       var self = this;
       OHUB.bind(ds.event_name, function() {
         self.update();;
       })
       return ds;
     },
-    
-    
+
+
     process_schema: function() {
       this.schema = this.process_single_schema(this.data_source);
       if (typeof(this.decl_properties) != "undefined") {
         this.mapping = this.process_single_mapping(null, this.opts.mapping, this.decl_properties);
       }
     },
-    
+
     process_single_schema: function(data_source) {
       var self = this;
       var o = this.opts;
@@ -161,11 +158,11 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
       });
       return schema;
     },
-   
+
     process_single_mapping: function(source_name, mapping_decl, properties_decl) {
       var self = this;
       var m = {};
-      var om = mapping_decl || {};      
+      var om = mapping_decl || {};
       _.map(properties_decl, function(a) {
         var pname = a[0]; var type = a[1]; var def = a[2];
         var descr = om[pname];
@@ -182,8 +179,8 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
         throw "Can't provide named stream '" + stream + "'.";
       }
       return this.schema;
-    },  
-    
+    },
+
     /*
      * Return data_source named 'name'.
      */
@@ -192,7 +189,7 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
         throw "Can't provide named stream '" + name + "'.";
       }
       return this.data_source;
-    },  
+    },
 
     create_mapping: function(mname, descr, stream, type, def) {
        var self = this;
@@ -223,7 +220,7 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
        if (schema == undefined) {
          throw "Can't find schema for stream '" + stream + "'.";
        }
-       
+
        if (type == 'index') {
          var key = descr.key;
          if (key == undefined || stream == undefined) {
@@ -234,7 +231,7 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
            throw "Unknown stream element '" + key + "'.";
          }
          var vindex = col_schema.index;
-         
+
          var jstream_name = descr.join_stream;
          if (jstream_name == undefined) {
            throw "Missing join stream declaration in '" + mname + "'.";
@@ -244,15 +241,15 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
            throw "Can't find schema for stream '" + jstream_name + "'.";
          }
          var jstream = this.data_source_for_stream(jstream_name);
-  
+
          var jkey = descr.join_key;
          if (jkey == undefined) jkey = 'id';
-         var jcol_schema = jschema[jkey];       
+         var jcol_schema = jschema[jkey];
          if (jcol_schema == undefined) {
            throw "Unknown stream element '" + jkey + "' in '" + jstream + "'.";
          }
          var index_f = jstream.index_for_column(jcol_schema);
-         
+
          return function(d) {
            var join = d[vindex];
            //var t = jstream.get_indexed_row(jindex, join); //self.get_indexed_table(jstream, jindex);
@@ -282,35 +279,35 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
          }
          var index = col_schema.index;
          switch (type) {
-         case 'int': 
-         case 'float':        
+         case 'int':
+         case 'float':
          case 'key' :
            var scale = descr.scale;
            var min_value = descr.min;
            var max_value = descr.max;
            return function(d) {
              var v = d[index];
-             if (scale != undefined) v = v * scale; 
-             if (min_value != undefined && v < min_value) v = min_value; 
-             if (max_value != undefined && v > max_value) v = max_value; 
+             if (scale != undefined) v = v * scale;
+             if (min_value != undefined && v < min_value) v = min_value;
+             if (max_value != undefined && v > max_value) v = max_value;
              return v;
            };
-         case 'color': 
+         case 'color':
            var color_fname = descr.color;
            if (color_fname == undefined) {
              throw "Missing color function for '" + mname + "'.";
-           } 
+           }
            var color_fp = self.decl_color_func[color_fname];
            if (color_fp == undefined) {
              throw "Unknown color function '" + color_fname + "'.";
-           } 
+           }
            var color_f = color_fp();
            var scale = descr.scale;
            var min_value = descr.min;
            return function(d) {
              var v = d[index];
-             if (scale != undefined) v = v * scale; 
-             if (min_value != undefined && v < min_value) v = min_value; 
+             if (scale != undefined) v = v * scale;
+             if (min_value != undefined && v < min_value) v = min_value;
              var color = color_f(v);
              return color;
            };
@@ -318,14 +315,14 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
            // return function(d) {
              // return d[index];
            // }
-         default:    
+         default:
            throw "Unknown mapping type '" + type + "'";
          }
        }
        var i = 0;
     },
 
-    
+
     // Fill in a given object (and any objects it contains) with default properties.
     // ... borrowed from unerscore.js
     //
@@ -339,7 +336,9 @@ L.provide('OML.abstract_widget', ["vendor/d3/d3.js"], function () {
       }
       return source;
     },
-    
-    
+
+
   });
+
+  return abstract_widget;
 })

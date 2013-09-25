@@ -1,58 +1,58 @@
 /*
- * Draws a simple barchart wiht a slection brush.
- * 
+ * Draws a simple barchart with a selection brush.
+ *
  * Most code was copied from http://square.github.com/crossfilter/ and all that
  * credit goes to Mike Bostok.
  */
 
 
-L.provide('OML.barchart_brush', ["graph/js/abstract_chart", "#OML.abstract_chart"], function () {
+define("graph/js/abstract_chart"], function (abstract_chart) {
 
-  OML.barchart_brush = OML.abstract_chart.extend({
+  var barchart_brush = abstract_chart.extend({
     decl_properties: [
-      ['key', 'int', {property: 'key'}], 
-      ['value', 'float', {property: 'value'}], 
-      // ['x_axis', 'key', {property: 'x'}], 
-      // ['y_axis', 'key', {property: 'y'}], 
-      // ['group_by', 'key', {property: 'id', optional: true}],             
-      ['stroke_width', 'int', 2], 
+      ['key', 'int', {property: 'key'}],
+      ['value', 'float', {property: 'value'}],
+      // ['x_axis', 'key', {property: 'x'}],
+      // ['y_axis', 'key', {property: 'y'}],
+      // ['group_by', 'key', {property: 'id', optional: true}],
+      ['stroke_width', 'int', 2],
       ['stroke_color', 'color', 'white'],
       ['fill_color', 'color', 'blue']
     ],
-    
+
     defaults: function() {
       return this.deep_defaults({
         relative: false,   // If true, report percentage
         axis: {
           orientation: 'horizontal'
         }
-      }, OML.barchart_brush.__super__.defaults.call(this));      
+      }, barchart_brush.__super__.defaults.call(this));
     },
-    
+
     configure_base_layer: function(vis) {
       var base = this.base_layer = vis.append("svg:g")
                                       .attr("class", "barchart")
                                       ;
-      var ca = this.chart_area; 
+      var ca = this.chart_area;
       this.legend_layer = base.append("svg:g");
       this.chart_layer = base.append("svg:g");
       this.axis_layer = base.append('g');
     },
-    
+
     redraw: function(data) {
-        
-    }    
-  }) // end of barchart_brush    
+
+    }
+  }) // end of barchart_brush
 
 
 
-  OML._barchart_brush = function barChart() {
-    if (!OML._barchart_brush.id) OML._barchart_brush.id = 0;
+  var _barchart_brush = function barChart() {
+    if (!_barchart_brush.id) _barchart_brush.id = 0;
 
     var margin = {top: 10, right: 10, bottom: 20, left: 10},
         x,
         y = d3.scale.linear().range([100, 0]),
-        id = OML._barchart_brush.id++,
+        id = _barchart_brush.id++,
         axis = d3.svg.axis().orient("bottom"),
         brush = d3.svg.brush(),
         brushDirty,
@@ -237,4 +237,6 @@ L.provide('OML.barchart_brush', ["graph/js/abstract_chart", "#OML.abstract_chart
 
     return d3.rebind(chart, brush, "on");
   }
+
+  return barchart_brush;
 });
