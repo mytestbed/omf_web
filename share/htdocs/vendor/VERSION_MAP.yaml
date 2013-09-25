@@ -10,3 +10,5 @@ silk_icons:   silk_icons_v013
 slickgrid:    slickgrid-200512
 stacktrace:   stacktrace-0.3
 underscore:   underscore-1.4.4
+require:      require-2.1.8
+require-css:  require-css-0.0.7
