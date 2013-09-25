@@ -1,11 +1,11 @@
 
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'omf-web/rack/rack_exceptions'
 require 'omf-web/content/content_proxy'
 
 module OMF::Web::Rack
       
-  class ContentHandler < OMF::Common::LObject
+  class ContentHandler < OMF::Base::LObject
     
     def call(env)
       req = ::Rack::Request.new(env)

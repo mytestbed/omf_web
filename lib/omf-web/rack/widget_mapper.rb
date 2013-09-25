@@ -1,5 +1,5 @@
 
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'rack'
 require 'omf-web/session_store'
 require 'omf-web/widget'
@@ -9,7 +9,7 @@ OMF::Web::Theme.require 'widget_page'
 
 module OMF::Web::Rack
 
-  class WidgetMapper < OMF::Common::LObject
+  class WidgetMapper < OMF::Base::LObject
 
     def initialize(opts = {})
       @opts = opts

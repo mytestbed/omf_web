@@ -1,7 +1,7 @@
 
 
 module OMF::Web::Theme
-  extend OMF::Common::Loggable
+  extend OMF::Base::Loggable
 
   DEFAULT_THEME = 'omf-web/theme/bright'
   @@search_order = [DEFAULT_THEME]  # default theme

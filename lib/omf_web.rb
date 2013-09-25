@@ -42,7 +42,7 @@ module OMF
       if w = y['widget']
         OMF::Web.register_widget w
       else
-        OMF::Common::LObject.error "Doesn't seem to be a widget definition. Expected 'widget' but found '#{y.keys.join(', ')}'"
+        OMF::Base::LObject.error "Doesn't seem to be a widget definition. Expected 'widget' but found '#{y.keys.join(', ')}'"
       end
     end
   

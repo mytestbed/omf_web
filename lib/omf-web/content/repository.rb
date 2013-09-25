@@ -2,7 +2,7 @@
 #require 'base64'
 require 'grit'
 require 'find'
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'omf_web'
 require 'omf-web/content/content_proxy'
 
@@ -11,7 +11,7 @@ module OMF::Web
   # This class provides an interface to a particular content repository.
   # It retrieves, archives and versions content.
   #
-  class ContentRepository < OMF::Common::LObject
+  class ContentRepository < OMF::Base::LObject
 
     MIME_TYPE = {
       :js => 'text/javascript',

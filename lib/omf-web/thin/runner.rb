@@ -15,7 +15,7 @@ end
 
 module OMF::Web
   class Runner < Thin::Runner
-    include OMF::Common::Loggable
+    include OMF::Base::Loggable
 
     @@instance = nil
 
@@ -89,7 +89,7 @@ module OMF::Web
       # Change the name of the root logger so we can apply different logging
       # policies depending on environment.
       #
-      OMF::Common::Loggable.set_environment @options[:environment]
+      OMF::Base::Loggable.set_environment @options[:environment]
 
       if css = opts[:include_css]
         require 'omf-web/theme'

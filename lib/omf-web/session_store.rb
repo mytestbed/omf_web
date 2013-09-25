@@ -1,5 +1,5 @@
 
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 
 
 module OMF::Web
@@ -8,7 +8,7 @@ module OMF::Web
   #
   # TODO: Implement cleanup thread
   #
-  class SessionStore < OMF::Common::LObject
+  class SessionStore < OMF::Base::LObject
     @@sessions = {}
 
     def self.[](key, domain)

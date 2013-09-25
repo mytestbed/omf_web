@@ -1,6 +1,6 @@
 
 require 'digest/md5'
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'omf_web'
 
 module OMF::Web
@@ -9,7 +9,7 @@ module OMF::Web
   # in a web browser and the corresponding +OmlTable+ in this server.
   #
   #
-  class ContentProxy < OMF::Common::LObject
+  class ContentProxy < OMF::Base::LObject
     
     @@proxies = {}
 

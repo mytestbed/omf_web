@@ -1,5 +1,5 @@
 
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 #require 'erector'
 require 'rack'
 #require 'omf-web/page'
@@ -11,7 +11,7 @@ require 'omf-web/theme'
 
 
 module OMF::Web::Rack
-  class TabMapper < OMF::Common::LObject
+  class TabMapper < OMF::Base::LObject
 
 
     def initialize(opts = {})

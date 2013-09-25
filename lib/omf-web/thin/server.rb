@@ -1,5 +1,5 @@
 require 'json'
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'omf_web'
 
 module OMF::Web
@@ -9,14 +9,15 @@ module OMF::Web
   # USAGE:
   #
   #
-  class Server < OMF::Common::LObject
+  class Server < OMF::Base::LObject
 
     def self.start(server_name, description, top_dir, opts = {})
       self.new(server_name, description, top_dir, opts)
     end
 
     def initialize(server_name, description, top_dir, opts)
-      OMF::Common::Loggable.init_log server_name
+      OMF::Base::Loggable.init_log(server_name)
+      #OMF::Base::Loggable.init_log server_name
 
       opts = {
         static_dirs_pre: ["#{top_dir}/htdocs"],
@@ -32,6 +33,7 @@ module OMF::Web
         }
       }.merge(opts)
 
+      @server_name = server_name
       @top_dir = top_dir
       @databases = {}
 
@@ -51,6 +53,10 @@ module OMF::Web
 
       @top_dir ||= File.dirname(cf)
       cfg = _rec_sym_keys(YAML.load_file(cf))
+
+      if log_opts = cfg[:logging]
+        # TODO: Deal with custom logging option
+      end
 
       (cfg[:server] || {}).each do |k, v|
         k = k.to_sym
@@ -84,7 +90,7 @@ module OMF::Web
       end
       case type = config[:type] || 'database'
       when 'database'
-        load_database(config)
+        load_database(id, config)
       when 'file'
         load_datasource_file(id, config)
       else
@@ -92,18 +98,18 @@ module OMF::Web
       end
     end
 
-    def load_database(config)
+    def load_database(id, config)
       unless table_name = config[:table]
-        puts "Missing 'table' in datasource configuration '#{id}'"
+        puts "Missing 'table' in datasource configuration '#{config}'"
         abort
       end
       unless db_cfg = config[:database]
-        puts "Missing database configuration in datasource '#{id}'"
+        puts "Missing database configuration in datasource '#{config}'"
         abort
       end
       db = get_database(db_cfg)
       unless table = db.create_table(table_name)
-        puts "Can't find table '#{table_name}' in database '#{db}'"
+        puts "Can't find table '#{table_name}' in database '#{db_cfg}'"
         abort
       end
       OMF::Web.register_datasource table, name: id
@@ -221,7 +227,7 @@ module OMF::Web
     # This class simulates a DataSource to transfer a JSON file as a database with one row and column
 
 
-    class JSONDataSource < OMF::Common::LObject
+    class JSONDataSource < OMF::Base::LObject
 
       def initialize(file)
         raw = File.read(file)

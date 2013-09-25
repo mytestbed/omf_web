@@ -1,11 +1,11 @@
 
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'omf-web/session_store'
 require 'omf-web/rack/rack_exceptions'
 
 module OMF::Web::Rack
       
-  class UpdateHandler < OMF::Common::LObject
+  class UpdateHandler < OMF::Base::LObject
     
     def initialize(opts = {})
     end

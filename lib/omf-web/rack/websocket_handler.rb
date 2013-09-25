@@ -1,15 +1,15 @@
 
 
 require 'rack/websocket'
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'omf-web/session_store'
 require 'thread'
 
 module OMF::Web::Rack
 
   class WebsocketHandler < ::Rack::WebSocket::Application
-    include OMF::Common::Loggable
-    extend OMF::Common::Loggable
+    include OMF::Base::Loggable
+    extend OMF::Base::Loggable
 
     MESSAGE_DELAY = 0.5 # Delay in pushing action message to browser
                         # after receiving a 'on_change' from monitored data proxy
