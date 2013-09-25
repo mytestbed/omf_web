@@ -1,9 +1,10 @@
 
-L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widget", "vendor/d3/d3.js"], function () {
+//L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widget", "vendor/d3/d3.js"], function () {
 
-  
-  OML.abstract_chart = OML.abstract_widget.extend({
-    
+define(["graph/abstract_widget"], function (abstract_widget) {
+
+  var abstract_chart = abstract_widget.extend({
+
     decl_color_func: {
       // scale
       "green_yellow80_red()": function() {
@@ -40,7 +41,7 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
                                 return d3.scale.category20c()
                               },
     },
-    
+
     defaults: function() {
       return this.deep_defaults({
         margin: {
@@ -49,19 +50,19 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
           right: 50,
           bottom: 40
         },
-      }, OML.abstract_chart.__super__.defaults.call(this));      
-    },    
-    
-        
+      }, abstract_chart.__super__.defaults.call(this));
+    },
+
+
     //base_css_class: 'oml-chart',
-    
+
     initialize: function(opts) {
-      OML.abstract_chart.__super__.initialize.call(this, opts);
-      
-  
+      abstract_chart.__super__.initialize.call(this, opts);
+
+
       var vis = this.init_svg(this.w, this.h);
       this.configure_base_layer(vis);
-                 
+
       var self = this;
       OHUB.bind("graph.highlighted", function(evt) {
         if (evt.source == self) return;
@@ -71,43 +72,43 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
         if (evt.source == self) return;
         self.on_dehighlighted(evt);
       });
-      
+
       //this.update(null);
-      this.update();         
+      this.update();
     },
-      
-    _resize_base_el: function(w, h) {  
+
+    _resize_base_el: function(w, h) {
       // Do not add margins to the base_el, but to the inside of the SVG panes
       this.w = w;
       this.h = h;
       this.base_el
         .style('height', this.h + 'px')
-        .style('width', this.w + 'px')        
+        .style('width', this.w + 'px')
         .style('margin-left', 0 + 'px')
-        .style('margin-right', 0 + 'px') 
-        .style('margin-top', 0 + 'px')        
-        .style('margin-bottom', 0 + 'px')                
+        .style('margin-right', 0 + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-bottom', 0 + 'px')
         ;
-      
+
       //var m = _.defaults(opts.margin || {}, this.defaults.margin);
       var m = this.opts.margin;
       var ca = this.widget_area = {
-        x: m.left, 
-        rx: w - m.left, 
-        y: m.bottom, 
-        ty: m.top, 
-        w: w - m.left - m.right, 
+        x: m.left,
+        rx: w - m.left,
+        y: m.bottom,
+        ty: m.top,
+        w: w - m.left - m.right,
         h: h - m.top - m.bottom,
         ow: w,  // outer dimensions
         oh: h
       };
-      
-    },   
-    
-    
+
+    },
+
+
     init_svg: function(w, h) {
       var opts = this.opts;
-      
+
       var vis = opts.svg = this.svg_base = this.base_el.append("svg:svg")
         // .attr("width", w)
         // .attr("height", h)
@@ -116,25 +117,25 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
         .attr('class', this.base_css_class);
       var offset = opts.offset;
       if (offset.x) {
-        // the next two lines do the same, but only one works 
+        // the next two lines do the same, but only one works
         // in the specific context
         vis.attr("x", offset.x);
-        vis.style("margin-left", offset.x + "px"); 
+        vis.style("margin-left", offset.x + "px");
       }
       if (offset.y) {
         vis.attr("y", offset.y);
-        vis.style("margin-top", offset.y + "px"); 
+        vis.style("margin-top", offset.y + "px");
       }
       return vis;
     },
 
-    // Split tuple array into array of tuple arrays grouped by 
+    // Split tuple array into array of tuple arrays grouped by
     // the tuple element at +index+.
     //
     group_by: function(in_data, index_f) {
       var data = [];
       var groups = {};
-      
+
       _.map(in_data, function(d) {
         var key = index_f(d);
         var a = groups[key];
@@ -147,7 +148,7 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
       // Sort by 'group_by' index to keep the same order and with it same color assignment.
       var data = _.sortBy(data, function(a) {
         return index_f(a[0])
-      }); 
+      });
       return data;
     },
 
@@ -156,11 +157,11 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
       this.ic = {
            handler: handler,
       };
-  
+
       var ig = this.base_layer.append("svg:g")
         .attr("pointer-events", "all")
         .on("mousedown", mousedown);
-  
+
       var ca = this.chart_area;
       var frame = ig.append("svg:rect")
         .attr("class", "graph-area")
@@ -171,7 +172,7 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
         .attr("fill", "none")
         .attr("stroke", "none")
         ;
-  
+
       function mousedown() {
         var ic = self.ic;
         if (!ic.rect) {
@@ -189,7 +190,7 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
         ic.move_event_consumed = false;
         d3.event.preventDefault();
       }
-  
+
       function mousedown_box() {
         var ic = self.ic;
         mousedown();
@@ -197,20 +198,20 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
           ic.offsetx = ic.x0[0] - ic.minx;
         }
       }
-  
+
       function mousemove(x, d, i) {
         var ic = self.ic;
         var ca = self.chart_area;
-  
+
         if (!ic.rect) return;
         if (!ic.is_dragging) return;
         ic.has_moved = true;
-  
+
         var x1 = d3.svg.mouse(ic.rect.node());
         var minx;
         if (ic.offsetx) {
           minx = Math.max(ca.x, x1[0] - ic.offsetx);
-          minx = ic.minx = Math.min(minx, ca.x + ca.w - ic.width); 
+          minx = ic.minx = Math.min(minx, ca.x + ca.w - ic.width);
         } else {
           minx = ic.minx = Math.max(ca.x, Math.min(ic.x0[0], x1[0]));
           var maxx = Math.min(ca.x + ca.w, Math.max(ic.x0[0], x1[0]));
@@ -218,7 +219,7 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
         }
         self.update_selection({screen_minx: minx});
       }
-  
+
       function mouseup() {
         var ic = self.ic;
         if (!ic.rect) return;
@@ -231,18 +232,18 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
           if (ic.handler) ic.handler(this, 0, 0);
         }
       }
-  
+
       d3.select(window)
           .on("mousemove", mousemove)
           .on("mouseup", mouseup);
     },
-  
+
     update_selection: function(selection) {
       if (!this.ic) return;
-  
+
       var ic = this.ic;
       var ca = this.chart_area;
-  
+
       var sminx = selection.screen_minx;
       if (sminx) {
         ic.rect
@@ -260,16 +261,16 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
         ic.handler(this, imin, imax);
       }
     },
-    
+
     /*************
      * Deal with schema and turn +mapping+ instructions into actionable functions.
      */
-    
-    
+
+
     on_highlighted: function(evt) {},
     on_dehighlighted: function(evt) {},
-    
-    
+
+
     // Return an array with the 'min' and 'max' value returned by running 'f' over 'data'
     // However, any 'min' and 'max' values in 'opts' take precedence.
     //
@@ -286,7 +287,7 @@ L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widg
       var min = o.min != undefined ? o.min : d3.min(data, function(s) {return d3.min(s, f)});
       return [min, max];
     }
-
-    
   });
+
+  return abstract_chart;
 })
