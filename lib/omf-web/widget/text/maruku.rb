@@ -34,7 +34,7 @@ module OMF::Web::Widget::Text
         raise "Expected content proxy, but got '#{content_proxy.class}'"
       end
       content = content_proxy.content
-      puts ">>>> CREATING NEW MARUKU"
+      #puts ">>>> CREATING NEW MARUKU"
       ::Maruku.new(content)
     end
 
