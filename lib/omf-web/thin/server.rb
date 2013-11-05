@@ -140,7 +140,7 @@ module OMF::Web
       begin
         return @databases[id] = OMF::OML::OmlSqlSource.new(url, :check_interval => 3.0)
       rescue Exception => ex
-        puts "Can't connect ot database '#{id}' - #{ex}"
+        puts "Can't connect to database '#{id}' - #{ex}"
         abort
       end
     end
