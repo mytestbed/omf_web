@@ -11,7 +11,7 @@ At this stage the best course of action is to clone the repository
 
     % git clone https://github.com/mytestbed/omf_web.git
     % cd omf_web
-    % export OMF_WEB_HOME=`pwd`
+    % export OMF_WEB=`pwd`
     % bundle install
 
 
