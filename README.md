@@ -21,7 +21,7 @@ Getting Started
 There are a few example sites in the 'example' directory. They have been developed in the context of various demos and 
 may not always be kept up to date. The one which should always work is 'example/simple'. Try it out.
 
-    % $OMF_WEB/bin/omf_web_server.rb --config $OMF_WEB/example/simple/simple.yaml
+    % $OMF_WEB/bin/omf_web_server.rb --config $OMF_WEB/example/simple/simple.yaml start
     
 This starts a webserver which can be accessed locally via 'http:localhost:4050'. Connecting to it through your favorite 
 web browser should display a web page approx. looking like:
