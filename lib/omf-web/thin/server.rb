@@ -51,7 +51,8 @@ module OMF::Web
         abort
       end
 
-      @top_dir ||= File.dirname(cf)
+      @cfg_dir = File.dirname(cf)
+      @top_dir ||= @cfg_dir
       cfg = _rec_sym_keys(YAML.load_file(cf))
 
       if log_opts = cfg[:logging]
@@ -88,29 +89,39 @@ module OMF::Web
         puts "Missing id in datasource configuration"
         abort
       end
-      case type = config[:type] || 'database'
-      when 'database'
+      if config[:database]
         load_database(id, config)
-      when 'file'
+      elsif config[:file]
         load_datasource_file(id, config)
       else
-        abort "Unknown datasource type '#{type}'."
+        abort "Unknown datasource type - #{config}"
       end
     end
 
     def load_database(id, config)
-      unless table_name = config[:table]
-        puts "Missing 'table' in datasource configuration '#{config}'"
-        abort
-      end
       unless db_cfg = config[:database]
         puts "Missing database configuration in datasource '#{config}'"
         abort
       end
       db = get_database(db_cfg)
-      unless table = db.create_table(table_name)
-        puts "Can't find table '#{table_name}' in database '#{db_cfg}'"
-        abort
+      if query_s = config[:query]
+        unless schema = config[:schema]
+          puts "Missing schema configuration in datasource '#{config}'"
+          abort
+        end
+        require 'omf_oml/schema'
+        config[:schema] = OMF::OML::OmlSchema.create(schema)
+        table = db.create_table(id, config)
+      else
+        unless table_name = config.delete(:table)
+          puts "Missing 'table' in datasource configuration '#{config}'"
+          abort
+        end
+        config[:name] = id
+        unless table = db.create_table(table_name, config)
+          puts "Can't find table '#{table_name}' in database '#{db_cfg}'"
+          abort
+        end
       end
       OMF::Web.register_datasource table, name: id
     end
@@ -126,25 +137,30 @@ module OMF::Web
         puts "Database '#{config}' not defined - (#{@databases.keys})"
         abort
       end
-      unless id = config[:id]
+      unless id = config.delete(:id)
         puts "Missing id in database configuration"
         abort
       end
+      if db = @databases[id.to_s] # already known
+        return db
+      end
+
       # unless id = config[:id]
         # puts "Database '#{config}' not defined - (#{@databases.keys})"
         # abort
       # end
-      unless url = config[:url]
+      unless url = config.delete(:url)
         puts "Missing URL for database '#{id}'"
         abort
       end
-      if url.start_with?('sqlite://') && ! url.start_with?('sqlite:///')
+      if url.start_with?('sqlite:') && ! url.start_with?('sqlite:/')
         # inject top dir
-        url.insert('sqlite://'.length, @top_dir + '/')
+        url.insert('sqlite:'.length, '//' + @cfg_dir + '/')
       end
-      puts "URL: #{url}"
+      config[:check_interval] ||= 3.0
+      puts "URL: #{url} - #{config}"
       begin
-        return @databases[id] = OMF::OML::OmlSqlSource.new(url, :check_interval => 3.0)
+        return @databases[id] = OMF::OML::OmlSqlSource.new(url, config)
       rescue Exception => ex
         puts "Can't connect ot database '#{id}' - #{ex}"
         abort
