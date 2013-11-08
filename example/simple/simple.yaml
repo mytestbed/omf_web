@@ -14,7 +14,7 @@ data_sources:
     table: wave
     database:
       id: sample
-      url: sqlite://sample.sq3
+      url: sqlite:sample.sq3
 
 repositories:
   - id: simple

@@ -15,7 +15,7 @@ data_sources:
     limit: 5 # Fetch 5 rows each time
     database:
       id: sample
-      url: sqlite://sample.sq3
+      url: sqlite:sample.sq3
 
 repositories:
   - id: simple
