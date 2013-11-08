@@ -1,8 +1,7 @@
-
-
-# Define a 'dashboard' consisting of two columns of widgets
 #
-
+# First tab showing the network on the left and
+# link stats on the right.
+#
 widget:
   id: linked_graphs
   name: Dashboard
@@ -14,7 +13,7 @@ widget:
       type: data/network2
       width: 1.0
       height: 1.0
-      data_source: 
+      data_source:
         name: network
         unique_column: id  # only use the latest link and row descriptions
         dynamic: true
@@ -22,7 +21,7 @@ widget:
         nodes:
           x:
             property: x
-          y: 
+          y:
             property: y
           radius: 20
         links:
@@ -35,12 +34,12 @@ widget:
             property: load
             max: 1.0
             color: green_yellow80_red()
-      margin: 
+      margin:
         left: 30
         right: 30
-      #interaction_mode: click  # click on link to create event
+      interaction_mode: click  # click on link to create event
 
-        
+
   right:
     - name: Link Stats
       type: data/line_chart3
@@ -51,8 +50,8 @@ widget:
         name: link_history
       mapping:
         x_axis: ts
-        y_axis: 
-          property:  rate 
+        y_axis:
+          property:  rate
           #max: 1
         group_by: name
       axis:
@@ -68,5 +67,5 @@ widget:
           ticks:
             format: 's'
           transition: 0
-      margin: 
+      margin:
         left: 100
