@@ -1,46 +1,38 @@
 
-L.provide('OML.bridge', ["graph/js/abstract_chart", "#OML.abstract_chart"],
+define(["graph/abstract_chart"], function(abstract_chart) {
 
-  function () {
-
-  OML.bridge = OML.abstract_chart.extend({
+  var bridge = abstract_chart.extend({
     decl_properties: [
-      ['health', 'key'], 
-      ['fill_color', 'color', 'blue'], 
+      ['health', 'key'],
+      ['fill_color', 'color', 'blue'],
     ],
-    
+
     defaults: function() {
       return this.deep_defaults({
         width: 1.0,  // <= 1.0 means set width to enclosing element
         height: 200,  // <= 1.0 means fraction of width
-        
-        /*
-        axis: {
-          orientation: 'horizontal'
-        }
-        */
-      }, OML.bridge.__super__.defaults.call(this));      
-    },    
-    
+      }, bridge.__super__.defaults.call(this));
+    },
+
     base_css_class: 'oml-bridge',
-    
+
     initialize: function(opts) {
-      OML.bridge.__super__.initialize.call(this, opts);
-      
+      bridge.__super__.initialize.call(this, opts);
+
       var self = this;
       OHUB.bind("bridge.event_selected", function(evt) {
         var joint_id = evt.datum[evt.schema.jointID.index];
         self.redraw_sensor_locator(joint_id);
       });
     },
-    
-    
+
+
     configure_base_layer: function(vis) {
       var base = this.base_layer = vis.append("svg:g")
                                       .attr("class", "bridge")
                                       ;
-    
-      var ca = this.chart_area; 
+
+      var ca = this.chart_area;
       var bgl = this.background_layer = base.append("svg:g");
       this.draw_background(bgl);
 
@@ -53,7 +45,7 @@ L.provide('OML.bridge', ["graph/js/abstract_chart", "#OML.abstract_chart"],
       var o = this.opts;
       var ca = this.widget_area;
       var m = this.mapping;
-      
+
       var events = this.data_layer.selectAll('.event')
                     .data(data)
                     ;
@@ -70,17 +62,17 @@ L.provide('OML.bridge', ["graph/js/abstract_chart", "#OML.abstract_chart"],
             .attr("r", 2)
             .attr('cy', m.y + 50)
             .style("stroke-opacity", 1e-6)
-            .remove();          
+            .remove();
           ;
     },
-    
+
     redraw_sensor_locator: function(joint_id) {
       var self = this;
       var o = this.opts;
       var ca = this.widget_area;
       var m = this.mapping;
       var self= this;
-      
+
       function locator(g) {
         g.append('svg:rect')
           .attr('x', m.joint2x)
@@ -100,27 +92,24 @@ L.provide('OML.bridge', ["graph/js/abstract_chart", "#OML.abstract_chart"],
             ;
          return g;
       }
-      
+
       var selector = this.selector_layer.selectAll('.locator')
                     .data([joint_id], function(d) { return d; })
                     ;
       selector
         .enter().append('g')
             .attr('class', 'locator')
-            .call(locator)
+            .call(locator);
       selector.exit().remove();
     },
-    
+
     draw_background: function(bgl) {
-      
-      var bw = 600, bh = 180; // bridge dim       
-      var y = -977.36218 + bh - 75; 
+      var bw = 600, bh = 180; // bridge dim
+      var y = -977.36218 + bh - 75;
       var boffset = 70;
-      
       var lmargin = (this.w - (2 * boffset + bw)) / 2;
-  
       var stroke = 'silver';
-      
+
       bgl.append('g')
         .attr("transform", 'translate(' + (boffset + lmargin) + ', ' + y + ')')
         .append('path')
@@ -139,11 +128,11 @@ L.provide('OML.bridge', ["graph/js/abstract_chart", "#OML.abstract_chart"],
           .attr('x1', 0)
           .attr('x2', 2 * boffset + bw)
           .attr('y1', ly)
-          .attr('y2', ly)        
+          .attr('y2', ly)
           .attr('stroke', stroke)
           .attr('stroke-width', '4px')
         ;
-        
+
       var self = this;
       var jid = this.schema.jointID.index;
       var scale = d3.scale.linear().domain([0, 60]).range([lmargin, lmargin + 2 * boffset + bw]);
@@ -152,14 +141,15 @@ L.provide('OML.bridge', ["graph/js/abstract_chart", "#OML.abstract_chart"],
         var joint = parseInt(joint_s);
         var x = scale(joint);
         return x;
-      }
+      };
       this.mapping.x = function(d) {
         return joint2x(d[jid]);
-      }
-      
+      };
       this.mapping.y = ly;
     },
-    
-    
-  }) // end of histogram
-}) // end of provide
+
+
+  }); // end of bridge
+
+  return bridge;
+});

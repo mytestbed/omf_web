@@ -1,14 +1,10 @@
 
-#require 'omf-common/mobject2'
-require 'omf_common/lobject'
-# require 'yaml'
-# require 'log4r'
+require 'omf_base/lobject'
 
-#OMF::Common::Loggable.init_log 'bridge', 'development', :searchPath => File.dirname(__FILE__)
-OMF::Common::Loggable.init_log 'bridge', :searchPath => File.dirname(__FILE__)
+OMF::Base::Loggable.init_log 'bridge', :searchPath => File.dirname(__FILE__)
 
 
-# If set, create fake sensor events 
+# If set, create fake sensor events
 $fake_bridge_events = false
 # Path to OML database
 $oml_database = 'sqlite://example/bridge/data_sources/test3.sq3'
@@ -20,10 +16,10 @@ def load_environment
   Dir.glob("#{File.dirname(__FILE__)}/data_sources/*.rb").each do |fn|
     load fn
   end
-  
+
   require 'yaml'
   Dir.glob("#{File.dirname(__FILE__)}/widgets/*.yaml").each do |fn|
-    OMF::Common::LObject.debug "Load yaml file '#{fn}'"
+    OMF::Base::LObject.debug "Load yaml file '#{fn}'"
     h = YAML.load_file(fn)
     if w = h['widget']
       OMF::Web.register_widget w
