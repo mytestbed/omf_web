@@ -1,7 +1,7 @@
 #ENV['BUNDLE_GEMFILE'] = "#{File.dirname(__FILE__)}/../../Gemfile"
 #require 'bundler/setup'
-require 'omf_common/lobject'
-OMF::Common::Loggable.init_log 'demo', :searchPath => File.dirname(__FILE__)
+require 'omf_base/lobject'
+OMF::Base::Loggable.init_log 'demo', :searchPath => File.dirname(__FILE__)
 
 
 require 'omf_oml/table'
