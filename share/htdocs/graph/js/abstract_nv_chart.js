@@ -1,12 +1,11 @@
 
-// L.provide('d3', ["vendor/d3/d3.js"], function() {
-  // L.provide('nv_d3', ["vendor/nv_d3/js/nv.d3.js",  "vendor/nv_d3/css/nv.d3.css"]);
-// })
+require.config({
+  shim: {
+    "vendor/nv_d3/js/nv.d3": ["vendor/d3/d3", "css!vendor/nv_d3/css/nv.d3"]
+  }
+});
 
 define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_chart) {
-// L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_chart",
-                                   // //"graph/js/axis", "#OML.axis", "graph/css/graph.css",
-                                   // "#nv_d3"], function () {
 
   var abstract_nv_chart = abstract_chart.extend({
     axis_defaults: {
@@ -70,7 +69,7 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
       }
 
       // TICKS
-      var ot = opts.ticks // _.defaults(opts.ticks || {}, defaults.ticks);
+      var ot = opts.ticks; // _.defaults(opts.ticks || {}, defaults.ticks);
       // Check if we need a special formatter for the tick labels
       if (ot.type == 'date' || ot.type == 'dateTime') {
         var d_f = d3.time.format(ot.format || "%X");
@@ -106,11 +105,11 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
       if (ot.count) axis.ticks(ot.count);
 
       // MARGIN
-      var om = opts.margin //_.defaults(ot.margin || {}, defaults.margin);
+      var om = opts.margin; //_.defaults(ot.margin || {}, defaults.margin);
       axis.margin(om);
 
       // MISC
-      axis.showMaxMin(false)
+      axis.showMaxMin(false);
     },
 
     resize: function() {
@@ -128,15 +127,15 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
                   .datum(this._datum(data, this.chart))
                   ;
       if (this.opts.transition_duration > 0) {
-        bl = bl.transition().duration(500)
+        bl = bl.transition().duration(500);
       }
       bl.call(this.chart);
     },
 
-  })
+  });
 
   return abstract_nv_chart;
-})
+});
 
 /*
   Local Variables:

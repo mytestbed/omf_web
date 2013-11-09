@@ -1,47 +1,47 @@
-L.provide('OML.scatter_plot', ["graph/js/abstract_chart", "#OML.abstract_chart", "graph/js/axis", "#OML.axis"], function () {
+define(["graph/abstract_nv_chart"], function (abstract_nv_chart) {
 
-  OML.scatter_plot = OML.abstract_chart.extend({
+  var scatter_plot = abstract_nv_chart.extend({
     decl_properties: [
-      ['x_axis', 'key', {property: 'x'}], 
-      ['y_axis', 'key', {property: 'y'}], 
-      ['radius', 'int', 10],       
-      ['stroke_width', 'int', 2], 
+      ['x_axis', 'key', {property: 'x'}],
+      ['y_axis', 'key', {property: 'y'}],
+      ['radius', 'int', 10],
+      ['stroke_width', 'int', 2],
       ['stroke_color', 'color', 'black'],
       ['fill_color', 'color', 'orange']
     ],
-    
+
     defaults: function() {
       return this.deep_defaults({
         transition: 400, // Time in msec for transition when elements change
         axis: {
           orientation: 'horizontal'
         }
-      }, OML.scatter_plot.__super__.defaults.call(this));      
-    },    
-    
-    
+      }, scatter_plot.__super__.defaults.call(this));
+    },
+
+
     configure_base_layer: function(vis) {
       var base = this.base_layer = vis.append("svg:g")
                                       .attr("class", "scatterplot")
                                       ;
                  //.attr("transform", "translate(0, " + this.h + ")");
 
-      var ca = this.chart_area; 
+      var ca = this.chart_area;
       this.legend_layer = base.append("svg:g");
       this.chart_layer = base.append("svg:g");
       this.axis_layer = base.append('g');
     },
 
     resize: function() {
-      OML.scatter_plot.__super__.resize.call(this);
+      scatter_plot.__super__.resize.call(this);
       return this;
-    },   
+    },
 
     redraw: function(data) {
       var self = this;
       var o = this.opts;
       var ca = this.widget_area;
-      
+
       var m = this.mapping;
       var x_m = m.x_axis;
       var y_m = m.y_axis;
@@ -56,13 +56,13 @@ L.provide('OML.scatter_plot', ["graph/js/abstract_chart", "#OML.abstract_chart",
                           .range([0, ca.h])
                           .nice();
       var r_f = typeof(r_m) != 'function' ? d3.functor(r_m) : r_m;
-      var w_f = typeof(r_m) != 'function' ? (2 * r_m) : function(d) { return 2 * r_m(d); }
-                
-      var x = function(d) { 
-        return x_f(x_m(d)) + ca.x - r_f(d); 
+      var w_f = typeof(r_m) != 'function' ? (2 * r_m) : function(d) { return 2 * r_m(d); };
+
+      var x = function(d) {
+        return x_f(x_m(d)) + ca.x - r_f(d);
       };
-      var y = function(d) { 
-        return ca.ty + ca.h - y_f(y_m(d)) - r_f(d); 
+      var y = function(d) {
+        return ca.ty + ca.h - y_f(y_m(d)) - r_f(d);
       };
       var rects = this.chart_layer.selectAll("rect").data(data);
       rects.transition().duration(o.transition)
@@ -86,10 +86,10 @@ L.provide('OML.scatter_plot', ["graph/js/abstract_chart", "#OML.abstract_chart",
       rects.exit()
         .remove()
         ;
-          
+
       this.redraw_axis(data, x_f, y_f);
     },
-    
+
     redraw_axis: function(data, x, y) {
       var self = this;
       var ca = this.widget_area;
@@ -100,7 +100,7 @@ L.provide('OML.scatter_plot', ["graph/js/abstract_chart", "#OML.abstract_chart",
         var xAxis = this.xAxis.scale(x);
         this.axis_layer.select('g.x.axis').call(xAxis);
       } else {
-        var xAxis = this.xAxis = OML.line_chart2_axis(oAxis.x).scale(x).orient("bottom").range([0, ca.w]);      
+        var xAxis = this.xAxis = line_chart2_axis(oAxis.x).scale(x).orient("bottom").range([0, ca.w]);
         this.axis_layer
           .append('g')
             .attr("transform", "translate(" + ca.x + "," + (ca.ty + ca.h) + ")")
@@ -108,13 +108,13 @@ L.provide('OML.scatter_plot', ["graph/js/abstract_chart", "#OML.abstract_chart",
             .call(xAxis)
             ;
       }
-      
+
       var inv_y = y.range([ca.h, 0]);
       if (this.yAxis) {
         var yAxis = this.yAxis.scale(inv_y);
         this.axis_layer.select('g.y.axis').call(yAxis);
       } else {
-        var yAxis = this.yAxis = OML.line_chart2_axis(oAxis.y).scale(inv_y).orient("left").range([0, ca.h]);
+        var yAxis = this.yAxis = line_chart2_axis(oAxis.y).scale(inv_y).orient("left").range([0, ca.h]);
         this.axis_layer
           .append('g')
             .attr("transform", "translate(" + ca.x + "," + ca.ty + ")")
@@ -122,11 +122,11 @@ L.provide('OML.scatter_plot', ["graph/js/abstract_chart", "#OML.abstract_chart",
             .call(yAxis)
             ;
       }
-                 
-      
+
+
     },
-    
-    
+
+
     on_highlighted: function(evt) {
       var els = evt.elements;
       var piece_id = els[0].id
@@ -150,17 +150,19 @@ L.provide('OML.scatter_plot', ["graph/js/abstract_chart", "#OML.abstract_chart",
       var vis = this.chart_layer;
       vis.selectAll("path")
        .transition()
-         .style("opacity", 1.0)         
+         .style("opacity", 1.0)
          .delay(0)
-         .duration(300)
+         .duration(300);
       if (evt.source == null) {
         evt.source = this;
         OHUB.trigger("graph.dehighlighted", evt);
       }
     },
-  
-  })
-})
+
+  });
+
+  return scatter_plot;
+});
 
 /*
   Local Variables:
