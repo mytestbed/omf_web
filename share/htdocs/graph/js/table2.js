@@ -118,7 +118,7 @@ define(["graph/abstract_widget",
         return self.sorted_data.length;
       }
 
-      var topts = this.opts.topts
+      var topts = this.opts.topts;
       topts.dataItemColumnValueExtractor = function(item, columnDef) {
         var i = 0;
         return item[columnDef.id];
@@ -152,7 +152,7 @@ define(["graph/abstract_widget",
 
       var columns;
       if (opts.columns) {
-        var sh = {}; _.each(schema, function(e) { sh[e.name] = e; })
+        var sh = {}; _.each(schema, function(e) { sh[e.name] = e; });
         columns = _.map(opts.columns, function(c) {
           if (typeof c === 'string') {
             c = {field: c};
@@ -163,9 +163,9 @@ define(["graph/abstract_widget",
             name: s.title || s.name,
             width: 0,
             sortable: true,
-          })
+          });
           if (c.format) {
-            c.formatter = self.find_formatter(c.type || s.type, c)
+            c.formatter = self.find_formatter(c.type || s.type, c);
           }
           return c;
         });
@@ -189,21 +189,21 @@ define(["graph/abstract_widget",
           var date = new Date(1000 * v);  // TODO: Implicitly assuming that value is in seconds is most likely NOT a good idea
           var fs = d_f(date);
           return fs;
-        }
+        };
       } else if (type == 'key') {
         var lm = opts.format;
         return function(r, c, v) {
           var l = lm[v] || ('??-' + v);
           return l;
-        }
+        };
       } else {
         var formatter = d3.format(opts.format);
         return function(r, c, v) {
           return formatter(v);
-        }
+        };
       }
     }
-  })
+  });
 
   return table2;
-})
+});

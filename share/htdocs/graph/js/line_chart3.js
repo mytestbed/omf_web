@@ -34,11 +34,11 @@ define(["graph/abstract_nv_chart",
       chart.x(function(d) {
         var v = x_index(d);
         return v;
-      })
+      });
       chart.y(function(d) {
         var v = y_index(d);
         return v;
-      })
+      });
     },
 
     _configure_options: function(opts, chart) {
@@ -89,10 +89,10 @@ define(["graph/abstract_nv_chart",
         return line;
       });
     },
-  })
+  });
 
   return line_chart3;
-})
+});
 
 /*
   Local Variables:

@@ -129,7 +129,7 @@ define(["graph/abstract_nv_chart"], function (abstract_nv_chart) {
 
     on_highlighted: function(evt) {
       var els = evt.elements;
-      var piece_id = els[0].id
+      var piece_id = els[0].id;
       var vis = this.chart_layer;
       vis.selectAll("path")
        .filter(function(d) {
