@@ -36,6 +36,7 @@ module OMF::Web
       @server_name = server_name
       @top_dir = top_dir
       @databases = {}
+      @omsp_endpoints = {}
 
       OMF::Web.start(opts)
     end
@@ -93,6 +94,8 @@ module OMF::Web
         load_database(id, config)
       elsif config[:file]
         load_datasource_file(id, config)
+      elsif config[:omsp]
+        load_omsp_endpoint(id, config)
       else
         abort "Unknown datasource type - #{config}"
       end
@@ -196,6 +199,17 @@ module OMF::Web
       OMF::Web.register_datasource ds, name: name
     end
 
+    def load_omsp_endpoint(id, config)
+      oconfig = config[:omsp]
+      unless port = oconfig[:port]
+        puts "Need port in OMSP definition '#{oconfig}' - datasource '#{id}'"
+        abort
+      end
+      ep = @omsp_endpoints[port] ||= OmspEndpointProxy.new(port)
+      ep.add_datasource(id, config)
+    end
+
+
     def load_repository(config)
       unless id = config[:id]
         puts "Missing id in respository configuration"
@@ -273,5 +287,59 @@ module OMF::Web
         # do nothing
       end
     end
+
+    # This class manages an OMSP Endpoint and all the related
+    # data sources
+    #
+    class OmspEndpointProxy < OMF::Base::LObject
+      def initialize(port)
+        @streams = {}
+        @sources = {}
+        @tables = {}
+        require 'omf_oml/endpoint'
+        @ep = OMF::OML::OmlEndpoint.new(port)
+        @ep.on_new_stream() do |name, stream|
+          _on_new_stream(name, stream)
+        end
+        Thread.new do # delay starting up endpoint, can't use EM yet
+          sleep 2
+          @ep.run(false)
+        end
+      end
+
+      def add_datasource(name, config)
+        stream_name = config[:omsp][:stream_name] || name
+        config.delete(:omsp)
+        (@sources[stream_name.to_s] ||= []) << config
+      end
+
+      def _on_new_stream(name, stream)
+        debug "New stream: #{name}-#{stream}"
+        (@sources[name] || []).each do |tdef|
+          puts "TDEF: #{tdef}"
+          tname = tdef.dup.delete(:id)
+          unless table = @tables[tname]
+            table = @tables[tname] = stream.create_table(tname, tdef)
+            OMF::Web.register_datasource table
+            puts "ADDED: #{table}"
+          else
+            warn "Looks like reconnection, should reconnect to table as well"
+          end
+        end
+
+        #sconfig = @streams[name] ||= {}
+        #sconfig[:stream] = stream
+      end
+          # table = stream.create_table(name + '_tbl', :max_size => 5)
+          # table.on_content_changed do |action, change|
+            # puts "TTTT > #{action} - #{change}"
+          # end
+
+        #ds = OMF::OML::OmlCsvTable.create name, file, has_csv_header: true
+        #OMF::Web.register_datasource table, name: name
+
+
+    end
+
   end # class
 end # module
