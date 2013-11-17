@@ -74,7 +74,7 @@ define(["graph/abstract_nv_chart",
         var line = {
           values: rows,
           key: name,
-        }
+        };
         if (o.area) line.area = o.area;
         if (m.stroke_color) {
           line.color = m.stroke_color(name);
