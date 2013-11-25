@@ -8,7 +8,8 @@ module OMF::Web::Theme
     depends_on :css, "/resource/theme/bright/css/bright.css"
 
     depends_on :script, %{
-      OML.session_id = '#{Thread.current["sessionID"]}'
+      if (typeof(OML) == "undefined") OML = {};
+      //OML.session_id = '#{Thread.current["sessionID"]}'
       OML.show_widget = function(opts) {
         var prefix = opts.inner_class;
         var index = opts.index;

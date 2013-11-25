@@ -1,0 +1,54 @@
+
+
+
+# Simple tab showing a line chart with supporting table
+#
+
+server:
+  name: 'WebRTC Demo'
+  page_title: 'WebRTC Demo'
+  port: 4050
+
+data_sources:
+  - id: rtc_stats
+    #table: webrtc_stats
+    query: SELECT oml_ts_server as ts, val, wrid FROM webrtc_stats WHERE key='googRtt'
+    schema: [[ts, float], [val, int], [wrid, string]]
+    database:
+      id: rtc
+      url: sqlite:webrtc-exp_1381786573.sq3
+
+widgets:
+  - id: main
+    name: Main
+    top_level: true
+    priority: 900
+    type: layout/one_column
+    widgets:
+      - type: layout/stacked
+        info: This widget shows ?????.
+        widgets:
+          - name: WRID
+            type: data/line_chart3
+            data_source:
+              name: rtc_stats
+            mapping:
+              x_axis: ts
+              y_axis:
+                property: val
+                min: 0
+              group_by: wrid
+            axis:
+              x:
+                legend: Time (sec)
+              y:
+                legend: ??
+                ticks:
+                  format: ".1s"
+
+          - name: Table
+            type: data/table2
+            data_source:
+              name: rtc_stats
+
+

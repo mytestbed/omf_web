@@ -13,7 +13,7 @@ widget:
     - name: Network
       type: data/network2
       width: 1.0
-      data_source: 
+      data_source:
         name: static_network
         unique_column: id  # only use the latest link and row descriptions
         dynamic: true
@@ -21,7 +21,7 @@ widget:
         nodes:
           x:
             property: x
-          y: 
+          y:
             property: y
         links:
           stroke_width:
@@ -31,44 +31,21 @@ widget:
           stroke_color:
             property: load
             color: red_yellow20_green() #green_yellow80_red()
-      margin: 
+      margin:
         left: 30
         right: 30
       interaction_mode: click  # click on link to create event
 
 
-    # - name: Link Stats All
-      # type: data/line_chart3
-      # #area: true # color the area between line and zero line
-      # data_source: 
-        # name: static_network/links
-        # dynamic: true
-      # group_by: name
-      # mapping:
-        # x_axis: ts
-        # y_axis: 
-          # property:  load 
-          # min: 0
-          # max: 1
-      # axis:
-        # x:
-          # ticks:
-            # type: time
-            # #transition: 0
-          # legend: Time (sec)
-        # y:
-          # legend: Load (bps)
-      # margin: 
-        # left: 100
-        
+
   right:
     - name: Single Link Stats
       type: data/line_chart3
       #area: true # color the area between line and zero line
       data_source:
         name: link_history
-        #name: static_network/links   
-        
+        #name: static_network/links
+
         # Only fetch a 'slice' of the underlying data source. A slice
         # is defined by specific value in the 'slice_column' of all rows
         slice:
@@ -79,8 +56,8 @@ widget:
       group_by: name
       mapping:
         x_axis: ts
-        y_axis: 
-          property:  load 
+        y_axis:
+          property:  load
           min: 0
           max: 1
       axis:
@@ -91,5 +68,5 @@ widget:
           legend: Time (sec)
         y:
           legend: Load (bps)
-      margin: 
+      margin:
         left: 100

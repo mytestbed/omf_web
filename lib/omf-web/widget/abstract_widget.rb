@@ -1,14 +1,14 @@
 
 require 'erector'
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 
 module OMF::Web::Widget
       
   # Maintains the context for a particular code rendering within a specific session.
   #
   class AbstractWidget < Erector::Widget
-    extend OMF::Common::Loggable
-    include OMF::Common::Loggable    
+    extend OMF::Base::Loggable
+    include OMF::Base::Loggable    
     
     attr_reader :widget_id, :widget_type, :name, :opts
     

@@ -1,50 +1,14 @@
 
 
-OML.data_sources = function() {
-  var sources = {};
-  
-  function context() {};
-  
-  context.register = function(opts) {
-    var id = opts.id || opts.name;
-    if (sources[id] == null) {
-      sources[id] = new OML.data_source(opts);
-    }
-    return context;
-  };
-  
-  context.lookup = function(ds_descr) {
-    var name;
-    var dynamic = false;
-    
-    if (typeof(ds_descr) == 'object') {
-      name = ds_descr.id || ds_descr.name;
-      dynamic = ds_descr.dynamic;
-    } else {
-      name = ds_descr;
-    } 
-    var source = sources[name];
-    if (! source) {
-      throw("Unknown data source '" + name + "'.");
-    }
-    if (dynamic) {
-      source.is_dynamic(dynamic);
-    }
-    return source;
-  };
-  
-  return context;
-}();
+function omf_web_data_source(opts) {
 
-OML.data_source = function(opts) {
-  
   var name = opts.id || opts.name;
   var event_name = "data_source." + name + ".changed";
   var rows = opts.rows || [];
   //var offset = opts.offset || -1; // Number of (initial) rows skipped (count towards 'max_rows')
-  var offset = opts.offset || 0; // Number of (initial) rows skipped (count towards 'max_rows')  
+  var offset = opts.offset || 0; // Number of (initial) rows skipped (count towards 'max_rows')
   var schema = opts.schema;
-  
+
   var data_source = {
     version: "0.1",
     name: name,
@@ -54,10 +18,10 @@ OML.data_source = function(opts) {
     is_dynamic: is_dynamic,
     event_name: event_name,
   }
-  
+
   var indexes = {};
   var unique_index_check = null;
-  
+
   var update_interval = -1;
   var ws = null; // points to web socket instance
 
@@ -72,7 +36,7 @@ OML.data_source = function(opts) {
       return indexes[i][key]; // need fresh lookup as we may redo index
     }
   }
-  
+
   function update_indexes() {
     // This can most likley be done more efficiently if we consider what has changed
     _.each(indexes, function(ignore, i) {
@@ -80,12 +44,12 @@ OML.data_source = function(opts) {
       _.each(rows, function(r) { index[r[i]] = r; })
     });
   }
-    
+
   function is_dynamic(_) {
     if (!arguments.length) {
       return update_interval > 0 || ws;
     }
-    
+
     var opts = _;
     var interval = -1;
     if (typeof(opts) == 'number') {
@@ -102,11 +66,11 @@ OML.data_source = function(opts) {
       start_polling_backend();
     }
   }
-    
+
   var ws = null; // Websocket identifier
   function start_web_socket() {
     if (ws) return; // already running
-    
+
     var url = 'ws://' + window.location.host + '/_ws?sid=' + (opts.sid || OML.session_id);
     ws = new WebSocket(url);
     ws.onopen = on_open;
@@ -117,10 +81,10 @@ OML.data_source = function(opts) {
     ws.onerror = function(evt) {
       var status = "onerror";
     };
-  } 
-  
+  }
+
   // Send a message to the server
-  // 
+  //
   // @params type - Type of message
   // @params args - Hash of additional args ('ds_name' of this data source will be added)
   //
@@ -132,13 +96,13 @@ OML.data_source = function(opts) {
     ws.send(JSON.stringify(msg));
   }
 
-  
+
   function on_open() {
     if (!active_slice_col_name) {
       send_server_msg('register_data_source', {offset: offset + rows.length})
     }
   };
-  
+
   function on_message(evt) {
     // evt.data contains received string.
     var msg = jQuery.parseJSON(evt.data);
@@ -153,7 +117,7 @@ OML.data_source = function(opts) {
         throw "Unknown message type '" + msg.type + "'.";
     }
   };
-  
+
   function on_update(msg) {
     if (unique_index_check) {
       // Let's first see if we simply replace a row
@@ -161,7 +125,7 @@ OML.data_source = function(opts) {
         if (!unique_index_check(r)) {
           rows.push(r); // new index
         }
-      });          
+      });
     } else {
       // need to append to 'rows' as it's referenced in other closures
       // _.each(msg.rows, function(r) { rows.push(r) });
@@ -170,7 +134,7 @@ OML.data_source = function(opts) {
         // rows = _.rest(rows, chop);
       // }
       switch (msg.action) {
-        case 'added': 
+        case 'added':
           _.each(msg.rows, function(r) { rows.push(r) });
           break;
         case 'removed':
@@ -193,17 +157,17 @@ OML.data_source = function(opts) {
           throw "Unknown message action '" + msg.action + "'.";
       }
     }
-      
+
     update_indexes();
     var evt = {data_source: data_source};
     OHUB.trigger(event_name, evt);
     OHUB.trigger("data_source.changed", evt);
   }
-  
+
   // Request a new slice from the server. Clear existing state
   function set_slice_column(col_value) {
     if (active_slice_value == col_value) return;
-    
+
     active_slice_column_id = col_value;
     // Reset state
     rows = [];
@@ -213,14 +177,14 @@ OML.data_source = function(opts) {
   }
   var active_slice_col_name = null;
   var active_slice_value = null;
- 
-  function start_polling_backend() {   
+
+  function start_polling_backend() {
     var first_time = this.update_interval < 0;
-    
+
     if (this.update_interval < 0 || this.update_interval > interval) {
       this.update_interval = interval;
     }
-    
+
     if (first_time) {
       var self = this;
       L.require(['vendor/jquery/jquery.js', 'vendor/jquery/jquery.periodicalupdater.js'], function() {
@@ -246,7 +210,7 @@ OML.data_source = function(opts) {
     }
     return true;
   }
-  
+
   // Let's check if this data_source maintains uniqueness along one axis (column)
   if (opts.unique_column) {
     var col_name = opts.unique_column;
@@ -270,18 +234,18 @@ OML.data_source = function(opts) {
         key2row[key] = row;
         return false;
       }
-      // pre-seed 
+      // pre-seed
       rows = _.uniq(rows, false, function(r) { return r[index]; });
       _.each(rows, function(r) { key2row[r[index]] = r; });
     } else {
       throw "Error in processing option 'unique_column'. Unknown column '" + col_name + "'."
     }
   }
-  
+
   // In slice mode, only fetch a 'slice' of the underlying data source. A slice
   // is defined by specific value in the 'slice_column' of all rows.
   //
-  // opts.slice: 
+  // opts.slice:
   //      slice_column: id
   //      event:
   //        name: graph.static_network.links.changed
@@ -289,36 +253,43 @@ OML.data_source = function(opts) {
   if (opts.slice) {
     var so = opts.slice;
     active_slice_col_name = so.slice_column;
-    
+
     if (so.event) {
       var evt_name = so.event.name;
-      if (! evt_name) 
+      if (! evt_name)
         throw "Missing event name in slice definition for data source '" + name + "'.";
       OHUB.bind(evt_name, function(msg) {
         var schema = msg.schema || msg.data_source.schema;
-        
+
         var key = so.event.key;
         var col = _.find(schema, function(cd) { return cd.name == key });
         if (col) {
           var event = msg.datum;
-          var col_id = event[col.index];        
+          var col_id = event[col.index];
           if (col_id) {
-            set_slice_column(col_id);        
+            set_slice_column(col_id);
           }
         }
       })
     }
   }
-  
+
   if (window.WebSocket) {
     start_web_socket();
   }
-  
+
   // Bind to event directly
   // this.on_changed = function(update_f) {
     // OHUB.bind(this.event_name, update_f);
   // }
-  
+
   return data_source;
 }
+
+define(function() {
+  return function(opts) {
+    return omf_web_data_source(opts);
+  }
+})
+
 

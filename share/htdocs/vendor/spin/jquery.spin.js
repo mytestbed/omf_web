@@ -20,7 +20,7 @@
     // left: 'auto' // Left position relative to parent in px
   // };
 
-function _jquery_spin_() {
+function _jquery_spin_(Spinner) {
   $.fn.spin = function(opts) {
     this.each(function() {
       var $this = $(this),
@@ -38,9 +38,11 @@ function _jquery_spin_() {
   };
 }
 
-if (L != undefined) {
-  L.provide('jquery.spin', ['/resource/vendor/spin/spin.min.js'], _jquery_spin_);
+if (typeof(define) != undefined) {
+  define(['vendor/spin/spin.min'], function(Spinner) {
+    _jquery_spin_(Spinner)
+  });
 } else {
   // This assumes that /resource/vendor/spin/spin.min.js has already been loaded
-  _jquery_spin_();
+  _jquery_spin_(Spinner);
 }

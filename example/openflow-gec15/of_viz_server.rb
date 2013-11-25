@@ -1,6 +1,6 @@
 
-require 'omf_common/lobject'
-OMF::Common::Loggable.init_log 'of-demo'
+require 'omf_base/lobject'
+OMF::Base::Loggable.init_log 'of-demo'
 
 
 require 'omf_oml/table'
@@ -10,13 +10,13 @@ $oml_database = 'postgres://norbit.npc.nicta.com.au/openflow-demo?user=oml2&pass
 
 def load_environment
   require 'omf-web/content/file_repository'
-  OMF::Web::ContentRepository.register_repo(:code, type: 'file', path: File.join(File.dirname(__FILE__), 'repository'))
-  
+  OMF::Web::ContentRepository.register_repo(:code, type: 'file', top_dir: File.join(File.dirname(__FILE__), 'repository'))
+
 
   Dir.glob("#{File.dirname(__FILE__)}/*_source.rb").each do |fn|
     load fn
   end
-  
+
   require 'yaml'
   Dir.glob("#{File.dirname(__FILE__)}/*_tab.yaml").each do |fn|
     h = YAML.load_file(fn)
@@ -26,7 +26,7 @@ def load_environment
       MObject.error "Don't know what to do with '#{fn}'"
     end
   end
-   
+
   # Start database adapter
   EM.next_tick do
     EM::run do
@@ -56,7 +56,7 @@ opts = {
       end
       p.separator ""
     end
-    
+
   }
 }
 require 'omf_web'

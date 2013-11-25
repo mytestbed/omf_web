@@ -1,5 +1,5 @@
 require 'json'
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'omf_web'
 
 module OMF::Web
@@ -9,14 +9,15 @@ module OMF::Web
   # USAGE:
   #
   #
-  class Server < OMF::Common::LObject
+  class Server < OMF::Base::LObject
 
     def self.start(server_name, description, top_dir, opts = {})
       self.new(server_name, description, top_dir, opts)
     end
 
     def initialize(server_name, description, top_dir, opts)
-      OMF::Common::Loggable.init_log server_name
+      OMF::Base::Loggable.init_log(server_name)
+      #OMF::Base::Loggable.init_log server_name
 
       opts = {
         static_dirs_pre: ["#{top_dir}/htdocs"],
@@ -32,8 +33,10 @@ module OMF::Web
         }
       }.merge(opts)
 
+      @server_name = server_name
       @top_dir = top_dir
       @databases = {}
+      @omsp_endpoints = {}
 
       OMF::Web.start(opts)
     end
@@ -49,8 +52,13 @@ module OMF::Web
         abort
       end
 
-      @top_dir ||= File.dirname(cf)
+      @cfg_dir = File.dirname(cf)
+      @top_dir ||= @cfg_dir
       cfg = _rec_sym_keys(YAML.load_file(cf))
+
+      if log_opts = cfg[:logging]
+        # TODO: Deal with custom logging option
+      end
 
       (cfg[:server] || {}).each do |k, v|
         k = k.to_sym
@@ -82,29 +90,41 @@ module OMF::Web
         puts "Missing id in datasource configuration"
         abort
       end
-      case type = config[:type] || 'database'
-      when 'database'
-        load_database(config)
-      when 'file'
+      if config[:database]
+        load_database(id, config)
+      elsif config[:file]
         load_datasource_file(id, config)
+      elsif config[:omsp]
+        load_omsp_endpoint(id, config)
       else
-        abort "Unknown datasource type '#{type}'."
+        abort "Unknown datasource type - #{config}"
       end
     end
 
-    def load_database(config)
-      unless table_name = config[:table]
-        puts "Missing 'table' in datasource configuration '#{id}'"
-        abort
-      end
+    def load_database(id, config)
       unless db_cfg = config[:database]
-        puts "Missing database configuration in datasource '#{id}'"
+        puts "Missing database configuration in datasource '#{config}'"
         abort
       end
       db = get_database(db_cfg)
-      unless table = db.create_table(table_name)
-        puts "Can't find table '#{table_name}' in database '#{db}'"
-        abort
+      if query_s = config[:query]
+        unless schema = config[:schema]
+          puts "Missing schema configuration in datasource '#{config}'"
+          abort
+        end
+        require 'omf_oml/schema'
+        config[:schema] = OMF::OML::OmlSchema.create(schema)
+        table = db.create_table(id, config)
+      else
+        unless table_name = config.delete(:table)
+          puts "Missing 'table' in datasource configuration '#{config}'"
+          abort
+        end
+        config[:name] = id
+        unless table = db.create_table(table_name, config)
+          puts "Can't find table '#{table_name}' in database '#{db_cfg}'"
+          abort
+        end
       end
       OMF::Web.register_datasource table, name: id
     end
@@ -120,25 +140,30 @@ module OMF::Web
         puts "Database '#{config}' not defined - (#{@databases.keys})"
         abort
       end
-      unless id = config[:id]
+      unless id = config.delete(:id)
         puts "Missing id in database configuration"
         abort
       end
+      if db = @databases[id.to_s] # already known
+        return db
+      end
+
       # unless id = config[:id]
         # puts "Database '#{config}' not defined - (#{@databases.keys})"
         # abort
       # end
-      unless url = config[:url]
+      unless url = config.delete(:url)
         puts "Missing URL for database '#{id}'"
         abort
       end
-      if url.start_with?('sqlite://') && ! url.start_with?('sqlite:///')
+      if url.start_with?('sqlite:') && ! url.start_with?('sqlite:/')
         # inject top dir
-        url.insert('sqlite://'.length, @top_dir + '/')
+        url.insert('sqlite:'.length, '//' + @cfg_dir + '/')
       end
-      puts "URL: #{url}"
+      config[:check_interval] ||= 3.0
+      puts "URL: #{url} - #{config}"
       begin
-        return @databases[id] = OMF::OML::OmlSqlSource.new(url, :check_interval => 3.0)
+        return @databases[id] = OMF::OML::OmlSqlSource.new(url, config)
       rescue Exception => ex
         puts "Can't connect to database '#{id}' - #{ex}"
         abort
@@ -173,6 +198,17 @@ module OMF::Web
       end
       OMF::Web.register_datasource ds, name: name
     end
+
+    def load_omsp_endpoint(id, config)
+      oconfig = config[:omsp]
+      unless port = oconfig[:port]
+        puts "Need port in OMSP definition '#{oconfig}' - datasource '#{id}'"
+        abort
+      end
+      ep = @omsp_endpoints[port] ||= OmspEndpointProxy.new(port)
+      ep.add_datasource(id, config)
+    end
+
 
     def load_repository(config)
       unless id = config[:id]
@@ -221,7 +257,7 @@ module OMF::Web
     # This class simulates a DataSource to transfer a JSON file as a database with one row and column
 
 
-    class JSONDataSource < OMF::Common::LObject
+    class JSONDataSource < OMF::Base::LObject
 
       def initialize(file)
         raw = File.read(file)
@@ -251,5 +287,59 @@ module OMF::Web
         # do nothing
       end
     end
+
+    # This class manages an OMSP Endpoint and all the related
+    # data sources
+    #
+    class OmspEndpointProxy < OMF::Base::LObject
+      def initialize(port)
+        @streams = {}
+        @sources = {}
+        @tables = {}
+        require 'omf_oml/endpoint'
+        @ep = OMF::OML::OmlEndpoint.new(port)
+        @ep.on_new_stream() do |name, stream|
+          _on_new_stream(name, stream)
+        end
+        Thread.new do # delay starting up endpoint, can't use EM yet
+          sleep 2
+          @ep.run(false)
+        end
+      end
+
+      def add_datasource(name, config)
+        stream_name = config[:omsp][:stream_name] || name
+        config.delete(:omsp)
+        (@sources[stream_name.to_s] ||= []) << config
+      end
+
+      def _on_new_stream(name, stream)
+        debug "New stream: #{name}-#{stream}"
+        (@sources[name] || []).each do |tdef|
+          puts "TDEF: #{tdef}"
+          tname = tdef.dup.delete(:id)
+          unless table = @tables[tname]
+            table = @tables[tname] = stream.create_table(tname, tdef)
+            OMF::Web.register_datasource table
+            puts "ADDED: #{table}"
+          else
+            warn "Looks like reconnection, should reconnect to table as well"
+          end
+        end
+
+        #sconfig = @streams[name] ||= {}
+        #sconfig[:stream] = stream
+      end
+          # table = stream.create_table(name + '_tbl', :max_size => 5)
+          # table.on_content_changed do |action, change|
+            # puts "TTTT > #{action} - #{change}"
+          # end
+
+        #ds = OMF::OML::OmlCsvTable.create name, file, has_csv_header: true
+        #OMF::Web.register_datasource table, name: name
+
+
+    end
+
   end # class
 end # module

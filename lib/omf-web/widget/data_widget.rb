@@ -25,6 +25,7 @@ module OMF::Web::Widget
         raise "Missing widget option ':viz_type' for widget '#{name}' (#{opts.inspect})"
       end
       name = opts[:name] ||= 'Unknown'
+      opts[:js_module] = "graph/#{vizType}"
       opts[:js_url] = "graph/js/#{vizType}.js"
       opts[:js_class] = "OML.#{vizType}"
       opts[:base_el] = "\##{dom_id}"

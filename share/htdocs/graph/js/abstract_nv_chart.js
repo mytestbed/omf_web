@@ -1,17 +1,17 @@
 
-L.provide('d3', ["vendor/d3/d3.js"], function() {
-  L.provide('nv_d3', ["vendor/nv_d3/js/nv.d3.js",  "vendor/nv_d3/css/nv.d3.css"]);
-})
+require.config({
+  shim: {
+    "vendor/nv_d3/js/nv.d3": ["vendor/d3/d3", "css!vendor/nv_d3/css/nv.d3"]
+  }
+});
 
-L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_chart", 
-                                   //"graph/js/axis", "#OML.axis", "graph/css/graph.css", 
-                                   "#nv_d3"], function () {
+define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_chart) {
 
-  OML.abstract_nv_chart = OML.abstract_chart.extend({
+  var abstract_nv_chart = abstract_chart.extend({
     axis_defaults: {
       legend: {
         text: 'DESCRIBE ME',
-        offset: 40 
+        offset: 40
       },
       ticks: {
         // type: 'date',
@@ -25,15 +25,15 @@ L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_ch
       },
       margin: {
         top: 0, right: 0, bottom: 0, left: 50 // not sure what impact this really has?
-      }    
+      }
     },
-    
+
     defaults: function() {
       return this.deep_defaults({
         transition_duration: 500
-      }, OML.abstract_nv_chart.__super__.defaults.call(this));      
-    },    
-      
+      }, abstract_nv_chart.__super__.defaults.call(this));
+    },
+
 
     configure_base_layer: function(vis) {
       this.base_layer = vis;
@@ -41,24 +41,24 @@ L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_ch
       this._configure_mapping(this.mapping, chart);
       this._configure_options(this.opts, chart);
     },
-    
+
     _configure_mapping: function(m, chart) {
     },
-    
+
     _configure_options: function(opts, chart) {
       chart.margin(opts.margin);
     },
-    
+
     _configure_xy_axis: function(opts, chart) {
       var oaxis = opts.axis || {};
       var a_defaults = this.axis_defaults;
-      
+
       var xao = _.defaults(oaxis.x || {}, a_defaults);
       this._configure_axis('x', chart.xAxis, xao);
       var yao = _.defaults(oaxis.y || {}, a_defaults);
       this._configure_axis('y', chart.yAxis, yao);
     },
-    
+
     _configure_axis: function(name, axis, opts) {
       // LABEL
       var ol = opts.legend;
@@ -67,15 +67,15 @@ L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_ch
         //ol = _.defaults(ol, defaults.axis);
         axis.axisLabel(ol.text);
       }
-      
+
       // TICKS
-      var ot = opts.ticks // _.defaults(opts.ticks || {}, defaults.ticks);
+      var ot = opts.ticks; // _.defaults(opts.ticks || {}, defaults.ticks);
       // Check if we need a special formatter for the tick labels
       if (ot.type == 'date' || ot.type == 'dateTime') {
         var d_f = d3.time.format(ot.format || "%X");
         axis.tickFormat(function(d) {
           var date = new Date(1000 * d);  // TODO: Implicitly assuming that value is in seconds is most likely NOT a good idea
-          var fs = d_f(date); 
+          var fs = d_f(date);
           return fs;
         });
       } else if (ot.type == 'key') {
@@ -90,7 +90,7 @@ L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_ch
       if (ot.subdivide) axis.tickSubdivide(ot.subdivide);
       if (ot.size) {
         // apply doesn't seem to work here
-        if (typeof ot.size === 'number') 
+        if (typeof ot.size === 'number')
           axis.tickSize(ot.size);
         else {
           var a = ot.size;
@@ -103,37 +103,39 @@ L.provide('OML.abstract_nv_chart', ["graph/js/abstract_chart", "#OML.abstract_ch
       }
       if (ot.padding) axis.tickPadding(ot.padding);
       if (ot.count) axis.ticks(ot.count);
-      
+
       // MARGIN
-      var om = opts.margin //_.defaults(ot.margin || {}, defaults.margin);
+      var om = opts.margin; //_.defaults(ot.margin || {}, defaults.margin);
       axis.margin(om);
 
       // MISC
-      axis.showMaxMin(false)
+      axis.showMaxMin(false);
     },
 
     resize: function() {
       var self = this;
-      OML.abstract_nv_chart.__super__.resize.call(this);
+      abstract_nv_chart.__super__.resize.call(this);
       if (this.chart) {
         this.chart.width(self.width);
-        this.chart.height(self.height);        
+        this.chart.height(self.height);
         this.chart.update();
-      } 
+      }
     },
-  
+
     redraw: function(data) {
       var bl = this.base_layer//.select(".chart_layer")
                   .datum(this._datum(data, this.chart))
                   ;
       if (this.opts.transition_duration > 0) {
-        bl = bl.transition().duration(500)
+        bl = bl.transition().duration(500);
       }
       bl.call(this.chart);
     },
-    
-  })
-})
+
+  });
+
+  return abstract_nv_chart;
+});
 
 /*
   Local Variables:

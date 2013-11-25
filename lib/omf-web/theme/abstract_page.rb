@@ -6,14 +6,23 @@ module OMF::Web::Theme
   class AbstractPage < Erector::Widget
 
     depends_on :js,  '/resource/vendor/stacktrace/stacktrace.js'
+
+    depends_on :js,  '/resource/vendor/require/require.js'
+    depends_on :js,  '/resource/js/app.js'
+
+
     depends_on :js, '/resource/vendor/jquery/jquery.js'
-    #depends_on :js, '/resource/js/stacktrace.js'
     depends_on :js, '/resource/vendor/underscore/underscore.js'
     depends_on :js, '/resource/vendor/backbone/backbone.js'
-    depends_on :js, "/resource/js/require3.js"
 
+    # depends_on :js, "/resource/js/require3.js"
+#
     depends_on :js, "/resource/theme/abstract/abstract.js"
-    depends_on :js, "/resource/js/data_source2.js"
+    # depends_on :js, "/resource/js/data_source2.js"
+    depends_on :script, %{
+      // ABSTRACT PAGE
+      if (typeof(OML) == "undefined") OML = {};
+    }
 
     attr_reader :opts
 
@@ -29,15 +38,6 @@ module OMF::Web::Theme
     end
 
     def content
-      javascript %{
-        if (typeof(LW) == "undefined") LW = {};
-        LW.session_id = OML.session_id = '#{Thread.current["sessionID"]}';
-
-        //L.provide('jquery', ['vendor/jquery/jquery.js']);
-        L.already_loaded('/resource/vendor/jquery/jquery.js');
-        //L.provide('jquery.periodicalupdater', ['vendor/jquery/jquery.periodicalupdater.js']);
-        //L.provide('jquery.ui', ['vendor/jquery-ui/js/jquery-ui.min.js']);
-      }
     end
 
     def render_flash
@@ -82,28 +82,19 @@ module OMF::Web::Theme
       data_source_widgets.each do |w|
         w.collect_data_sources(dss)
       end
-      #puts ">>>>>>>>>>> #{dss.inspect}"
-      # dsh = {}
-      # dss.each do |ds|
-        # name = ds[:name].to_s
-        # dsh[name] = ds.merge(dsh[name] || {})
-      # end
-
-      #puts ">>>> #{dsh.inspect}"
       return if dss.empty?
 
       js = dss.map do |ds|
         render_data_source(ds)
       end
 
-      # js = dsh.values.to_a.collect do |ds|
-        # render_data_source(ds)
-      # end
       # Calling 'javascript' doesn't seem to work here. No idea why, so let's do it by hand
       %{
         <script type="text/javascript">
           // <![CDATA[
-            #{js.join("\n")}
+            require(['omf/data_source_repo'], function(ds) {
+              #{js.join("\n")}
+            });
           // ]]>
         </script>
       }

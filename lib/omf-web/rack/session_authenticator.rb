@@ -1,5 +1,5 @@
 
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'rack'
 require 'omf-web/session_store'
 
@@ -16,7 +16,7 @@ module OMF::Web::Rack
   # Calls to the class methods are resolved inthe context
   # of a Session using 'OMF::Web::SessionStore'
   #
-  class SessionAuthenticator < OMF::Common::LObject
+  class SessionAuthenticator < OMF::Base::LObject
 
     # Returns true if this Rack module has been instantiated
     # in the current Rack stack.
@@ -130,7 +130,7 @@ module OMF::Web::Rack
         sid = "s#{(rand * 10000000).to_i}_#{(rand * 10000000).to_i}"
       end
       Thread.current["sessionID"] = sid  # needed for Session Store
-      debug "Request for '#{path_info}' - sid: #{sid} - #{self.class.authenticated?}"
+      #debug "Request for '#{path_info}' - sid: #{sid} - #{self.class.authenticated?}"
       unless @opts[:no_session].find {|rx| rx.match(path_info) }
         # If 'login_page_url' is defined, check if this session is authenticated
         login_url = @opts[:login_page_url]

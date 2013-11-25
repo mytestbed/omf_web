@@ -1,5 +1,5 @@
 
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'omf_web'
 require 'omf-web/content/content_proxy'
 require 'omf-web/content/repository'

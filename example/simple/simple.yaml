@@ -6,6 +6,7 @@
 
 server:
   name: 'Simple Demo'
+  page_title: 'Simple Demo'
   port: 4050
 
 data_sources:
@@ -13,7 +14,7 @@ data_sources:
     table: wave
     database:
       id: sample
-      url: sqlite://sample.sq3
+      url: sqlite:sample.sq3
 
 repositories:
   - id: simple

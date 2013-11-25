@@ -1,6 +1,6 @@
 
 
-require 'omf_common/lobject'
+require 'omf_base/lobject'
 require 'omf_oml/network'
 
 module OMF::Web
@@ -9,7 +9,7 @@ module OMF::Web
   # in a web browser and the corresponding +OmlTable+ in this server.
   #
   #
-  class DataSourceProxy < OMF::Common::LObject
+  class DataSourceProxy < OMF::Base::LObject
 
     @@datasources = {}
 
@@ -164,7 +164,7 @@ module OMF::Web
       #puts "to_java2>>>>> #{opts.inspect}"
 
       %{
-        OML.data_sources.register(#{opts.to_json});
+        ds.register(#{opts.to_json});
       }
 
     end

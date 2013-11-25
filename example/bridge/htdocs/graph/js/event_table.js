@@ -1,34 +1,30 @@
 
-// L.provide('slickgrid/checkbox', [
-                 // 'vendor/slickgrid/slick.core.js',
-                 // 'vendor/slickgrid/slick.formatters.js',
-                 // 'vendor/slickgrid/slick.editors.js',
-                 // 'vendor/slickgrid/plugins/slick.rowselectionmodel.js',
-                 // 'vendor/slickgrid/slick.grid.js',
-                 // 'vendor/slickgrid/slick.dataview.js',
+define(["graph/table2",
+                 'vendor/slickgrid/plugins/slick.checkboxselectcolumn',
+                 'css!/resource/css/bridge.css'], function(table2) {
 
-L.provide('OML.event_table', ["graph/js/table2", "#OML.table2", 
-                                'vendor/slickgrid/plugins/slick.checkboxselectcolumn.js',
-                                'css/bridge.css'
-                             ], function () {
+// L.provide('OML.event_table', ["graph/js/table2", "#OML.table2",
+                                // 'vendor/slickgrid/plugins/slick.checkboxselectcolumn.js',
+                                // 'css/bridge.css'
+                             // ], function () {
 
-  OML.event_table = OML.table2.extend({
+  var event_table = table2.extend({
     decl_properties: [
     ],
-    
+
     defaults: function() {
       return this.deep_defaults({
-      }, OML.event_table.__super__.defaults.call(this));      
-    },    
-    
+      }, event_table.__super__.defaults.call(this));
+    },
+
     base_css_class: 'oml-event-table',
-    
+
     init_grid: function() {
-      OML.event_table.__super__.init_grid.call(this);
+      event_table.__super__.init_grid.call(this);
 
       var grid = this.grid;
       var self = this;
-      
+
       grid.setSelectionModel(new Slick.RowSelectionModel());
       grid.onSelectedRowsChanged.subscribe(function(e, args) {
         var rindex = args.rows[0];
@@ -39,22 +35,22 @@ L.provide('OML.event_table', ["graph/js/table2", "#OML.table2",
         }
       });
     },
-    
+
     init_columns: function() {
-      var columns = OML.event_table.__super__.init_columns.call(this);
-      
+      var columns = event_table.__super__.init_columns.call(this);
+
       // var checkboxSelector = new Slick.CheckboxSelectColumn({
         // cssClass: "slick-cell-checkboxsel"
       // });
       // columns.splice(0, 0, checkboxSelector.getColumnDefinition());
-      
+
       function health_formatter(row, cell, value, columnDef, dataContext) {
         if (value == null || value === "") {
           return "";
         }
         var value = Math.round(100 * (1 - value));
         var color;
-    
+
         if (value < 30) {
           color = "silver";
         } else if (value < 50) {
@@ -69,10 +65,12 @@ L.provide('OML.event_table', ["graph/js/table2", "#OML.table2",
       }
       var hc = columns[2];
       hc.formatter = health_formatter;
-      hc.name = 'Attention'
+      hc.name = 'Attention';
       return columns;
     },
 
-    
-  }) // end of event-table
-}) // end of provide
+
+  }); // end of event-table
+
+  return event_table;
+});
