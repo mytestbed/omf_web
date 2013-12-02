@@ -10,35 +10,35 @@ define(["graph/abstract_widget"], function (abstract_widget) {
       "green_yellow80_red()": function() {
                                 return d3.scale.linear()
                                         .domain([0, 0.8, 1])
-                                        .range(["green", "yellow", "red"])
+                                        .range(["green", "yellow", "red"]);
                               },
       "green_red()":          function() {
                                 return d3.scale.linear()
                                         .domain([0, 1])
-                                        .range(["green", "red"])
+                                        .range(["green", "red"]);
                               },
       "red_yellow20_green()": function() {
                                 return d3.scale.linear()
                                         .domain([0, 0.2, 1])
-                                        .range(["red", "yellow", "green"])
+                                        .range(["red", "yellow", "green"]);
                               },
       "red_green()":          function() {
                                 return d3.scale.linear()
                                         .domain([0, 1])
-                                        .range(["red", "green"])
+                                        .range(["red", "green"]);
                               },
       // category
       "category10()":         function() {
-                                return d3.scale.category10()
+                                return d3.scale.category10();
                               },
       "category20()":         function() {
-                                return d3.scale.category20()
+                                return d3.scale.category20();
                               },
       "category20b()":        function() {
-                                return d3.scale.category20b()
+                                return d3.scale.category20b();
                               },
       "category20c()":        function() {
-                                return d3.scale.category20c()
+                                return d3.scale.category20c();
                               },
     },
 
@@ -290,4 +290,4 @@ define(["graph/abstract_widget"], function (abstract_widget) {
   });
 
   return abstract_chart;
-})
+});
