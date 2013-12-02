@@ -11,7 +11,8 @@ define(["graph/abstract_nv_chart"], function (abstract_nv_chart) {
       return this.deep_defaults({
         bins: null, // number of bins to use. The default bin function will
                   // divide the values into uniform bins using Sturges' formula.
-        rotate_labels: -45,
+        //rotate_labels: -45,
+        rotate_labels: 0,
         tooltips: true,
         show_legend: true,
         show_controls: true,
@@ -57,7 +58,7 @@ define(["graph/abstract_nv_chart"], function (abstract_nv_chart) {
       var bins = o.bins ? histogram.bins(o.bins) : histogram.bins();
       // To calculate density, we would need to calibrate that across
       // all groups.
-      //if (o.density != 'undefined"') histogram.frequency(! o.density);
+      if (o.density) histogram.frequency(false);
       hdata = histogram(data);
 
       var group_by = m.group_by;

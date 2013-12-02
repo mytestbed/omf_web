@@ -83,7 +83,9 @@ module OMF::Web
         if (text = url_or_descr[:text])
           # a bit of a hack for small static text blocks
           # Much better for maintenance is to use a separate file
-          url = "static:-"
+          require 'omf-web/content/static_repository'
+          url = OMF::Web::StaticContentRepository.create_from_text(url_or_descr, opts)
+          #url = repo.url # "static:-"
         else
           url = url_or_descr[:url]
         end

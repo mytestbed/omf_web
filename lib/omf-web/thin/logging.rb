@@ -30,6 +30,11 @@ module Thin
 
     # Log a message to the console if tracing is activated
     def trace(msg=nil)
+      ### DO NOT COMMIT!!!! Can't figure out where tracing is switched on
+      return
+      #####
+
+
       return unless msg
       (@logger ||= OMF::Base::LObject.new(self.class)).debug(msg)
     end
