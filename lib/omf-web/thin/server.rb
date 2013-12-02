@@ -18,9 +18,7 @@ module OMF::Web
     def initialize(server_name, description, top_dir, opts)
       OMF::Base::Loggable.init_log(server_name)
       #OMF::Base::Loggable.init_log server_name
-
       opts = {
-        static_dirs_pre: ["#{top_dir}/htdocs"],
         handlers: {
           pre_parse: lambda do |p, runner|
             p.on("--config CONF_FILE", "File holding description of web site") {|f| runner.options[:omf_config_file] = f}
@@ -53,6 +51,7 @@ module OMF::Web
       end
 
       @cfg_dir = File.dirname(cf)
+      opts[:static_dirs].insert(0, File.absolute_path(File.join(@cfg_dir, 'htdocs')))
       @top_dir ||= @cfg_dir
       cfg = _rec_sym_keys(YAML.load_file(cf))
 
@@ -326,20 +325,9 @@ module OMF::Web
             warn "Looks like reconnection, should reconnect to table as well"
           end
         end
-
-        #sconfig = @streams[name] ||= {}
-        #sconfig[:stream] = stream
       end
-          # table = stream.create_table(name + '_tbl', :max_size => 5)
-          # table.on_content_changed do |action, change|
-            # puts "TTTT > #{action} - #{change}"
-          # end
 
-        #ds = OMF::OML::OmlCsvTable.create name, file, has_csv_header: true
-        #OMF::Web.register_datasource table, name: name
-
-
-    end
+    end # class OmspEndpointProxy
 
   end # class
 end # module
