@@ -23,17 +23,17 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "omf_oml", "~> 1"
   s.add_runtime_dependency "omf_base"
   s.add_runtime_dependency "erector", "~> 0.9"
-  s.add_runtime_dependency "activesupport", "~> 3.0.0" # required by erector:table
-  s.add_runtime_dependency "rack", "~> 1.3.5"
-  s.add_runtime_dependency "thin", "~> 1.3.1"
-  s.add_runtime_dependency "coderay", "~> 1.0.6"
-  #s.add_runtime_dependency "log4r", "~> 1.1.10"
-  s.add_runtime_dependency "maruku", "~> 0.6.0"
-  s.add_runtime_dependency "ritex", "~> 1.0.1"
-  s.add_runtime_dependency "json", "~> 1.7.3"
-  s.add_runtime_dependency "grit", "~> 2.5.0"
-  s.add_runtime_dependency "websocket-rack", "~> 0.4.0"
-  s.add_runtime_dependency "rack-accept", "~> 0.4.5"
+  s.add_runtime_dependency "activesupport", "~> 3.0" # required by erector:table
+  s.add_runtime_dependency "rack", "~> 1"
+  s.add_runtime_dependency "thin", "~> 1"
+  s.add_runtime_dependency "coderay", "~> 1"
+  s.add_runtime_dependency "maruku", "~> 0.6"
+  s.add_runtime_dependency "ritex", "~> 1.0"
+  s.add_runtime_dependency "json", "~> 1.7"
+  s.add_runtime_dependency "grit", "~> 2.5"
+  s.add_runtime_dependency "websocket-rack", "~> 0.4"
+  s.add_runtime_dependency "rack-accept", "~> 0.4"
+  s.add_runtime_dependency "i18n"
 
   # Do we need the next two dependencies?
   #s.add_runtime_dependency "sqlite3", "~> 1.3.6"

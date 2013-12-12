@@ -2,12 +2,12 @@
 require 'erector'
 
 module OMF::Web::Widget
-  
-    
+
+
     @@widgets = {}
-    @@descriptions = {}  
-    @@type2class = {}  
-    
+    @@descriptions = {}
+    @@type2class = {}
+
     def self.register_widget(wdescr)
       unless id = wdescr[:id]
         raise "Missing 'id' for widget '#{wdescr.inspect}'"
@@ -15,25 +15,25 @@ module OMF::Web::Widget
       id = id.to_sym
       if (@@descriptions.key? id)
         raise "Repeated try to register widget '#{id}'"
-      end  
+      end
       @@descriptions[id] = wdescr
     end
-    
+
     def self.registered_widgets()
       @@descriptions
     end
-    
+
     def self.register_widget_type(id, widget_class)
       id = id.to_sym
       if (@@type2class.key? id)
         raise "Repeated try to register widget type '#{id}'"
-      end  
+      end
       @@type2class[id] = widget_class
     end
-    
-    
+
+
     # Return the number of top level widgets. If 'restrict_to' is an
-    # array, only return those. 
+    # array, only return those.
     #
     def self.toplevel_widgets(restrict_to = nil)
       if restrict_to
@@ -49,15 +49,15 @@ module OMF::Web::Widget
         end.compact
       end
       wa.sort do |a, b|
-        (b[:priority] || 100) <=> (a[:priority] || 100) 
+        (b[:priority] || 100) <=> (a[:priority] || 100)
       end
-    end    
-    
+    end
+
     def self.create_widget(name)
       if name.is_a? Array
         # this is  short notation for a stacked widget
         #
-        wdescr = { :type => 'layout/stacked', :widgets => name} 
+        wdescr = { :type => 'layout/stacked', :widgets => name}
       elsif name.is_a? Hash
         wdescr = name
       else
@@ -85,25 +85,25 @@ module OMF::Web::Widget
         w = OMF::Web::Widget::DataWidget.new(wdescr)
       when /^layout/
         require 'omf-web/widget/layout'
-        w =  OMF::Web::Widget::Layout.create_layout_widget(type, wdescr)        
+        w =  OMF::Web::Widget::Layout.create_layout_widget(type, wdescr)
       when /^text/
         require 'omf-web/widget/text/text_widget'
-        w =  OMF::Web::Widget::TextWidget.create_text_widget(type, wdescr)        
+        w =  OMF::Web::Widget::TextWidget.create_text_widget(type, wdescr)
       when /^code/
         require 'omf-web/widget/code_widget'
-        w =  OMF::Web::Widget::CodeWidget.create_code_widget(type, wdescr)        
+        w =  OMF::Web::Widget::CodeWidget.create_code_widget(type, wdescr)
       when /^moustache/
         require 'omf-web/widget/mustache_widget'
-        w =  OMF::Web::Widget::MustacheWidget.create_mustache_widget(type, wdescr)        
+        w =  OMF::Web::Widget::MustacheWidget.create_mustache_widget(type, wdescr)
       else
         raise "Unknown widget type '#{type}' (#{wdescr.inspect})"
       end
       @@widgets[wdescr[:id]] = w
     end
-    
+
     def self._init()
       register_widget
     end
-  
+
 
 end # OMF::Web::Widget
