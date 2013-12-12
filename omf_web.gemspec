@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.homepage    = "https://www.mytestbed.net"
   s.summary     = %q{OMF's web frontend.}
   s.description = %q{OMF's Web based control and visualization framework.}
-
+  s.license
   s.rubyforge_project = "omf_web"
 
   s.files         = `git ls-files`.split("\n")
@@ -20,19 +20,19 @@ Gem::Specification.new do |s|
 
   # specify any dependencies here; for example:
 #  s.add_development_dependency "minitest", "~> 2.11.3"
-  s.add_runtime_dependency "omf_oml", "~> 1"
+  s.add_runtime_dependency "omf_oml", "~> 1.0"
   s.add_runtime_dependency "omf_base"
-  s.add_runtime_dependency "erector", "~> 0.9"
-  s.add_runtime_dependency "activesupport", "~> 3.0" # required by erector:table
-  s.add_runtime_dependency "rack", "~> 1"
-  s.add_runtime_dependency "thin", "~> 1"
-  s.add_runtime_dependency "coderay", "~> 1"
-  s.add_runtime_dependency "maruku", "~> 0.6"
-  s.add_runtime_dependency "ritex", "~> 1.0"
-  s.add_runtime_dependency "json", "~> 1.7"
-  s.add_runtime_dependency "grit", "~> 2.5"
-  s.add_runtime_dependency "websocket-rack", "~> 0.4"
-  s.add_runtime_dependency "rack-accept", "~> 0.4"
+  s.add_runtime_dependency "erector", "~> 0.9.0"
+  s.add_runtime_dependency "activesupport", "~> 3.0.0" # required by erector:table
+  s.add_runtime_dependency "rack", "~> 1.0"
+  s.add_runtime_dependency "thin", "~> 1.0"
+  s.add_runtime_dependency "coderay", "~> 1.0"
+  s.add_runtime_dependency "maruku", "~> 0.6.0"
+  s.add_runtime_dependency "ritex", "~> 1.0.0"
+  s.add_runtime_dependency "json", "~> 1.7.0"
+  s.add_runtime_dependency "grit", "~> 2.5.0"
+  s.add_runtime_dependency "websocket-rack", "~> 0.4.0"
+  s.add_runtime_dependency "rack-accept", "~> 0.4.0"
   s.add_runtime_dependency "i18n"
 
   # Do we need the next two dependencies?
