@@ -75,12 +75,12 @@ module OMF::Web
         load_repository(repo)
       end
 
-      unless wa = cfg[:widgets]
-        puts "Can't find 'widgets' section in config file '#{cf}' - #{cfg.keys}"
+      unless wa = cfg[:tabs]
+        puts "Can't find 'tabs' section in config file '#{cf}' - #{cfg.keys}"
         abort
       end
       wa.each do |w|
-        OMF::Web.register_widget w
+        register_widget w
       end
     end
 
@@ -235,6 +235,16 @@ module OMF::Web
         abort
       end
 
+    end
+
+    def register_widget(w)
+      unless w[:id]
+        require 'digest/md5'
+        w[:id] = Digest::MD5.hexdigest(w[:name] || "tab#{rand(10000)}")[0, 8]
+      end
+      w[:top_level] = true
+      w[:type] ||= 'layout/one_column'
+      OMF::Web.register_widget w
     end
 
     # Recusively Symbolize keys of hash
