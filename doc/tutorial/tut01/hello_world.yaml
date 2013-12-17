@@ -1,0 +1,12 @@
+server:
+  page_title: 'Tutorial 1'
+  port: 4030
+
+tabs:
+  - name: Main
+    priority: 300
+    widgets:
+      - name: Description
+        type: text
+        content:
+          text: Hello World!
