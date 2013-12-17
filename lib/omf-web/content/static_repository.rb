@@ -18,7 +18,7 @@ module OMF::Web
     #   @returns url for repo
     #
     def self.create_from_text(descr, opts)
-      puts "STATIC>>> #{opts}"
+      #puts "STATIC>>> #{opts}"
       unless (text = descr[:text])
         text "Missing 'text' declaration in 'content'"
       end
