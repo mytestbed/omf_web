@@ -179,13 +179,16 @@ module OMF::Web
         abort
       end
       unless file.start_with? '/'
-        file = File.join(@top_dir, file)
+        file = File.join(@cfg_dir, file)
       end
       unless File.readable? file
         puts "Can't read file '#{file}'"
         abort
       end
-      case content_type = opts[:content_type].to_s
+      unless content_type = opts[:content_type]
+        content_type = File.extname(file)[1 ..  -1]
+      end
+      case content_type.to_s
       when 'json'
         ds = JSONDataSource.new(file)
       when 'csv'
