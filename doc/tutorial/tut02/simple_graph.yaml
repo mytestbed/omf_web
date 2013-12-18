@@ -1,0 +1,28 @@
+server:
+  page_title: 'Tutorial 2'
+  port: 4030
+
+data_sources:
+  - id: voltage
+    file: gen.csv
+
+tabs:
+  - name: Main
+    priority: 300
+    widgets:
+      - name: Generator
+        type: data/line_chart3
+        data_source:
+          name: voltage
+        mapping:
+          x_axis: ts
+          y_axis: voltage
+          group_by: generator
+        axis:
+          x:
+            legend: Time [sec]
+          y:
+            legend: Voltage [V]
+            ticks:
+              format: ".2s"
+
