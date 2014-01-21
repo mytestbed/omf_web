@@ -128,7 +128,12 @@ module OMF::Web
       fsa = (opts[:repo_iterator] || [@@primary_repository]).map do |repo|
         repo.find_files(selector, opts)
       end
+
       fs = fsa.flatten
+      if (mt = opts[:mime_type])
+        fs = fs.select { |f| File.fnmatch(mt, f[:mime_type]) }
+      end
+
       if (max = opts[:max])
         fs = fs[0, max]
       end

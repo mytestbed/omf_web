@@ -116,7 +116,8 @@ module OMF::Web
           path = e.path
           if path.match(search_pattern)
             mt = mime_type_for_file(path)
-            next if mime_type != nil && mime_type != mt
+            # subselect mime type in class method
+            #next if mime_type != nil && !File.fnmatch(mime_type, mt)
             res << {:url => get_url_for_path(path), :path => path, #:name => 'foo',
                     :mime_type => mt}
           end

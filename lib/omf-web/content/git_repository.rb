@@ -135,9 +135,9 @@ module OMF::Web
       res = []
       fs = _find_files(search_pattern, tree, nil, res)
 
-      if (mt = opts[:mime_type])
-        fs = fs.select { |f| f[:mime_type] == mt }
-      end
+      # if (mt = opts[:mime_type])
+        # fs = fs.select { |f| File.fnmatch(mt, f[:mime_type]) }
+      # end
       fs
     end
 
