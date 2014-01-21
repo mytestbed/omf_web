@@ -1,0 +1,47 @@
+server:
+  page_title: Tutorial 5 - OML Direct Graphs
+  port: 4030
+
+data_sources:
+  - id: voltage
+    max_size: 100
+    omsp:
+      port: 4003
+      stream_name: gen_voltage
+
+tabs:
+  - name: Main
+    priority: 300
+    widgets:
+      - name: Voltage
+        type: data/line_chart3
+        data_source:
+          name: voltage
+        mapping:
+          x_axis: oml_ts
+          y_axis: voltage
+          group_by: generator
+        axis:
+          x:
+            legend: Time [sec]
+          y:
+            legend: Voltage [V]
+
+      - name: Noise
+        type: data/histogram2
+        info: This widget shows the distribution of the noise on the generator output.
+        density: true
+        data_source:
+          name: voltage
+        mapping:
+          value: noise
+          group_by: generator
+        axis:
+          x:
+            legend: Noise (V)
+            ticks:
+              format: ".2s"
+          y:
+            legend: Density
+
+

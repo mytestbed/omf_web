@@ -1,0 +1,37 @@
+server:
+  page_title: Tutorial 3 - Stacked Widgets
+  port: 4030
+
+data_sources:
+  - id: voltage
+    file: ../tut02/gen.csv
+
+tabs:
+  - name: Main
+    priority: 300
+    widgets:
+      - type: layout/stacked
+        info: This widget shows the voltage reported for varous generators
+        widgets:
+          - name: Generator
+            type: data/line_chart3
+            data_source:
+              name: voltage
+            mapping:
+              x_axis: ts
+              y_axis: voltage
+              group_by: generator
+            axis:
+              x:
+                legend: Time [sec]
+              y:
+                legend: Voltage [V]
+                ticks:
+                  format: ".2s"
+
+          - name: Table
+            type: data/table2
+            data_source:
+              name: voltage
+
+
