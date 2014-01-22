@@ -139,12 +139,10 @@ module OMF::Web
         puts "Database '#{config}' not defined - (#{@databases.keys})"
         abort
       end
-      unless id = config.delete(:id)
-        puts "Missing id in database configuration"
-        abort
-      end
-      if db = @databases[id.to_s] # already known
-        return db
+      if id = config.delete(:id)
+        if db = @databases[id.to_s] # already known
+          return db
+        end
       end
 
       # unless id = config[:id]
@@ -162,7 +160,9 @@ module OMF::Web
       config[:check_interval] ||= 3.0
       puts "URL: #{url} - #{config}"
       begin
-        return @databases[id] = OMF::OML::OmlSqlSource.new(url, config)
+        db = OMF::OML::OmlSqlSource.new(url, config)
+        @databases[id] = db if id
+        return db
       rescue Exception => ex
         puts "Can't connect to database '#{id}' - #{ex}"
         abort
