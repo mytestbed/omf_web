@@ -20,6 +20,7 @@ Gemfile.lock
 share/htdocs/vendor/valums-file-uploader-cf7bfb1/.gitignore
 share/htdocs/vendor/valums-file-uploader-cf7bfb1/.gitignore
 .project
+.settings
 
 UNUSED/
 *.swp
@@ -27,3 +28,4 @@ UNUSED/
 
 share/htdocs/vendor/jquery-ui-1.8.23/development-bundle
 example/wimax
+vendor
