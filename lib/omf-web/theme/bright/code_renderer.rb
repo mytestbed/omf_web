@@ -46,7 +46,7 @@ module OMF::Web::Theme
       div :id => base_id, :class => "codemirror_widget" do
 
         js_toolbar = []
-        div :class => "codemirror_toolbar_container widget-toolbar" do
+        div :class => "codemirror_toolbar_container widget_toolbar" do
           ol :class => "codemirror_toolbar" do
             ['save', 'undo', 'redo'].each do |name|
               id = "#{base_id}_#{name}_a"
