@@ -13,11 +13,11 @@ function omf_web_data_source(opts) {
     version: "0.1",
     name: name,
     schema: schema,
-    rows: function() {return rows},
+    rows: function() { return rows; },
     index_for_column: index_for_column,
     is_dynamic: is_dynamic,
     event_name: event_name,
-  }
+  };
 
   var indexes = {};
   var unique_index_check = null;
@@ -30,18 +30,18 @@ function omf_web_data_source(opts) {
     var index = indexes[i];
     if (!index) {
       index = indexes[i] = {};
-      _.each(rows, function(r) { index[r[i]] = r; })
+      _.each(rows, function(r) { index[r[i]] = r; });
     }
     return function(key) {
       return indexes[i][key]; // need fresh lookup as we may redo index
-    }
+    };
   }
 
   function update_indexes() {
     // This can most likley be done more efficiently if we consider what has changed
     _.each(indexes, function(ignore, i) {
       var index = indexes[i] = {};
-      _.each(rows, function(r) { index[r[i]] = r; })
+      _.each(rows, function(r) { index[r[i]] = r; });
     });
   }
 
@@ -53,7 +53,7 @@ function omf_web_data_source(opts) {
     var opts = _;
     var interval = -1;
     if (typeof(opts) == 'number') {
-      interval = opts
+      interval = opts;
     } else if (opts == true) {
       interval = 3;
     }
