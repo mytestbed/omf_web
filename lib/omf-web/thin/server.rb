@@ -75,11 +75,16 @@ module OMF::Web
         load_repository(repo)
       end
 
-      unless wa = cfg[:tabs]
-        puts "Can't find 'tabs' section in config file '#{cf}' - #{cfg.keys}"
+      widgets = cfg[:widgets] || []
+      if (tabs = cfg[:tabs])
+        tabs.each {|t| t[:top_level] = true}
+        widgets += tabs
+      end
+      if widgets.empty?
+        puts "Can't find 'widgets' or 'tabs' section in config file '#{cf}' - #{cfg.keys}"
         abort
       end
-      wa.each do |w|
+      widgets.each do |w|
         register_widget w
       end
     end
