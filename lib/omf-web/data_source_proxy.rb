@@ -109,7 +109,7 @@ module OMF::Web
       return [proxy]
     end
 
-    attr_reader :name
+    attr_reader :name, :data_source
 
     def reset()
       # TODO: Figure out partial sending
@@ -153,7 +153,8 @@ module OMF::Web
       opts = opts.dup
       opts[:name] = @name
       opts[:schema] = @data_source.schema.describe
-      opts[:update_url] = "/_update/#{@name}?sid=#{sid}"
+      opts[:update_url] ||= "/_update/#{@name}?sid=#{sid}"
+      opts[:ws_url] ||= "/_ws?sid=#{sid}"
       opts[:sid] = sid
       #opts[:is_static] = (@data_source.respond_to? :static?) ? @data_source.static? : false
       unless opts[:slice] # don't send any data if this is a sliced one
