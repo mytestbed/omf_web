@@ -77,6 +77,13 @@ define(["graph/abstract_widget"], function (abstract_widget) {
       this.update();
     },
 
+    configure_base_layer: function(vis) {
+      this.base_layer = vis.append("svg:g");
+      if (this.base_css_class) {
+        this.base_layer.attr("class", this.base_css_class);
+      }
+    },
+
     _resize_base_el: function(w, h) {
       // Do not add margins to the base_el, but to the inside of the SVG panes
       this.w = w;
