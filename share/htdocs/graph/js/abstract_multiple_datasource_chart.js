@@ -3,17 +3,8 @@ define(["graph/abstract_chart"], function(abstract_chart) {
 
   var graph = abstract_chart.extend({
     // MAKE SURE THIS IS DEFINED IN SUB CLASS
-    //data_source_names: ['centers', 'users'],
+    data_source_names: ['change', 'me'],
 
-    // initialize: function(opts) {
-      // graph.__super__.initialize.call(this, opts);
-//
-      // var self = this;
-      // // OHUB.bind("bridge.event_selected", function(evt) {
-        // // var joint_id = evt.datum[evt.schema.jointID.index];
-        // // self.redraw_sensor_locator(joint_id);
-      // // });
-    // },
 
     // Find the appropriate data source and bind to it
     //
