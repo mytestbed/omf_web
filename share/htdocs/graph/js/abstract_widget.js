@@ -31,7 +31,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
           x: 0,
           y: 0
         },
-      }
+      };
     },
 
     //base_css_class: 'oml-chart',
@@ -93,6 +93,8 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       }
       this._resize_base_el(w,h);
 
+      OHUB.trigger(o.id + '.resize', {width: w, height: h});
+
       return this;
     },
 
@@ -120,10 +122,10 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       var self = this;
 
       if (! (sources instanceof Array)) {
-        throw "Expected an array"
+        throw "Expected an array";
       }
       if (sources.length != 1) {
-        throw "Can only process a SINGLE source"
+        throw "Can only process a SINGLE source";
       }
       this.data_source = this.init_single_data_source(sources[0]);
     },
@@ -136,7 +138,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       var self = this;
       OHUB.bind(ds.event_name, function() {
         self.update();;
-      })
+      });
       return ds;
     },
 
@@ -166,7 +168,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       _.map(properties_decl, function(a) {
         var pname = a[0]; var type = a[1]; var def = a[2];
         var descr = om[pname];
-        m[pname] = self.create_mapping(pname, descr, source_name, type, def)
+        m[pname] = self.create_mapping(pname, descr, source_name, type, def);
       });
       return m;
     },
@@ -194,7 +196,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
     create_mapping: function(mname, descr, stream, type, def) {
        var self = this;
        if (descr == undefined && typeof(def) == 'object') {
-         descr = def
+         descr = def;
        }
        if (descr == undefined || typeof(descr) != 'object' ) {
          if (type == 'index') {
@@ -208,7 +210,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
              var cf_i = cf();
              value = function(x) {
                return cf_i(x);
-             }
+             };
            }
            return value;
          }
@@ -256,7 +258,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
            var t = index_f(join);
            //var r = t[join];
            return t;
-         }
+         };
        } else {
          if (descr.values) {
            // provided custom mapping for values
@@ -264,7 +266,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
            var def_value = descr['default'];
            return function(x) {
              return values[x] || def_value;
-           }
+           };
          }
          var pname = descr.property;
          if (pname == undefined) {
@@ -331,7 +333,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
         if (source[prop] == null) {
           source[prop] = defaults[prop];
         } else if((typeof(source[prop]) == 'object') && defaults[prop]) {
-          this.deep_defaults(source[prop], defaults[prop])
+          this.deep_defaults(source[prop], defaults[prop]);
         }
       }
       return source;
@@ -341,4 +343,4 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
   });
 
   return abstract_widget;
-})
+});

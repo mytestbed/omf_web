@@ -5,6 +5,9 @@ define(["graph/abstract_chart"], function(abstract_chart) {
     // MAKE SURE THIS IS DEFINED IN SUB CLASS
     data_source_names: ['change', 'me'],
 
+    initialize: function(opts) {
+      graph.__super__.initialize.call(this, opts);
+    },
 
     // Find the appropriate data source and bind to it
     //
