@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "websocket-rack", "~> 0.4.0"
   s.add_runtime_dependency "rack-accept", "~> 0.4.0"
   s.add_runtime_dependency "i18n"
+  s.add_runtime_dependency "rake"
 
   # Do we need the next two dependencies?
   #s.add_runtime_dependency "sqlite3", "~> 1.3.6"
