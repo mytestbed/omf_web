@@ -46,12 +46,18 @@ module OMF::Web
     end
 
     def self.[](name)
+      find(name)
+    end
+
+    def self.find(name, warn_if_not_exist = true)
       name = name.to_sym
       unless dsp = OMF::Web::SessionStore[name, :dsp]
         if ds = @@datasources[name]
           dsp = OMF::Web::SessionStore[name, :dsp] = self.new(name, ds)
         else
-          warn "Requesting unknown datasource '#{name}', only know about '#{@@datasources.keys.join(', ')}'."
+          if warn_if_not_exist
+            warn "Requesting unknown datasource '#{name}', only know about '#{@@datasources.keys.join(', ')}'."
+          end
         end
       end
       dsp
