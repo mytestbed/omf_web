@@ -282,8 +282,9 @@ module OMF::Web
           abort
         end
         unless top_dir.start_with? '/'
-          top_dir = File.join(@top_dir, top_dir)
+          top_dir = File.join(@cfg_dir, top_dir)
         end
+        #puts "TOP>>> #{File.absolute_path top_dir}"
         OMF::Web::ContentRepository.register_repo(id, type: :file, top_dir: top_dir)
       else
         fatal "Unknown repository type '#{type}'. Only supporting 'file'."
