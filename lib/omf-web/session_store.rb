@@ -48,7 +48,25 @@ module OMF::Web
     def self.find_across_sessions(&block)
       @@sessions.values.map { |v| v[:content] }.find(&block)
     end
+
+    # Return a session context which will execute block given to
+    # #call in this session context
+    #
+    def self.session_context
+      SessionContext.new
+    end
   end # SessionStore
+
+  class SessionContext
+    def initialize
+      @sid = Thread.current["sessionID"]
+    end
+
+    def call(&block)
+      Thread.current["sessionID"] = @sid
+      block.call
+    end
+  end
 
 end # OMF:Web
 
