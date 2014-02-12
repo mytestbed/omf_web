@@ -7,7 +7,7 @@ define(['omf/data_source3'], function(data_source) {
     function context() {};
 
     context.register = function(opts) {
-      var id = opts.id || opts.name;
+      var id = opts.id || opts.stream || opts.name;
       if (sources[id] == null) {
         sources[id] = data_source(opts);
       }
@@ -19,7 +19,7 @@ define(['omf/data_source3'], function(data_source) {
       var dynamic = false;
 
       if (typeof(ds_descr) == 'object') {
-        name = ds_descr.id || ds_descr.name;
+        name = ds_descr.id || ds_descr.stream || ds_descr.name;
         dynamic = ds_descr.dynamic;
       } else {
         name = ds_descr;

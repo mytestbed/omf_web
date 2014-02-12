@@ -153,27 +153,28 @@ module OMF::Web
       dsp
     end
 
-    def to_javascript(opts = {})
-      #puts "to_java>>>>> #{opts.inspect}"
+    def to_hash(opts = {})
       sid = Thread.current["sessionID"]
       opts = opts.dup
-      opts[:name] = @name
+      opts[:name] ||= @name
+      opts[:id] = @name
+      opts[:stream] = @name # TODO: Should retire. Code should use :id
       opts[:schema] = @data_source.schema.describe
       opts[:update_url] ||= "/_update/#{@name}?sid=#{sid}"
       opts[:ws_url] ||= "/_ws?sid=#{sid}"
       opts[:sid] = sid
-      #opts[:is_static] = (@data_source.respond_to? :static?) ? @data_source.static? : false
       unless opts[:slice] # don't send any data if this is a sliced one
-        #opts[:rows] = @data_source.rows[0 .. 20]
         opts[:rows] = []
         opts[:offset] = @data_source.offset
       end
-      #puts "to_java2>>>>> #{opts.inspect}"
+      opts
+    end
 
+    def to_javascript(opts = {})
+      opts = to_hash(opts)
       %{
         ds.register(#{opts.to_json});
       }
-
     end
 
     def initialize(name, data_source)
