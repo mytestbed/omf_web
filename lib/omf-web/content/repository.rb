@@ -17,6 +17,7 @@ module OMF::Web
       :js => 'text/javascript',
       :md => 'text/markup',
       :rb => 'text/ruby',
+      :oedl => 'text/ruby',
       :r => 'text/r',
       :svg => 'text/svg',
       :txt => 'text'
