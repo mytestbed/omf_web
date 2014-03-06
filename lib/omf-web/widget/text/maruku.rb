@@ -4,6 +4,8 @@
 require 'maruku'
 require 'maruku/ext/math'
 # Monkey patches to add line numbers to html output
+
+require 'omf_web'
 require 'omf-web/widget/text/maruku/input/parse_block'
 require 'omf-web/widget/text/maruku/output/to_html'
 require 'omf-web/widget/text/maruku/helpers'
@@ -29,12 +31,14 @@ module OMF::Web::Widget::Text
 
     # Fetch text and parse it
     #
-    def self.format_content(content_proxy)
+    def self.format_content_proxy(content_proxy)
       unless content_proxy.is_a? OMF::Web::ContentProxy
         raise "Expected content proxy, but got '#{content_proxy.class}'"
       end
-      content = content_proxy.content
-      #puts ">>>> CREATING NEW MARUKU"
+      format_content(content_proxy.content)
+    end
+
+    def self.format_content(content)
       ::Maruku.new(content)
     end
 
@@ -94,13 +98,12 @@ module OMF::Web::Widget::Text
 
 end # OMF::Web::Widget::Text
 
-# module MaRuKu::Out::HTML
-#
-  # def to_html_viz
-    # span = Element.new 'javascript'
-    # span.attributes['class'] = 'maruku_section_number'
-    # span << Text.new('Foooo')
-    # add_ws  span
-  # end
-#
-# end
+if __FILE__ == $0
+  unless fname = ARGV[0]
+    puts "ERROR: Missing file name"
+    exit -1
+  end
+  content = File.open(fname).read
+  x = OMF::Web::Widget::Text::Maruku.format_content(content)
+  puts x.to_html
+end
