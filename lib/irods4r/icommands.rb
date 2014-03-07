@@ -41,6 +41,11 @@ module IRODS4r
       f.unlink
     end
 
+    def self.mkpath(dirname)
+      cmd_out = `imkdir -p #{dirname} 2>&1`
+      raise ICommandException.new(cmd_out) unless $?.exitstatus == 0
+    end
+
     def self.exist?(path, ticket = nil)
       `ils #{"-t #{ticket}" if ticket} #{path}`
       $?.exitstatus == 0

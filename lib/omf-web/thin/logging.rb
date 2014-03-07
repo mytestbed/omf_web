@@ -50,7 +50,14 @@ module Thin
     public :debug
 
     # Log an error backtrace if debugging is activated
-    def log_error(e = $!)
+    #
+    # Thin 1.3 uses one argument e
+    # Thin 1.6 uses two argument message, e
+    #
+    # This patch will now support both cases
+    def log_error(*args)
+      e = args.last
+      e ||= $!
       (@logger ||= OMF::Base::LObject.new(self.class)).error(e)
     end
     module_function :log_error
