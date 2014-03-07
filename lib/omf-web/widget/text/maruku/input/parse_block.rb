@@ -69,11 +69,9 @@ module MaRuKu; module In; module Markdown; module BlockLevelParser
           read_text_material(src, output)
         when :header2, :hrule
           src.shift_line
-          #output.push md_hrule()
+          output.push md_hrule()
         when :header3
           output.push read_header3(src)
-        when :hrule
-          output.push md_hrule()
         when :ulist, :olist
           list_type = src.cur_line.md_type == :ulist ? :ul : :ol
           li = read_list_item(src)
