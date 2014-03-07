@@ -2,7 +2,7 @@
 
 module IRODS4r
 
-  class IRODS4rException < Exception; end
+  class IRODS4rException < StandardError; end
   class NotFoundException < IRODS4rException; end
   class NoDirectoryException < IRODS4rException; end
 
