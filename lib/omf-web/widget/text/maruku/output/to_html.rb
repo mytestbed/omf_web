@@ -352,7 +352,7 @@ Example:
   # Sets 'id' if meta is set
   def wrap_as_element(name, attributes_to_copy=[])
     m = create_html_element(name, attributes_to_copy)
-    puts "MMM>>> #{m} - #{attributes_to_copy}"
+    #puts "MMM>>> #{m} - #{attributes_to_copy}"
     children_to_html.each do |e| m << e; end
 
 #			m << Comment.new( "{"+self.al.to_md+"}") if not self.al.empty?
@@ -431,7 +431,7 @@ It is copied as a standard HTML attribute.
 
   def create_html_element(name, attributes_to_copy=[])
     m = Element.new name
-    puts "ATTR>>> #{@attributes}"
+    #puts "ATTR>>> #{@attributes}"
     if atts = HTML4Attributes[name] then
       atts.each do |att|
         if v = @attributes[att] then
@@ -460,7 +460,7 @@ It is copied as a standard HTML attribute.
     #add_ws wrap_as_element('p')
     dt = Element.new 'p'
     dt.attributes['class'] = 'drop-target'
-    dt.attributes['line_no'] = Thread.current['line_no']
+    dt.attributes['line_no'] = Thread.current['maruku.line_no']
     dt.attributes['delegate'] = 'plan'  # should most likely go into the js column handler
     dt.text = ' ';
     p = wrap_as_element('p')
@@ -523,11 +523,11 @@ by Maruku, to have the same results in both HTML and LaTeX.
   def to_html_header
     element_name = "h#{self.level}"
     h = wrap_as_element element_name
-    puts "h>>> #{h}"
 
     if span = render_section_number
       h.insert_before(h.children.first, span)
     end
+    #puts "h>>> #{h}"
     add_ws h
   end
 
@@ -993,46 +993,44 @@ If true, raw HTML is discarded from the output.
   end
 
   def array_to_html(array)
+    #array.each {|a| puts a.inspect }
     res = []
-                res << (e = [])
-#          puts "init: #{res.inspect}"
-                first_header = true
+    res << (e = [])
+    first_header = true
     array.each do |c|
-      method = c.kind_of?(MDElement) ?
-         "to_html_#{c.node_type}" : "to_html"
-
+      method = c.kind_of?(MDElement) ? "to_html_#{c.node_type}" : "to_html"
       if not c.respond_to?(method)
         #raise "Object does not answer to #{method}: #{c.class} #{c.inspect}"
         next
       end
 
-
-      Thread.current['line_no'] = c.line_no if c.respond_to? :line_no
+      Thread.current['maruku.line_no'] = c.line_no if c.respond_to? :line_no
       h =  c.send(method)
-#            puts "HHHHH: #{h.inspect} e: #{e.inspect}"
-
       if h.nil?
         raise "Nil html created by method  #{method}:\n#{h.inspect}\n"+
         " for object #{c.inspect[0,300]}"
       end
 
-                        if method == 'to_html_header'
-#                            puts "INNER HEADER res: #{res.inspect} -- e: #{e.inspect}"
+      if method == 'to_html_header'
+        if res.length > 1
+          res.pop
+          s = res[-1][-1]
+          e.each do |el| s << el end
+          e = res[-1]
+        end
+        e << (s = Element.new('section'))
+        #puts c.inspect
+        s.attributes['line_no'] = c.line_no
+        s.attributes['level'] = c.level
 
-                          if res.length > 1
-#                            puts "INNER FIND res: #{res.inspect} -- e: #{e.inspect}"
-                            res.pop
-                            s = res[-1][-1]
-                            e.each do |el| s << el end
-                            e = res[-1]
-                          end
-                          e << (s = Element.new('section'))
-#puts c.line_no
-                          s.attributes['line_no'] = c.line_no
-                          s.attributes['level'] = c.level
-                          res << (e = [])
-#                          puts "AFTER SECTION res: #{res.inspect} -- e: #{e.inspect}"
-                        end
+        toc = Thread.current['maruku.toc'] ||= []
+        li = c.level - 1
+        toc[li] = toc[li] ? (toc[li]  + 1) : 1
+        s.attributes['toc'] = toc.map {|l| l ? l : 1 }.join('.')
+
+        res << (e = [])
+
+      end
 
       if h.kind_of?Array
         e.concat(h) #h.each do |hh| e << hh end

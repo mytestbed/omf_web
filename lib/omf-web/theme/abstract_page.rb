@@ -124,7 +124,8 @@ module OMF::Web::Theme
       else
         e = render_externals << render_additional_headers << render_data_sources
         r = Erector.inline do
-          instruct
+          #instruct
+          text! '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
           html do
             head do
               title page_title || "OMF WEB"
@@ -140,5 +141,6 @@ module OMF::Web::Theme
         r.to_html(opts)
       end
     end
+
   end # class AbstractPage
 end # OMF::Web::Theme

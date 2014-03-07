@@ -68,11 +68,12 @@ module MaRuKu; module In; module Markdown; module BlockLevelParser
           # paragraph, or table, or definition list
           read_text_material(src, output)
         when :header2, :hrule
-          # hrule
           src.shift_line
-          output.push md_hrule()
+          #output.push md_hrule()
         when :header3
           output.push read_header3(src)
+        when :hrule
+          output.push md_hrule()
         when :ulist, :olist
           list_type = src.cur_line.md_type == :ulist ? :ul : :ol
           li = read_list_item(src)
@@ -191,7 +192,6 @@ module MaRuKu; module In; module Markdown; module BlockLevelParser
   # reads a header like '#### header ####'
   def read_header3(src)
 #          puts "READ_H3: #{src.inspect}"
-      puts "READ_H3: attr: #{@attributes}"
     line = src.shift_line.strip
     al = nil
     # Check if there is an IAL
@@ -202,7 +202,6 @@ module MaRuKu; module In; module Markdown; module BlockLevelParser
     end
     level = num_leading_hashes(line)
     text = parse_lines_as_span [strip_hashes(line)]
-      puts "22READ_H3: attr: #{@attributes}"
     return md_header(level, text, al, src.cur_index)
   end
 
