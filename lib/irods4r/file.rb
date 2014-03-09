@@ -33,7 +33,7 @@ module IRODS4r
     #
     def write(content)
       dir_name = ::File.dirname(@path)
-      ICommands.mkpath(dir_name) unless ICommands.exists?(dir_name)
+      ICommands.mkpath(dir_name) unless IRODS4r.exists?(dir_name)
       ICommands.write(@path, content, @ticket)
     end
 
