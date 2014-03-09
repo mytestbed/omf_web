@@ -32,7 +32,7 @@ module IRODS4r
     # WARN: This will overwrite any previous content
     #
     def write(content)
-      dir_name = File.dirname(@path)
+      dir_name = ::File.dirname(@path)
       ICommands.mkpath(dir_name) unless ICommands.exists?(dir_name)
       ICommands.write(@path, content, @ticket)
     end
