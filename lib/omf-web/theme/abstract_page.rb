@@ -129,6 +129,7 @@ module OMF::Web::Theme
           html do
             head do
               title page_title || "OMF WEB"
+              meta 'http-equiv' => "content-type", :content => "text/html; charset=UTF8"
               #<link rel="shortcut icon" href="/resource/theme/@theme/img/favicon.ico">
               #<link rel="apple-touch-icon" href="/resource/theme/@theme/img/apple-touch-icon.png">
               text! e.join("\n")

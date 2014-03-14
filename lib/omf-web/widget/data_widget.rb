@@ -1,4 +1,5 @@
 require 'omf-web/widget/abstract_widget'
+require 'omf-web/data_source_proxy'
 
 module OMF::Web::Widget
 
@@ -46,7 +47,11 @@ module OMF::Web::Widget
           ds_descr = {:name => ds_descr}
         end
         ds_descr[:alias] = "#{name}_#{self.object_id}"
-        {:stream => ds_descr, :name => name}
+        #{:stream => ds_descr, :name => name}
+        unless OMF::Web::DataSourceProxy.validate_ds_description(ds_descr)
+          raise "Unknown data source requested for data widget - #{ds_descr}"
+        end
+        ds_descr
       end
       #puts "DTA_WIDGTE>>> #{opts[:data_sources].inspect}"
     end

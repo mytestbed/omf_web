@@ -18,15 +18,23 @@ define(['omf/data_source3'], function(data_source) {
       var name;
       var dynamic = false;
 
-      if (typeof(ds_descr) == 'object') {
-        name = ds_descr.id || ds_descr.stream || ds_descr.name;
-        dynamic = ds_descr.dynamic;
-      } else {
-        name = ds_descr;
+      if (typeof(ds_descr) != 'object') {
+        ds_descr = {name: ds_descr};
       }
+      name = ds_descr.id || ds_descr.stream || ds_descr.name;
+      dynamic = ds_descr.dynamic;
       var source = sources[name];
       if (! source) {
-        throw("Unknown data source '" + name + "'.");
+        // Let's see if we can create one out of
+        if (ds_descr.data_url) {
+          // We can try to fetch it directly
+          if (! name) {
+            name = ds_descr.id = ds_descr.data_url;
+          }
+          source = sources[name] = data_source(ds_descr);
+        } else {
+          throw("Unknown data source '" + name + "'.");
+        }
       }
       if (dynamic) {
         source.is_dynamic(dynamic);

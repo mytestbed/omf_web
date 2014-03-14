@@ -172,8 +172,8 @@ function omf_web_data_source(opts) {
     // Reset state
     rows = [];
     update_indexes();
-    var sm = {col_name: active_slice_col_name, col_value: col_value}
-    send_server_msg('request_slice', {slice: sm})
+    var sm = {col_name: active_slice_col_name, col_value: col_value};
+    send_server_msg('request_slice', {slice: sm});
   }
   var active_slice_col_name = null;
   var active_slice_value = null;
@@ -211,6 +211,28 @@ function omf_web_data_source(opts) {
     return true;
   }
 
+  function fetch_data(data_url) {
+    require(['vendor/jquery/jquery'], function() {
+      $.ajax({
+        url: data_url,
+        dataType: 'json',
+        //data: opts,
+        type: 'GET'
+      }).done(function(reply) {
+        var data = reply.data;
+        rows.splice(0, rows.length); // this is an update, not an add
+        _.each(data, function(r) { rows.push(r); });
+
+        update_indexes();
+        var evt = {data_source: data_source};
+        OHUB.trigger(event_name, evt);
+        OHUB.trigger("data_source.changed", evt);
+      }).error(function(ajax, textStatus, errorThrown) {
+        console.log("ERROR: '" + textStatus + "' - " + errorThrown);
+      });
+    });
+  }
+
   // Let's check if this data_source maintains uniqueness along one axis (column)
   if (opts.unique_column) {
     var col_name = opts.unique_column;
@@ -233,7 +255,7 @@ function omf_web_data_source(opts) {
         }
         key2row[key] = row;
         return false;
-      }
+      };
       // pre-seed
       rows = _.uniq(rows, false, function(r) { return r[index]; });
       _.each(rows, function(r) { key2row[r[index]] = r; });
@@ -262,7 +284,7 @@ function omf_web_data_source(opts) {
         var schema = msg.schema || msg.data_source.schema;
 
         var key = so.event.key;
-        var col = _.find(schema, function(cd) { return cd.name == key });
+        var col = _.find(schema, function(cd) { return cd.name == key; });
         if (col) {
           var event = msg.datum;
           var col_id = event[col.index];
@@ -270,12 +292,18 @@ function omf_web_data_source(opts) {
             set_slice_column(col_id);
           }
         }
-      })
+      });
     }
   }
 
-  if (window.WebSocket) {
+  if (window.WebSocket && opts.ws_url) {
     start_web_socket();
+  } else if (opts.update_url) {
+    throw "Missing implementation for NON web socket browsers";
+  } else if (opts.data_url) {
+    fetch_data(opts.data_url);
+  } else {
+    throw "Don't know how to fetch data source '" + name + "'.";
   }
 
   // Bind to event directly
@@ -289,7 +317,7 @@ function omf_web_data_source(opts) {
 define(function() {
   return function(opts) {
     return omf_web_data_source(opts);
-  }
-})
+  };
+});
 
 

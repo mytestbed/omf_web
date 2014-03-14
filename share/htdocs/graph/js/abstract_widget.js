@@ -134,7 +134,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
     // Find the appropriate data source and bind to it
     //
     init_single_data_source: function(ds_descr) {
-      var ds = ds_repo.lookup(ds_descr.stream);
+      var ds = ds_repo.lookup(ds_descr);
       var self = this;
       OHUB.bind(ds.event_name, function() {
         self.update();;

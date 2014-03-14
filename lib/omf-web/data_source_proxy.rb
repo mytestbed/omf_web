@@ -63,6 +63,20 @@ module OMF::Web
       dsp
     end
 
+    def self.validate_ds_description(ds_descr)
+      debug "Validate datasource - #{ds_descr}"
+      unless ds_descr.is_a? Hash
+        raise "Expected Hash, but got '#{ds_descr.class}::#{ds_descr.inspect}'"
+      end
+      return true if ds_descr[:data_url] # We can fetch the data in the browser if necessary
+      unless ds_name = ds_descr[:id] || ds_descr[:stream] || ds_descr[:name]
+        raise "Missing 'name' attribute in datasource description. (#{ds_descr.inspect})"
+      end
+      ds_name = ds_name.to_sym
+      ds = @@datasources[ds_name]
+      ds != nil
+    end
+
     # Return proxies for 'ds_name'. Note, there can be more then
     # one proxy be needed for a datasource, such as a network which
     # has one ds for the nodes and one for the links

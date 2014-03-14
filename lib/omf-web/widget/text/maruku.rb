@@ -43,21 +43,54 @@ module OMF::Web::Widget::Text
     end
 
 
-    class WidgetElement
+    class WidgetElement < OMF::Base::LObject
+
+      @@pre_create_handlers = []
+
+      # Register a block which is presented with the
+      # widget description (Hash) we are about to create. The
+      # block is assumed to return a widget description.
+      #
+      def self.on_pre_create(&block)
+        @@pre_create_handlers << block
+      end
+
+      def self.create(wdescr)
+        wdescr = @@pre_create_handlers.reduce(wdescr) do |wd, block|
+          wd2 = block.call(wd)
+          unless wd2.is_a? Hash
+            raise "Pre_create handler '#{block}' does not return hash, but '#{wd2}'"
+          end
+          wd2
+        end
+        self.new(wdescr)
+      end
+
       attr_reader :widget
 
       def initialize(wdescr)
+        debug  "Embedding widget - #{wdescr} "
         @wdescr = wdescr
         @widget = OMF::Web::Widget.create_widget(wdescr)
+        debug "Created widget - #{@widget.class}"
       end
 
       def to_html
         content = @widget.content
         h = content.to_html
-        if title = @widget.title
-          h += "<div class='caption'>#{title}</div>"
+        klass = ['embedded']
+        if caption = @wdescr[:caption] || @widget.title
+          if mt = @wdescr[:mime-type]
+            klass << "embedded-#{mt.gsub('/', '-')}"
+          end
+          if ty = @wdescr[:type]
+            klass << "embedded-#{ty.gsub('/', '-')}"
+          end
+          h += "<div class='caption'><span class='figure'>Figure: </span><span class='text'>#{caption}</span></div>"
         end
-        ::REXML::Document.new("<div class='embedded'>#{h}</div>").root
+        root = ::REXML::Document.new("<div class='#{klass.join(' ')}'>#{h}</div>").root
+        #puts "EMBEDDED >>> #{root}"
+        root
       end
 
       def node_type
@@ -84,7 +117,7 @@ module OMF::Web::Widget::Text
         descr = YAML::load(lines.join("\n"))
         descr = OMF::Web::deep_symbolize_keys(descr)
         if (wdescr = descr[:widget])
-          wel = WidgetElement.new(wdescr)
+          wel = WidgetElement.create(wdescr)
           context << wel
           (doc.attributes[:widgets] ||= []) << wel.widget
         else
