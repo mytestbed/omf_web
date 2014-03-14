@@ -130,7 +130,7 @@ module OMF::Web
     # Return a URL for a path in this repo
     #
     def get_url_for_path(path)
-      puts "PATH>>>>> '#{path}:#{path.class}'-'#{@top_dir}:#{@top_dir.class}'"
+      # puts "PATH>>>>> '#{path}:#{path.class}'-'#{@top_dir}:#{@top_dir.class}'"
       if m = path.match("#{@top_dir}(.*)")
         path = m[1]
       end
