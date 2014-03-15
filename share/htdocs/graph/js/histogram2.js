@@ -27,6 +27,10 @@ define(["graph/abstract_nv_chart"], function (abstract_nv_chart) {
       }, histogram2.__super__.defaults.call(this));
     },
 
+    initialize: function(opts) {
+      histogram2.__super__.initialize.call(this, opts);
+    },
+
     _create_model: function() {
       return  nv.models.multiBarChart();
     },

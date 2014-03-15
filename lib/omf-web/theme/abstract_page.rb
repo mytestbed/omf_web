@@ -14,11 +14,8 @@ module OMF::Web::Theme
     depends_on :js, '/resource/vendor/jquery/jquery.js'
     depends_on :js, '/resource/vendor/underscore/underscore.js'
     depends_on :js, '/resource/vendor/backbone/backbone.js'
-
-    # depends_on :js, "/resource/js/require3.js"
-#
     depends_on :js, "/resource/theme/abstract/abstract.js"
-    # depends_on :js, "/resource/js/data_source2.js"
+
     depends_on :script, %{
       // ABSTRACT PAGE
       if (typeof(OML) == "undefined") OML = {};
@@ -64,12 +61,7 @@ module OMF::Web::Theme
     # Return an array of widgets to collect data sources from
     #
     def data_source_widgets
-      # puts ">>>>> #{@widget.class}"
-      # if @widget.respond_to? :data_source_widgets
-        # @widget.data_source_widgets
-      # else
-        [@widget]
-      # end
+      [@widget]
     end
 
     def render_data_sources

@@ -37,11 +37,6 @@ module OMF::Web
       if data_source.is_a? OMF::OML::OmlNetwork
         raise "Register link and node table separately "
       end
-        # dsh = data_source.to_tables(opts)
-        # @@datasources[name] = dsh
-      # else
-        # @@datasources[name] = data_source
-      # end
       @@datasources[name] = data_source
     end
 
@@ -103,14 +98,6 @@ module OMF::Web
             OMF::Web::SessionStore[ds_name, :dsp] ||= self.new(ds_name, @@datasources[ds_name])
           end
         end
-        # debug ">>>> #{dsa}"
-        # # let's check for sub table, such as network/nodes
-        # main, sub = ds_descr[:name].split('/')
-        # if (sub)
-          # if ds_top = @@datasources[main.to_sym]
-            # ds = ds_top[sub.to_sym]
-          # end
-        # end
         unless ds
           raise "Unknown data source '#{ds_name}' (#{@@datasources.keys.inspect})"
         end
