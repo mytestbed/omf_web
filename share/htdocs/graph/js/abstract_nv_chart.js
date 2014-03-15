@@ -16,7 +16,7 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
       ticks: {
         // type: 'date',
         // format: '%I:%M', // hour:minutes
-        format: ',.s',
+        format: ',.3s',
         // format: ",.0f" // integers with comma-grouping for thousands.
         //subdivide: 2, // the number of uniform subdivisions to make between major tick marks
         //size: [8, 4, 16], // set the size of major, minor and end ticks
@@ -118,7 +118,7 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
       if (this.chart) {
         this.chart.width(self.width);
         this.chart.height(self.height);
-        this.chart.update();
+        //this.chart.update();
       }
     },
 
