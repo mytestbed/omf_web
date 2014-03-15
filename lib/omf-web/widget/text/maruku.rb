@@ -80,7 +80,7 @@ module OMF::Web::Widget::Text
         h = content.to_html
         klass = ['embedded']
         if caption = @wdescr[:caption] || @widget.title
-          if mt = @wdescr[:mime-type]
+          if mt = @wdescr[:'mime-type']
             klass << "embedded-#{mt.gsub('/', '-')}"
           end
           if ty = @wdescr[:type]

@@ -160,7 +160,8 @@ Synonim for `title`.
 
 
   # Render to an HTML fragment (returns a REXML document tree)
-  def to_html_tree
+  def to_html_tree(context={})
+    Thread.current['maruku_context'] = context
     div = Element.new 'div'
       div.attributes['class'] = 'maruku_wrapper_div'
         children_to_html.each do |e|
@@ -195,7 +196,8 @@ Example:
   end
 
   # Render to a complete HTML document (returns a REXML document tree)
-  def to_html_document_tree
+  def to_html_document_tree(context={})
+    Thread.current['maruku_context'] = context
     doc = Document.new(nil,{:respect_whitespace =>:all})
   #	doc << XMLDecl.new
 
