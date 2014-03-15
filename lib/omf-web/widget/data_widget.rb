@@ -69,48 +69,13 @@ module OMF::Web::Widget
       OMF::Web::Theme::DataRenderer.new(self, @opts)
     end
 
-    # A dynamic widget may open a web socket back to this service. Connect
-    # to the respective table and feed back any changes.
-    #
-    # BUG ALERT: We send the entire content of the data table initially and only
-    # start monitoring the table for new stuff when the web socket connects. Any
-    # data added in between is not covered.
-    #
-    # def on_ws_open(ws)
-      # raise "ARE WE STILL NEEDING THIS"
-      # #puts ">>>> ON_WS_OPEN"
-      # @ws = ws
-      # @data_sources.each do |name, table|
-        # table.on_row_added(self.object_id) do |row|
-          # begin
-            # # may want to queue events to group events into larger messages
-            # msg = [{:stream => name, :events => [row]}]
-            # ws.send_data msg.to_json
-          # rescue Exception => ex
-            # warn ex
-          # end
-        # end
-      # end
-    # end
-#
-    # def on_ws_close(ws)
-      # raise "ARE WE STILL NEEDING THIS"
-      # @ws = nil
-      # @data_sources.each do |name, table|
-        # table.on_row_added(self.object_id)
-      # end
-    # end
-
     def collect_data_sources(ds_set)
-      #puts "DATA_SOURCES>>>> #{@data_sources.values.inspect}"
       @opts[:data_sources].each do |ds|
-        ds_set.add(ds[:stream])
+        #ds_set.add(ds[:id] || ds[:name] || ds[:stream])
+        ds_set.add(ds)
       end
       ds_set
     end
-
-
-
   end # DataWidget
 
 end
