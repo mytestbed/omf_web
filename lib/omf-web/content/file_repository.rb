@@ -45,9 +45,13 @@ module OMF::Web
     end
 
     def write(content_descr, content, message)
+      raise ReadOnlyContentRepositoryException.new if @read_only
+
       path = _get_path(content_descr)
       Dir.chdir(@top_dir) do
-        unless File.writable?(path)
+        d_name = File.dirname(path)
+        FileUtils.mkpath(d_name) unless File.exist?(d_name)
+        unless File.writable?(path) || File.writable?(d_name)
           raise "Cannot write to file '#{path}'"
         end
         f = File.open(path, 'w')
