@@ -8,6 +8,9 @@ require 'omf-web/content/content_proxy'
 
 module OMF::Web
 
+  class ContentRepositoryException < Exception; end
+  class ReadOnlyContentRepositoryException < ContentRepositoryException; end
+
   # This class provides an interface to a particular content repository.
   # It retrieves, archives and versions content.
   #
@@ -153,8 +156,12 @@ module OMF::Web
 
     attr_reader :name, :top_dir
 
+    # params opts [Hash]
+    # opts read_only [Boolean] If true, write will fail
     def initialize(name, opts)
       @name = name
+      @read_only = (opts[:read_only] == true)
+
       if @top_dir = opts[:top_dir]
         @top_dir = File.expand_path(@top_dir)
       end
@@ -187,6 +194,10 @@ module OMF::Web
         content = File.open(path).read
         return content
       end
+    end
+
+    def write(content_descr, content, message)
+      raise "Missing implementation"
     end
 
     def absolute_path(content_descr)
