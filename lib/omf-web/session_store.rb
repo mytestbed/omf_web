@@ -29,7 +29,7 @@ module OMF::Web
 
     def self.session_id
       sid = Thread.current["sessionID"]
-      raise "Missing session id 'sid'" if sid.nil?
+      raise "Missing session ID in thread context" if sid.nil?
       sid
     end
 
