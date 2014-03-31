@@ -71,7 +71,8 @@ function omf_web_data_source(opts) {
   function start_web_socket() {
     if (ws) return; // already running
 
-    var url = 'ws://' + window.location.host + '/_ws?sid=' + (opts.sid || OML.session_id);
+    var host = (typeof window_location_host == 'function') ? window_location_host() : window.location.host;
+    var url = 'ws://' + host + '/_ws?sid=' + (opts.sid || OML.session_id);
     ws = new WebSocket(url);
     ws.onopen = on_open;
     ws.onmessage = on_message;
