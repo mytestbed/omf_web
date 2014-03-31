@@ -192,6 +192,10 @@ module OMF::Web
       unless path
         raise "Can't find path information in '#{content_descr.inspect}'"
       end
+      if path.start_with? '/'
+        # Remove leading '/' .. need to stay within git directory tree
+        path = path[1 .. -1]
+      end
       return path
     end
 
