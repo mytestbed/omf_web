@@ -63,8 +63,13 @@ module OMF::Web
     end
 
     def call(&block)
-      Thread.current["sessionID"] = @sid
-      block.call
+      begin
+        current_sid = Thread.current["sessionID"]
+        Thread.current["sessionID"] = @sid
+        block.call
+      ensure
+        Thread.current["sessionID"] = current_sid
+      end
     end
   end
 
