@@ -38,6 +38,20 @@ module OMF::Web::Theme
     @@search_order = search_order if search_order
   end
 
+  # Return a named renderer for this theme initialised with 'widget'
+  #
+  def self.create_renderer(name, widget)
+    name = name.to_sym
+    @@search_order.each do |theme|
+      if tr = @@additional_renderers[theme.to_s]
+        if klass = tr[name]
+          #self.require(name)
+          return klass.new(widget)
+        end
+      end
+    end
+    raise "Can't find class implementing renderer '#{name}' in '#{@@search_order.join(', ')}'"
+  end
 
   def self.require(name)
     name = name.to_sym
@@ -57,6 +71,6 @@ module OMF::Web::Theme
         #puts ">>>> #{le}"
       end
     end
-    raise "Can't find theme component '#{name}' in '#{@@search_order.join(', ')}"
+    raise "Can't find theme component '#{name}' in '#{@@search_order.join(', ')}'"
   end
 end
