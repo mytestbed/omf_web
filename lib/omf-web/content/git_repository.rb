@@ -102,6 +102,8 @@ module OMF::Web
     end
 
     def write(content_descr, content, message)
+      raise ReadOnlyContentRepositoryException.new if @read_only
+
       path = _get_path(content_descr)
       Dir.chdir(@top_dir) do
         d_name = File.dirname(path)

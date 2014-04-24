@@ -57,7 +57,7 @@ module OMF::Web
     end
 
     def write(content_descr, content, message)
-      raise "READ ONLY"
+      raise ReadOnlyContentRepositoryException.new
     end
 
     def mime_type_for_file(content_descriptor)

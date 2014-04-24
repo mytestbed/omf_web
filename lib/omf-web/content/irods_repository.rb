@@ -80,6 +80,8 @@ module OMF::Web
     end
 
     def write(content_descr, content, message)
+      raise ReadOnlyContentRepositoryException.new if @read_only
+
       path = _get_path(content_descr)
       #puts "WRITE PATHS>>> #{path}"
       f = IRODS4r::File.create(path, false, ticket: @ticket)
