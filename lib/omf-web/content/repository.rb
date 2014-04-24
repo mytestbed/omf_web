@@ -175,6 +175,13 @@ module OMF::Web
       raise "Missing implementation"
     end
 
+    # Return true if repo is read only. Any attempts to write to
+    # a read only repo will result in a 'ReadOnlyContentRepositoryException'
+    # exception.
+    #
+    def read_only?
+      @read_only
+    end
 
     def mime_type_for_file(content_descriptor)
       fname = content_descriptor

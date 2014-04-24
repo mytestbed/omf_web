@@ -33,7 +33,7 @@ module OMF::Web
     # @return: Content proxy
     #
     def create_content_proxy_for(content_descr)
-      debug "CREATE CONTNT PROXY: #{content_descr}"
+      debug "CREATE CONTENT PROXY: #{content_descr}"
       if content_descr.is_a? String
         content_descr = {text: content_descr}
       end
