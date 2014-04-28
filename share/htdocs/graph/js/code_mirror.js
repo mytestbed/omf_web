@@ -47,6 +47,7 @@ define(["graph/abstract_widget"], function (abstract_widget) {
           lineNumbers: true,
           matchBrackets: true,
           tabMode: "indent",
+          readOnly: (o.read_only == true),
           onCursorActivity: function() {
             // try to highlight active line
             cm.setLineClass(hlLine, null, null);
