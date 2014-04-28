@@ -5,31 +5,34 @@ require 'omf_web'
 
 module OMF::Web
 
+  # TODO: Is this really the right description???
+  #
   # This object maintains synchronization between a JS DataSource object
   # in a web browser and the corresponding +OmlTable+ in this server.
   #
   #
   class ContentProxy < OMF::Base::LObject
 
-    @@proxies = {}
-
-    def self.[](url)
-      @@proxies[url.to_s]
+    def self.[](key)
+      #key = Digest::MD5.hexdigest(url)
+      OMF::Web::SessionStore[key, :content_proxy]
     end
 
+    # content_descriptor: url, mime_type, name
     def self.create(content_descr, repo)
-      unless key = content_descr[:url_key]
-        raise "Missing ':url_key' in content descriptor '#{content_descr.inspect}'"
+      unless url = content_descr[:url]
+        raise "Missing ':url' in content descriptor '#{content_descr.inspect}'"
       end
-      if proxy = @@proxies[key]
+      key = Digest::MD5.hexdigest(url)
+
+      if proxy = OMF::Web::SessionStore[key, :content_proxy]
         return proxy
       end
-      debug "Create content proxy for '#{key}' (#{content_descr.inspect})"
-      @@proxies[key] = self.new(content_descr, repo)
+      debug "Create content proxy for '#{url}' (#{content_descr.inspect})"
+      self.new(key, content_descr, repo)
     end
 
-    attr_reader :content_descriptor, :content_url, :content_id, :name, :mime_type, :repository
-
+    attr_reader :content_descriptor, :content_url, :name, :mime_type, :repository
 
     def on_get(req)
       c = content()
@@ -71,20 +74,26 @@ module OMF::Web
       @repository.create_content_proxy_for(url)
     end
 
+    def read_only?
+      @repository.read_only?
+    end
+
     private
 
-    def initialize(content_descriptor, repository)
+    def initialize(key, content_descriptor, repository)
+      @key = key
       @content_descriptor = content_descriptor
       @repository = repository
       #@path = File.join(repository.top_dir, content_handle) # requires 1.9 File.absolute_path(@content_handle, @repository.top_dir)
 
-      @content_id = content_descriptor[:url_key]
-      @content_url = "/_content/#{@content_id}"  # That most likley should come from the content handler
+      #@content_id = content_descriptor[:url_key]
+      @content_url = "/_content/#{key}"  # That most likley should come from the content handler
 
       @mime_type = @content_descriptor[:mime_type] ||= repository.mime_type_for_file(content_descriptor)
       @name = content_descriptor[:name]
 
-      @@proxies[@content_id] = self
+      OMF::Web::SessionStore[key, :content_proxy] = self
+      #@@proxies[@content_id] = self
     end
 
   end
