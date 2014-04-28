@@ -14,91 +14,11 @@ module OMF::Web
   #
   class GitContentRepository < ContentRepository
 
-    # @@git_repositories = {}
-#
-    # # Return the repository which is referenced to by elements in 'opts'.
-    # #
-    # #
-    # def self.[](name)
-      # unless repo = @@git_repositories[name.to_sym]
-        # raise "Unknown git repo '#{name}'"
-      # end
-      # repo
-    # end
-
-    # Register an existing GIT repo to the system. It will be
-    # consulted for all content url's strarting with
-    # 'git:_top_dir_:'. If 'is_primary' is set to true, it will
-    # become the default repo for all newly created content
-    # in this app.
-    #
-    # def self.register_git_repo(name, top_dir, is_primary = false)
-      # name = name.to_sym
-      # if @@git_repositories[name]
-        # warn "Ignoring repeated registration of git rep '#{name}'"
-        # return
-      # end
-      # repo = @@git_repositories[name] = GitContentRepository.new(name, top_dir)
-      # if is_primary
-        # @@primary_repository = repo
-      # end
-    # end
-
-    # def self.read_content(url, opts)
-      # unless (a = url.split(':')).length == 3
-        # raise "Expected 'git:some_name:some_path', but got '#{url}'"
-      # end
-      # git, name, path = a
-      # unless (repo = @@repositories['git:' + name])
-        # raise "Unknown git repository '#{name}'"
-      # end
-      # repo.read(path)
-    # end
-
     attr_reader :name, :top_dir
 
     def initialize(name, opts)
       super
       @repo = Grit::Repo.new(@top_dir)
-      @url_prefix = "git:#{@name}:"
-    end
-
-    #
-    # Create a URL for a file with 'path' in.
-    # If 'strictly_new' is true, returns nil if 'path' already exists.
-    #
-    # def create_url(path, strictly_new = true)
-      # return "git:"
-      # # TODO: Need to add code to select proper repository
-      # return GitContentRepository.create_url(path, strictly_new)
-    # end
-
-
-    # Load content described by either a hash or a straightforward path
-    # and return a 'ContentProxy' holding it.
-    #
-    # If descr[:strictly_new] is true, return nil if file for which proxy is requested
-    # already exists.
-    #
-    # @return: Content proxy
-    #
-    def create_content_proxy_for(content_descr)
-      path = _get_path(content_descr)
-      # TODO: Make sure that key is really unique across multiple repositories
-      url = @url_prefix + path
-      key = Digest::MD5.hexdigest(url)
-      descr = {}
-      descr[:url] = url
-      descr[:url_key] = key
-      descr[:path] = path
-      descr[:name] = url # Should be something human digestable
-      if (descr[:strictly_new])
-        Dir.chdir(@top_dir) do
-          return nil if File.exist?(path)
-        end
-      end
-      proxy = ContentProxy.create(descr, self)
-      return proxy
     end
 
     def write(content_descr, content, message)
@@ -127,8 +47,6 @@ module OMF::Web
       @url_prefix + path
     end
 
-
-
     #
     # Return an array of file names which are in the repository and
     # match 'search_pattern'
@@ -138,10 +56,6 @@ module OMF::Web
       tree = @repo.tree
       res = []
       fs = _find_files(search_pattern, tree, nil, res)
-
-      # if (mt = opts[:mime_type])
-        # fs = fs.select { |f| File.fnmatch(mt, f[:mime_type]) }
-      # end
       fs
     end
 
@@ -162,10 +76,6 @@ module OMF::Web
                     #:id => Base64.encode64(long_name).gsub("\n", ''),
                     size: e.size, blob: e.id}
           end
-          # name = e.name
-          # if File.fnmatch(search_pattern, long_name)
-            # res << long_name
-          # end
         end
       end
       res

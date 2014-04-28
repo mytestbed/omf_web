@@ -49,6 +49,18 @@ module OMF::Web
     @@primary_repository = nil
     @@repositories = {}
 
+    # Prepand this path if 'top_dir' starts with '.'
+    @@reference_dir = nil
+
+    # Prepand this path if 'top_dir' starts with '.'
+    def self.reference_dir=(dir)
+      @@reference_dir = dir
+    end
+
+    def self.reference_dir
+      @@reference_dir
+    end
+
     def self.register_repo(name, opts)
       raise "ArgumentMismatch: Expected Hash, but got #{opts}" unless opts.is_a? Hash
 
@@ -58,20 +70,37 @@ module OMF::Web
         return
       end
 
+      # unless type = opts[:type]
+        # raise "Missing type in repo opts (#{opts})"
+      # end
+      # unless repo_creator = REPO_PLUGINS[type.to_sym]
+        # raise "Unknown repository type '#{type}'"
+      # end
+
+      @@repositories[name] = r = create(opts)
+      @@primary_repository = r if opts[:is_primary]
+      r
+    end
+
+    def self.create(name, opts)
+      raise "ArgumentMismatch: Expected Hash, but got #{opts}" unless opts.is_a? Hash
+
       unless type = opts[:type]
         raise "Missing type in repo opts (#{opts})"
       end
       unless repo_creator = REPO_PLUGINS[type.to_sym]
         raise "Unknown repository type '#{type}'"
       end
-      @@repositories[name] = r = repo_creator.call(name, opts)
-      @@primary_repository = r if opts[:is_primary]
-      r
+      r = repo_creator.call(name, opts)
     end
+
 
 
     # Load content described by either a hash or a straightforward url
     # and return a 'ContentProxy' holding it.
+    #
+    # @params
+    #    - :repo_iterator: Iterator over available repos
     #
     # @return: Content proxy
     #
@@ -98,7 +127,8 @@ module OMF::Web
         throw "Can't find url in '#{url_or_descr.inspect}"
       end
 
-      repo = find_repo_for(url)
+      repo = find_repo_for(url, opts)
+      #puts ">>>>>> FOUND REPO: #{repo} for url #{url}"
       repo.create_content_proxy_for(url_or_descr)
     end
 
@@ -108,13 +138,21 @@ module OMF::Web
     end
 
     def self.read_content(url, opts)
-      find_repo_for(url).read(url)
+      find_repo_for(url, opts).read(url)
     end
 
-    def self.find_repo_for(url)
+    def self.find_repo_for(url, opts = {})
       parts = url.split(':')
-      name = parts[1]
-      unless repo = @@repositories[name.to_sym]
+      name = (parts[parts.length == 2 ? 0 : 1]).to_sym # old style: git:name:path, new style: name:path
+
+      repo = nil
+      puts "REPO SELECTOR: >>>>>>>>> #{opts[:repo_iterator]}"
+      if opts[:repo_iterator]
+        repo = opts[:repo_iterator].find {|r| r.name == name}
+      else
+        repo = @@repositories[name.to_sym]
+      end
+      unless repo
         raise "Unknown repo '#{name}'"
       end
       return repo
@@ -160,11 +198,39 @@ module OMF::Web
     # opts read_only [Boolean] If true, write will fail
     def initialize(name, opts)
       @name = name
+      @url_prefix = "#{@name}:"
       @read_only = (opts[:read_only] == true)
 
       if @top_dir = opts[:top_dir]
+        if @top_dir.start_with?('.') && ContentRepository.reference_dir
+          @top_dir = File.join(ContentRepository.reference_dir, @top_dir)
+        end
         @top_dir = File.expand_path(@top_dir)
+        debug "Creating repo '#{name} with top dir: #{@top_dir}"
       end
+    end
+
+    # Load content described by either a hash or a straightforward path
+    # and return a 'ContentProxy' holding it.
+    #
+    # If descr[:strictly_new] is true, return nil if file for which proxy is requested
+    # already exists.
+    #
+    # @return: Content proxy
+    #
+    def create_content_proxy_for(content_descr)
+      path = _get_path(content_descr)
+      # TODO: Make sure that key is really unique across multiple repositories - why?
+      descr = descr ? descr.dup : {}
+      url = get_url_for_path(path)
+      descr[:url] = url
+      descr[:path] = path
+      descr[:name] = url # Should be something human digestable
+      if (descr[:strictly_new])
+        return nil if exist?(path)
+      end
+      proxy = ContentProxy.create(descr, self)
+      return proxy
     end
 
     #
@@ -181,6 +247,12 @@ module OMF::Web
     #
     def read_only?
       @read_only
+    end
+
+    def exist?(path)
+      Dir.chdir(@top_dir) do
+        return nil if File.exist?(path)
+      end
     end
 
     def mime_type_for_file(content_descriptor)
@@ -216,10 +288,11 @@ module OMF::Web
       path = _get_path(content_descr)
     end
 
+    #
     # Return a URL for a path in this repo
     #
     def get_url_for_path(path)
-      raise "Missing implementation"
+      @url_prefix + path
     end
   end # class
 end # module

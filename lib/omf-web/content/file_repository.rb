@@ -14,34 +14,7 @@ module OMF::Web
 
     def initialize(name, opts)
       super
-      @url_prefix = "file:#{name}:"
-    end
-
-    # Load content described by either a hash or a straightforward path
-    # and return a 'ContentProxy' holding it.
-    #
-    # If descr[:strictly_new] is true, return nil if file for which proxy is requested
-    # already exists.
-    #
-    # @return: Content proxy
-    #
-    def create_content_proxy_for(content_descr)
-      path = _get_path(content_descr)
-      # TODO: Make sure that key is really unique across multiple repositories
-      descr = descr ? descr.dup : {}
-      url = @url_prefix + path
-      key = Digest::MD5.hexdigest(url)
-      descr[:url] = url
-      descr[:url_key] = key
-      descr[:path] = path
-      descr[:name] = url # Should be something human digestable
-      if (descr[:strictly_new])
-        Dir.chdir(@top_dir) do
-          return nil if File.exist?(path)
-        end
-      end
-      proxy = ContentProxy.create(descr, self)
-      return proxy
+      #@url_prefix = "file:#{name}:"
     end
 
     def write(content_descr, content, message)
@@ -60,22 +33,33 @@ module OMF::Web
       end
     end
 
-    # Return a URL for a path in this repo
     #
-    def get_url_for_path(path)
-      "file:#{path}"
+    # Return an array of file names which are in the repository and
+    # match 'search_pattern'
+    #
+    def find_files(search_pattern, opts = {})
+      Dir.chdir(@top_dir)
+      Dir.glob("**/*#{search_pattern}*").map do |path|
+        next if File.directory?(path)
+        mt = mime_type_for_file(path)
+        {
+          name: path,
+          url: get_url_for_path(path),
+          mime_type: mt,
+          size: File.size(path)
+        }
+      end.compact
     end
 
     def _get_path(content_descr)
       if content_descr.is_a? String
         path = content_descr.to_s
-        if path.start_with? 'file:'
-          path = path.split(':')[2]
-        end
+        parts = path.split(':')
+        path = parts[-1] # old style (file:name:path) vs. new style (name:path)
       elsif content_descr.is_a? Hash
         descr = content_descr
         if (url = descr[:url])
-          path = url.split(':')[2] # git:repo_name:path
+          path = url.split(':')[-1]
         else
           path = descr[:path]
         end
