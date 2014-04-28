@@ -4,9 +4,9 @@ require 'omf-web/rack/rack_exceptions'
 require 'omf-web/content/content_proxy'
 
 module OMF::Web::Rack
-      
+
   class ContentHandler < OMF::Base::LObject
-    
+
     def call(env)
       req = ::Rack::Request.new(env)
       begin
@@ -17,6 +17,8 @@ module OMF::Web::Rack
         end
         method = "on_#{req.request_method().downcase}"
         body, headers = c_proxy.send(method.to_sym, req)
+      rescue OMF::Web::ReadOnlyContentRepositoryException
+        return [403, {"Content-Type" => 'text'}, "Read-only repository"]
       rescue MissingArgumentException => mex
         debug mex
         return [412, {"Content-Type" => 'text'}, [mex.to_s]]
@@ -28,12 +30,12 @@ module OMF::Web::Rack
       if headers.kind_of? String
         headers = {"Content-Type" => headers}
       end
-      [200, headers, [body]] 
+      [200, headers, [body]]
     end
   end # ContentHandler
-  
+
 end # OMF:Web
 
 
-      
-        
+
+
