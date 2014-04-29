@@ -78,6 +78,10 @@ module OMF::Web
       @repository.read_only?
     end
 
+    def to_s
+      "\#<#{self.class} - #@name>"
+    end
+
     private
 
     def initialize(key, content_descriptor, repository)

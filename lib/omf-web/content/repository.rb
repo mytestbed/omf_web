@@ -105,10 +105,10 @@ module OMF::Web
     # @return: Content proxy
     #
     def self.create_content_proxy_for(url_or_descr, opts = {})
-      debug "self.create_content_proxy_for: '#{url_or_descr.inspect}'"
       if url_or_descr.is_a? ContentProxy
         return url_or_descr
       end
+      debug "self.create_content_proxy_for: '#{url_or_descr.inspect}'"
 
       if url_or_descr.is_a? String
         url = url_or_descr
@@ -146,7 +146,7 @@ module OMF::Web
       name = (parts[parts.length == 2 ? 0 : 1]).to_sym # old style: git:name:path, new style: name:path
 
       repo = nil
-      puts "REPO SELECTOR: >>>>>>>>> #{opts[:repo_iterator]}"
+      #puts "REPO SELECTOR: >>>>>>>>> #{opts[:repo_iterator]}"
       if opts[:repo_iterator]
         repo = opts[:repo_iterator].find {|r| r.name == name}
       else
@@ -293,6 +293,12 @@ module OMF::Web
     #
     def get_url_for_path(path)
       @url_prefix + path
+    end
+
+    # Make the repo references less verbose
+    def to_s
+      #"\#<#{self.class}-#{@name} - #{@top_dir}>"
+      "\#<#{self.class}-#{@name}>"
     end
   end # class
 end # module

@@ -467,7 +467,10 @@ It is copied as a standard HTML attribute.
     dt.text = ' ';
     p = wrap_as_element('p')
     p.attributes['class'] = 'content'
-    [Text.new("\n"), p, dt, Text.new("\n")]
+    p.attributes['line_no'] = Thread.current['maruku.line_no']
+    p.attributes['delegate'] = 'plan'  # should most likely go into the js column handler
+    #[Text.new("\n"), p, dt, Text.new("\n")]
+    [Text.new("\n"), p, Text.new("\n")]
   end
   def to_html_ol;        add_ws wrap_as_element('ol')        end
   def to_html_li;        add_ws wrap_as_element('li')        end
