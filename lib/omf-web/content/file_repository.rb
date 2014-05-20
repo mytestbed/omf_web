@@ -51,30 +51,5 @@ module OMF::Web
       end.compact
     end
 
-    def _get_path(content_descr)
-      if content_descr.is_a? String
-        path = content_descr.to_s
-        parts = path.split(':')
-        path = parts[-1] # old style (file:name:path) vs. new style (name:path)
-      elsif content_descr.is_a? Hash
-        descr = content_descr
-        if (url = descr[:url])
-          path = url.split(':')[-1]
-        else
-          path = descr[:path]
-        end
-        unless path
-          raise "Missing 'path' or 'url' in content description (#{descr.inspect})"
-        end
-        path = path.to_s
-      else
-        raise "Unsupported type '#{content_descr.class}'"
-      end
-      unless path
-        raise "Can't find path information in '#{content_descr.inspect}'"
-      end
-      return path
-    end
-
   end # class
 end # module

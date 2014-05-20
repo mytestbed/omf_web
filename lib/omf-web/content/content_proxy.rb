@@ -82,6 +82,31 @@ module OMF::Web
       "\#<#{self.class} - #@name>"
     end
 
+    def _get_path(content_descr)
+      if content_descr.is_a? String
+        # Old style (file:name:path) vs. new style (name:path)
+        path = content_descr.split(':')[-1]
+        unless path
+          raise "Can't find path information in '#{content_descr.inspect}'"
+        end
+      elsif content_descr.is_a? Hash
+        if (url = content_descr[:url])
+          path = url.split(':')[-1]
+        else
+          path = content_descr[:path]
+        end
+        unless path
+          raise "Missing 'path' or 'url' in content description (#{content_descr.inspect})"
+        else
+          path = path.to_s
+        end
+      else
+        raise "Unsupported type '#{content_descr.class}'"
+      end
+
+      return path
+    end
+
     private
 
     def initialize(key, content_descriptor, repository)
