@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "maruku", "~> 0.6.0"
   s.add_runtime_dependency "ritex", "~> 1.0.0"
   s.add_runtime_dependency "json", "~> 1.7.0"
-  s.add_runtime_dependency "grit", "~> 2.5.0"
+  s.add_runtime_dependency "gitlab-grit"
   s.add_runtime_dependency "websocket-rack", "~> 0.4.0"
   s.add_runtime_dependency "rack-accept", "~> 0.4.0"
   s.add_runtime_dependency "i18n"
