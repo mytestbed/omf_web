@@ -80,36 +80,5 @@ module OMF::Web
       end
       res
     end
-
-    def _get_path(content_descr)
-      if content_descr.is_a? String
-        path = content_descr.to_s
-        if path.start_with? 'git:'
-          path = path.split(':')[2]
-        end
-      elsif content_descr.is_a? Hash
-        descr = content_descr
-        if (url = descr[:url])
-          path = url.split(':')[2] # git:repo_name:path
-        else
-          path = descr[:path]
-        end
-        unless path
-          raise "Missing 'path' or 'url' in content description (#{descr.inspect})"
-        end
-        path = path.to_s
-      else
-        raise "Unsupported type '#{content_descr.class}'"
-      end
-      unless path
-        raise "Can't find path information in '#{content_descr.inspect}'"
-      end
-      if path.start_with? '/'
-        # Remove leading '/' .. need to stay within git directory tree
-        path = path[1 .. -1]
-      end
-      return path
-    end
-
   end # class
 end # module
