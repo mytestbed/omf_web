@@ -1016,25 +1016,28 @@ If true, raw HTML is discarded from the output.
         " for object #{c.inspect[0,300]}"
       end
 
-      if method == 'to_html_header'
-        if res.length > 1
-          res.pop
-          s = res[-1][-1]
-          e.each do |el| s << el end
-          e = res[-1]
+      unless (Thread.current['maruku_context'] || {})[:suppress_section]
+        if method == 'to_html_header'
+          if res.length > 1
+            res.pop
+            s = res[-1][-1]
+            e.each do |el| s << el end
+            e = res[-1]
+          end
+
+          # Wrap into 'section' to more easily find back into MD from html
+          e << (s = Element.new('section'))
+          s.attributes['line_no'] = c.line_no
+          s.attributes['level'] = c.level
+
+          toc = Thread.current['maruku.toc'] ||= []
+          li = c.level - 1
+          toc[li] = toc[li] ? (toc[li]  + 1) : 1
+          s.attributes['toc'] = toc.map {|l| l ? l : 1 }.join('.')
+
+          res << (e = [])
+
         end
-        e << (s = Element.new('section'))
-        #puts c.inspect
-        s.attributes['line_no'] = c.line_no
-        s.attributes['level'] = c.level
-
-        toc = Thread.current['maruku.toc'] ||= []
-        li = c.level - 1
-        toc[li] = toc[li] ? (toc[li]  + 1) : 1
-        s.attributes['toc'] = toc.map {|l| l ? l : 1 }.join('.')
-
-        res << (e = [])
-
       end
 
       if h.kind_of?Array
@@ -1045,12 +1048,12 @@ If true, raw HTML is discarded from the output.
 #                   puts "LOOP ENDN res: #{res.inspect} -- e: #{e.inspect}"
     end
 #                puts "after: #{res.inspect} e: #{e.inspect}"
-                if res.length > 1
-                  res.pop
-                  s = res[-1][-1]
-                  e.each do |el| s << el end
-                  e = res[-1]
-                end
+    if res.length > 1
+      res.pop
+      s = res[-1][-1]
+      e.each do |el| s << el end
+      e = res[-1]
+    end
 #puts e.inspect
     e
   end

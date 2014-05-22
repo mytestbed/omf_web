@@ -5,6 +5,7 @@ require 'maruku'
 require 'maruku/ext/math'
 # Monkey patches to add line numbers to html output
 
+require 'omf_base/lobject'
 require 'omf_web'
 require 'omf-web/widget/text/maruku/input/parse_block'
 require 'omf-web/widget/text/maruku/output/to_html'
@@ -132,11 +133,25 @@ module OMF::Web::Widget::Text
 end # OMF::Web::Widget::Text
 
 if __FILE__ == $0
-  unless fname = ARGV[0]
-    puts "ERROR: Missing file name"
-    exit -1
+  OMF::Base::Loggable.init_log 'maruku'
+
+  if fname = ARGV[0]
+    content = File.open(fname).read
+  else
+    content = %{
+# Lorem ipsum dolor sit
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin
+sollicitudin nibh eu ligula lobortis ornare. Sed nibh nibh,
+ullamcorper at vehicula ac, molestie ac nunc.
+
+## Cras ut volutpat magna
+
+Duis sodales, nisi vel pellentesque imperdiet, nisi massa accumsan
+lorem, gravida scelerisque velit est vitae eros. Suspendisse eu
+lacinia elit.
+}
   end
-  content = File.open(fname).read
   x = OMF::Web::Widget::Text::Maruku.format_content(content)
-  puts x.to_html
+  puts x.to_html(suppress_section: false)
 end
