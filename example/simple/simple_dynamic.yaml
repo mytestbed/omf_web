@@ -5,13 +5,15 @@
 #
 
 server:
-  name: 'Simple Demo'
-  port: 4050
+  name: 'Simple Dynamic Demo'
+  page_title: 'Simple Dynamic Demo'
+  port: 4010
 
 data_sources:
   - id: signal
     table: wave
-    dynamic: 2 # Check every 2 seconds
+    check_interval: 2 # Check every 2 seconds
+    query_interval: 1
     limit: 5 # Fetch 5 rows each time
     database:
       id: sample

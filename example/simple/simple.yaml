@@ -7,7 +7,7 @@
 server:
   name: 'Simple Demo'
   page_title: 'Simple Demo'
-  port: 4050
+  port: 4010
 
 data_sources:
   - id: signal
