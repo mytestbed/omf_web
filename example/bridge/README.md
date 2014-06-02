@@ -4,4 +4,4 @@ This would deserve a long write up as it shows off many of the neat features of 
 Running
 -------
 
-ruby -I example/bridge -I lib -e development  --fake-events  start 
+    bundle exec ruby example/bridge/bridge_viz_server start
