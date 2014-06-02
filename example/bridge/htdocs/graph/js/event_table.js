@@ -1,12 +1,7 @@
 
 define(["graph/table2",
-                 'vendor/slickgrid/plugins/slick.checkboxselectcolumn',
-                 'css!/resource/css/bridge.css'], function(table2) {
-
-// L.provide('OML.event_table', ["graph/js/table2", "#OML.table2",
-                                // 'vendor/slickgrid/plugins/slick.checkboxselectcolumn.js',
-                                // 'css/bridge.css'
-                             // ], function () {
+         'vendor/slickgrid/plugins/slick.checkboxselectcolumn',
+         'css!/resource/css/bridge.css'], function(table2) {
 
   var event_table = table2.extend({
     decl_properties: [

@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+THIS_DIR = File.dirname(File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__)
+TOP_DIR = File.join(THIS_DIR, '../..')
+$: << File.join(TOP_DIR, 'lib')
+
+require 'json'
+require 'omf-web/thin/server'
+
+DESCR = %{
+Start the Bridge Viz Server
+}
+
+OMF::Base::Loggable.init_log 'bridge', searchPath: THIS_DIR
+
+# If set, create fake sensor events
+$fake_bridge_events = false
+# Path to OML database
+$oml_database = 'sqlite://example/bridge/data_sources/test3.sq3'
+
+
+opts = {
+  port: 4050,
+  handlers: {
+    pre_parse: lambda do |p, runner|
+      runner.options[:omf_config_file] = File.join(THIS_DIR, 'bridge.yaml')
+
+      p.separator ""
+      p.separator "BRIDGE options:"
+      p.on("--fake-events", "If set, create fake sensor events") { $fake_bridge_events = true }
+      p.on("--oml-database DATABASE", "Database containing bridge data [#{$oml_database}]") do |f|
+        $oml_database = f
+      end
+      p.separator ""
+    end,
+  },
+  footer_left: "Imagined by NICTA",
+  footer_right: "git:omf_web/bridge",
+}
+
+OMF::Web::Server.start('omf_web_server', DESCR, TOP_DIR, opts)

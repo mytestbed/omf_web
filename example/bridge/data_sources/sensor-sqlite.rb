@@ -25,8 +25,9 @@ end
 class BridgeSensor < OMF::Base::LObject
   attr_reader :table
 
-  def initialize(db_name)
+  def initialize(db_name, fake_bridge_events)
     @db_name = db_name
+    @fake_bridge_events = fake_bridge_events
   end
 
   # oml_sender_id INTEGER, oml_seq INTEGER, oml_ts_client REAL, oml_ts_server REAL, "eventID" TEXT, "sensorID" TEXT, "time" REAL, "x" REAL, "y" REAL, "z" REAL, "v1" REAL, "v2" REAL
@@ -97,4 +98,4 @@ class BridgeSensor < OMF::Base::LObject
     end
   end
 end
-wv = BridgeSensor.new($oml_database).run()
+wv = BridgeSensor.new($oml_database, $fake_bridge_events).run()

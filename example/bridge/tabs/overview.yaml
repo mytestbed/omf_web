@@ -1,0 +1,82 @@
+# Shows full width model of the bridge followed by two
+# half-width widgets, one listing the last N events and
+# the other one details of a single event (selected in the
+# former widget)
+#
+
+
+tabs:
+  - id: overview
+    name: Overview
+    priority: 900
+    chrome: false  # don't show title
+    widgets:
+      - type: data/bridge
+        title: Context
+        data_source:
+          name: health
+        mapping:
+          health: health
+          fill_color:
+            property: health
+            #scale: 0.04 # 1.0 / 25
+            color: red_green() # () indicates a color scale
+        margin:
+          left: 20
+          right: 20
+
+      - type: layout/two_columns/50_50
+        left:
+          - type: data/event_table
+            title: Events
+            data_source:
+              name: health
+              dynamic: 1  # check once a second
+            columns:
+              - field: eventID
+                name: Event ID
+                behavior: select
+                cssClass: cell-selection
+                selectable: true
+
+              - field: jointID
+                name: Joint ID
+
+              - field: health
+            topts:
+              enableCellNavigation: true
+            margin:
+              left: 5
+        right:
+          - type: data/event_line_chart
+            title: Sensor Reading
+            data_source:
+              name: sensors
+              # Only fetch a 'slice' of the underlying data source. A slice
+              # is defined by specific value in the 'slice_column' of all rows
+              slice:
+                slice_column: eventID
+                event:
+                  name: bridge.event_selected
+                  key: eventID
+            mapping:
+              x_axis: time
+              y_axis:
+                property: v1
+              group_by:
+                property: sensorID
+            axis:
+              x:
+                ticks:
+                  type: date
+                  #format: %I:%M
+                  count: 5
+                legend: Time
+              y:
+                ticks:
+                  format: s
+                legend: V1
+            margin:
+              top: 10
+              left: 60
+              right: 20

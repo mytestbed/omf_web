@@ -1,0 +1,10 @@
+
+server:
+  page_title: Bridge Monitoring
+  port: 4020
+
+include: tabs/*.yaml
+
+load:
+  - data_sources/sensor-sqlite.rb
+
