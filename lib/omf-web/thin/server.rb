@@ -23,14 +23,17 @@ module OMF::Web
           pre_parse: lambda do |p, runner|
             p.on("--config CONF_FILE", "File holding description of web site") {|f| runner.options[:omf_config_file] = f}
             p.on("--top-dir DIR", "Directory to start from for relative data paths [directory of config file]") {|td| @top_dir = td }
-          end,
-          post_parse: lambda { |r| load_environment(r.options) },
+          end
         },
         authentication: {
           required: false
         }
       }.merge(opts)
-
+      post_parse = opts[:handlers][:post_parse]
+      opts[:handlers][:post_parse] = lambda do |r|
+        post_parse.call(r) if post_parse
+        load_environment(r.options)
+      end
       @server_name = server_name
       @top_dir = top_dir
       @databases = {}
@@ -53,6 +56,16 @@ module OMF::Web
       @cfg_dir = File.dirname(cf)
       opts[:static_dirs].insert(0, File.absolute_path(File.join(@cfg_dir, 'htdocs')))
       @top_dir ||= @cfg_dir
+      load_config_file(cf, opts)
+    end
+
+    def load_config_file(cf, opts)
+      unless File.readable? cf
+        fatal "Can't read config file '#{cf}'"
+        abort
+      end
+
+      debug "Loading config file '#{cf}'"
       cfg = _rec_sym_keys(YAML.load_file(cf))
 
       if log_opts = cfg[:logging]
@@ -80,20 +93,54 @@ module OMF::Web
         tabs.each {|t| t[:top_level] = true}
         widgets += tabs
       end
-      if widgets.empty?
-        fatal "Can't find 'widgets' or 'tabs' section in config file '#{cf}' - #{cfg.keys}"
-        abort
-      end
+      # if widgets.empty?
+        # fatal "Can't find 'widgets' or 'tabs' section in config file '#{cf}' - #{cfg.keys}"
+        # abort
+      # end
       widgets.each do |w|
         register_widget w
       end
 
       # Any other file to load before opening shop
-      if init = cfg[:init]
-        unless init.is_a? Enumerable
-          init = [init]
+      if load = cfg[:load]
+        unless load.is_a? Enumerable
+          load = [load]
         end
-        init.each {|f| load_ruby_file(f) }
+        load.each do |g| #{|f| load_ruby_file(f) }
+          unless g.start_with? '/'
+            g = File.absolute_path(g, File.dirname(cf))
+          end
+          found_something = false
+          Dir.glob(g).each do |f|
+            found_something = true
+            load_ruby_file(f)
+          end
+          unless found_something
+            fatal "Couldn't find any load file for pattern '#{g}'"
+            abort
+          end
+        end
+      end
+
+      # Any other configure to load
+      if include = cfg[:include]
+        unless include.is_a? Enumerable
+          include = [include]
+        end
+        include.each do |g|
+          unless g.start_with? '/'
+            g = File.absolute_path(g, File.dirname(cf))
+          end
+          found_something = false
+          Dir.glob(g).each do |f|
+            found_something = true
+            load_config_file(f, opts)
+          end
+          unless found_something
+            fatal "Couldn't find any config file for pattern '#{g}'"
+            abort
+          end
+        end
       end
 
     end
@@ -147,7 +194,6 @@ module OMF::Web
     def get_database(config)
       require 'omf_oml/table'
       require 'omf_oml/sql_source'
-
       if config.is_a? String
         if db = @databases[config]
           return db
@@ -173,8 +219,8 @@ module OMF::Web
         # inject top dir
         url.insert('sqlite:'.length, '//' + @cfg_dir + '/')
       end
-      config[:check_interval] ||= 3.0
-      puts "URL: #{url} - #{config}"
+      #config[:check_interval] ||= 3.0
+      #puts "URL: #{url} - #{config}"
       begin
         db = OMF::OML::OmlSqlSource.new(url, config)
         @databases[id] = db if id
@@ -195,7 +241,7 @@ module OMF::Web
         abort
       end
       unless file.start_with? '/'
-        File.absolute_path(file, @cfg_dir)
+        file = File.absolute_path(file, @cfg_dir)
       end
       unless File.readable? file
         fatal "Can't read file '#{file}'"
@@ -298,7 +344,7 @@ module OMF::Web
         require 'digest/md5'
         w[:id] = Digest::MD5.hexdigest(w[:name] || "tab#{rand(10000)}")[0, 8]
       end
-      w[:top_level] = true
+      #w[:top_level] = true
       w[:type] ||= 'layout/one_column'
       OMF::Web.register_widget w
     end
