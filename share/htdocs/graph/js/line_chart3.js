@@ -52,7 +52,7 @@ define(["graph/abstract_nv_chart",
         // ;
 
       this.opts.transition_duration = 0; // force no smooth transition
-      this._configure_xy_axis(opts, chart)
+      this._configure_xy_axis(opts, chart);
     },
 
     _datum: function(data, chart) {
@@ -67,7 +67,7 @@ define(["graph/abstract_nv_chart",
       } else {
         data = [data];
       };
-      chart.showLegend(data.length > 1);
+      chart.showLegend(group_by != null);
 
       return data.map(function(rows, i) {
         var name = m.group_by != null ? m.group_by(rows[0]) : 'unknown';

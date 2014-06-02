@@ -61,7 +61,7 @@ define(["graph/abstract_widget"], function (abstract_widget) {
 
 
       var vis = this.init_svg(this.w, this.h);
-      this.configure_base_layer(vis);
+      if (vis) this.configure_base_layer(vis);
 
       var self = this;
       OHUB.bind("graph.highlighted", function(evt) {
