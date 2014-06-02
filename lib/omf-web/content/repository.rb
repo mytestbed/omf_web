@@ -77,7 +77,7 @@ module OMF::Web
         # raise "Unknown repository type '#{type}'"
       # end
 
-      @@repositories[name] = r = create(opts)
+      @@repositories[name] = r = create(name, opts)
       @@primary_repository = r if opts[:is_primary]
       r
     end
