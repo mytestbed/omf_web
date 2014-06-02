@@ -13,7 +13,13 @@ At this stage the best course of action is to clone the repository
     % cd omf_web
     % export OMF_WEB=`pwd`
     % bundle install
+    
+On some systems you will need to install 'libicu'
 
+On Mac with Ports
+
+    % sudo port install icu
+    % bundle config build.charlock_holmes --with-icu-dir=/opt/local
 
 Getting Started
 ---------------
