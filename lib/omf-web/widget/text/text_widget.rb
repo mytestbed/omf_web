@@ -53,7 +53,7 @@ module OMF::Web::Widget
     end
 
     def content_id
-      @content_proxy.content_id
+      @content_proxy.content_url
     end
 
     def mime_type
