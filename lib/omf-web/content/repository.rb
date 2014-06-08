@@ -191,6 +191,9 @@ module OMF::Web
       return GitContentRepository.create_url(path, strictly_new)
     end
 
+    def self.register_mime_type(mapping)
+      MIME_TYPE.merge!(mapping)
+    end
 
     attr_reader :name, :top_dir
 
