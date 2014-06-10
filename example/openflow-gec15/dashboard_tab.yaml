@@ -15,6 +15,7 @@ widget:
       height: 1.0
       data_source:
         name: network
+        sub_sources: [nodes, links]
         unique_column: id  # only use the latest link and row descriptions
         dynamic: true
       mapping:

@@ -37,7 +37,9 @@ define(["graph/abstract_chart"], function (abstract_chart) {
       this.graph_layer = vis.append("svg:g")
                  .attr("transform", "translate(0, " + ca.h + ")")
                  ;
-      this.legend_layer = vis.append("svg:g");
+      this.link_layer = this.graph_layer.append("svg:g");
+      this.node_layer = this.graph_layer.append("svg:g");
+      this.legend_layer = this.graph_layer.append("svg:g");
     },
 
     base_css_class: 'oml-network',
@@ -53,23 +55,17 @@ define(["graph/abstract_chart"], function (abstract_chart) {
         throw "Expected an array";
       }
       if (sources.length == 1) {
-        // Check if the source name is 'default' and we can find
+        // Check if we can find
         // a _links and _nodes source
         var s = sources[0];
-        if (s.name == 'default') {
-          // ok, lets expand it
-          var ss = s.stream;
-          if (typeof(ss) != 'object') {
-            ss = { name: ss };
-          }
-          var prefix = ss.name;
-          var sn = {}; for (var p in ss) { sn[p] = ss[p]; }; sn.name = prefix + '/nodes';
-          var sl = {}; for (var p in ss) { sl[p] = ss[p]; }; sl.name = prefix + '/links';
-          sources = [
-            {name: 'nodes', stream: sn},
-            {name: 'links', stream: sl},
-          ];
+        var ss = s.stream || s.name;
+        if (typeof(ss) != 'object') {
+          ss = { name: ss };
         }
+        var prefix = ss.name;
+        var sn = {}; for (var p in ss) { sn[p] = ss[p]; }; sn.name = 'nodes'; sn.stream = prefix + '/nodes';
+        var sl = {}; for (var p in ss) { sl[p] = ss[p]; }; sl.name = 'links'; sl.stream = prefix + '/links';
+        sources = [sn, sl];
       }
       if (sources.length != 2) {
         throw "Expected TWO data source, one for nodes and one for links";
@@ -172,8 +168,11 @@ define(["graph/abstract_chart"], function (abstract_chart) {
       };
 
       var ldata = data.links;
-      var link2 = this.graph_layer.selectAll("path.link")
-                    .data(d3.values(ldata));
+      var link2 = this.link_layer.selectAll("path.link")
+                    .data(d3.values(ldata), function(d) {
+                      var k = lmapping.key(d);
+                      return lmapping.key(d);
+                    });
       link2
         //.each(position) // update existing markers
         .style("stroke", lmapping.stroke_color)
@@ -193,8 +192,10 @@ define(["graph/abstract_chart"], function (abstract_chart) {
       var ndata = data.nodes;
       // first draw white circle to allow actual node to become transparent
       // without links showing through
-      var bg_node = this.graph_layer.selectAll("circle.bg_node")
-                        .data(ndata, function(d) { return nmapping.key(d); })
+      var bg_node = this.node_layer.selectAll("circle.bg_node")
+                        .data(ndata, function(d) {
+                          return nmapping.key(d);
+                        })
           .attr("cx", function(d) { return x(nmapping.x(d)); })
           .attr("cy", function(d) { return y(nmapping.y(d)); })
           .attr("r", nmapping.radius)
@@ -217,7 +218,7 @@ define(["graph/abstract_chart"], function (abstract_chart) {
           .style("stroke-width", nmapping.stroke_width)
           ;
       }
-      var node = this.graph_layer.selectAll("circle.node")
+      var node = this.node_layer.selectAll("circle.node")
                         .data(ndata, function(d) {
                             return nmapping.key(d);
                             });
@@ -256,7 +257,7 @@ define(["graph/abstract_chart"], function (abstract_chart) {
           .style("font-size", nmapping.label_size)
           .text(function(d) { return nmapping.label_text(d); });
       }
-      var label = this.graph_layer.selectAll("text.node_label")
+      var label = this.node_layer.selectAll("text.node_label")
                         .data(ndata, function(d) {
                             return nmapping.key(d);
                             });
