@@ -67,9 +67,17 @@ module OMF::Web
       unless ds_name = ds_descr[:id] || ds_descr[:stream] || ds_descr[:name]
         raise "Missing 'name' attribute in datasource description. (#{ds_descr.inspect})"
       end
-      ds_name = ds_name.to_sym
-      ds = @@datasources[ds_name]
-      ds != nil
+      if ds_descr[:sub_sources]
+        res = ds_descr[:sub_sources].inject(true) do |ok, name|
+          #puts ">>>>> #{ok} - #{name}"
+          ok && (@@datasources["#{ds_name}/#{name}".to_sym] != nil)
+        end
+      else
+        ds_name = ds_name.to_sym
+        ds = @@datasources[ds_name]
+        #puts ">>>>> #{@@datasources.keys}"
+        ds != nil
+      end
     end
 
     # Return proxies for 'ds_name'. Note, there can be more then
