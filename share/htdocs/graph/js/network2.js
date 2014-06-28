@@ -154,6 +154,15 @@ define(["graph/abstract_chart"], function (abstract_chart) {
       });
     },
 
+    resize: function() {
+      network2.__super__.resize.call(this);
+
+      if (this.force) {
+        var ca = this.widget_area;
+        this.force.size([ca.w, ca.h]).start();
+      }
+    },
+
 
     update: function() {
 
