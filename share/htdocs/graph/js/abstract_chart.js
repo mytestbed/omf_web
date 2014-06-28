@@ -74,6 +74,7 @@ define(["graph/abstract_widget"], function (abstract_widget) {
       });
 
       //this.update(null);
+      this.init_chart();
       this.update();
     },
 
@@ -82,6 +83,11 @@ define(["graph/abstract_widget"], function (abstract_widget) {
       if (this.base_css_class) {
         this.base_layer.attr("class", this.base_css_class);
       }
+    },
+
+    // This is called once and just before update()
+    init_chart: function() {
+      // Do nothing, but allow override
     },
 
     _resize_base_el: function(w, h) {
