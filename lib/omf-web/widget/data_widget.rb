@@ -34,19 +34,28 @@ module OMF::Web::Widget
 
       if (ds = opts.delete(:data_source))
         # single source
-        data_sources = {:default => ds}
+        #data_sources = {:default => ds}
+        data_sources = [ds]
       end
       unless data_sources ||= opts.delete(:data_sources)
         raise "Missing option ':data_sources' for widget '#{name}'"
       end
-      unless data_sources.kind_of? Hash
-        data_sources = {:default => data_sources}
+      if data_sources.kind_of? Hash
+        # turn into array an set stream
+        data_sources = data_sources.map do |sname, ds_descr|
+          ds_descr[:stream] ||= sname
+        end
       end
-      opts[:data_sources] = data_sources.collect do |name, ds_descr|
+      unless data_sources.kind_of? Array
+        #data_sources = {:default => data_sources}
+        raise "Unexpected ':data_sources' for widget '#{name}' - #{data_sources}"
+      end
+      i = 0
+      opts[:data_sources] = data_sources.map do |ds_descr|
         unless ds_descr.is_a? Hash
           ds_descr = {:name => ds_descr}
         end
-        ds_descr[:alias] = "#{name}_#{self.object_id}"
+        ds_descr[:alias] = "#{name}_#{self.object_id}_#{i += 1}"
         #{:stream => ds_descr, :name => name}
         unless OMF::Web::DataSourceProxy.validate_ds_description(ds_descr)
           raise "Unknown data source requested for data widget - #{ds_descr}"

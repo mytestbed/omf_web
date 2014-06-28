@@ -75,8 +75,12 @@ module OMF::Web
       else
         ds_name = ds_name.to_sym
         ds = @@datasources[ds_name]
-        #puts ">>>>> #{@@datasources.keys}"
-        ds != nil
+        return true if ds
+
+        # Check for automatic sub sources
+        top = "#{ds_name}/"
+        names = @@datasources.keys.find_all { |ds_name| ds_name.to_s.start_with? top }
+        !names.empty?
       end
     end
 
@@ -93,8 +97,8 @@ module OMF::Web
       unless ds_descr.is_a? Hash
         raise "Expected Hash, but got '#{ds_descr.class}::#{ds_descr.inspect}'"
       end
-      unless ds_name = ds_descr[:name]
-        raise "Missing 'name' attribute in datasource description. (#{ds_descr.inspect})"
+      unless ds_name = ds_descr[:stream] || ds_descr[:name]
+        raise "Missing 'stream' or 'name' attribute in datasource description. (#{ds_descr.inspect})"
       end
       ds_name = ds_name.to_sym
       ds = @@datasources[ds_name]
@@ -112,11 +116,11 @@ module OMF::Web
       end
       if ds.is_a? Hash
         raise "Is this actually used anywhere?"
-        proxies = ds.map do |name, ds|
-          id = "#{ds_name}_#{name}".to_sym
-          proxy = OMF::Web::SessionStore[id, :dsp] ||= self.new(id, ds)
-        end
-        return proxies
+        # proxies = ds.map do |name, ds|
+          # id = "#{ds_name}_#{name}".to_sym
+          # proxy = OMF::Web::SessionStore[id, :dsp] ||= self.new(id, ds)
+        # end
+        # return proxies
       end
 
       #debug ">>>>> DS: #{ds_descr.inspect} - #{ds}"
