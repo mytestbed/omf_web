@@ -27,7 +27,17 @@ define(["graph/abstract_chart"], function (abstract_chart) {
 
     defaults: function() {
       return this.deep_defaults({
+        line_mode: 'curved', // 'straight'
         interaction_mode: 'none',   // none, hover, click
+        force: {
+          // see https://github.com/mbostock/d3/wiki/Force-Layout
+          link_distance: null, // 150,
+          link_strength: null, // [0, 1] set to 1
+          charge: null, // -30 -500,
+          charge_distance: null,
+          gravity: null, // default: 0.1
+          theta: null, // default: 0.8
+        }
       }, network2.__super__.defaults.call(this));
     },
 
@@ -111,27 +121,113 @@ define(["graph/abstract_chart"], function (abstract_chart) {
       return ds;
     },
 
+    // This is called once and just before update()
+    init_chart: function() {
+      network2.__super__.init_chart.call(this);
+
+      this.auto_placement = this.mapping.nodes.x == 'auto';
+      if (!this.auto_placement) return;
+
+      var self = this;
+      var o = this.opts.force;
+      var nmapping = this.mapping.nodes;
+      nmapping.x = function(d) {
+        return d.__force__.x / self.widget_area.w;
+      };
+      nmapping.y = function(d) {
+        return d.__force__.y / self.widget_area.h;
+      };
+
+      var ca = this.widget_area;
+      var force = this.force = d3.layout.force().size([ca.w, ca.h]);
+
+      if (o.link_distance) force.linkDistance(o.link_distance);
+      if (o.link_strength) force.linkStrength(o.link_strength);
+      if (o.charge) force.charge(o.charge);
+      if (o.charge_distance) force.chargeDistance(o.charge_distance);
+      if (o.gravity) force.gravity(o.gravity);
+      if (o.theta) force.theta(o.theta);
+
+      this.force.on('tick', function() {
+        var data = self.data;
+        self.redraw(data);
+      });
+    },
+
+
     update: function() {
 
       var ldata = this.data_source.links.rows();
       var ndata = this.data_source.nodes.rows();
+
+      if (this.force) {
+        // The following sets up data structures to be used by
+        // force layout. It also needs node and link arrays but
+        // in a different format from how we use it here.
+        // To still work with the rest of the library, we are
+        // attaching an '__force__' entry to each data element
+        // which we then hand over to the force layouter but also
+        // can revert to when drawing the graph.
+        //
+        var nm = this.mapping.nodes;
+        var nmap = {};
+        var nodes = _.map(ndata, function(d) {
+          var f = d.__force__;
+          if (!f) {
+            var id = nm.key(d);
+            f = d.__force__ = {index: id, d: d};
+          }
+          nmap[f.index] = f;
+          return f;
+        });
+
+        var lm = this.mapping.links;
+        var links = _.map(ldata, function(d) {
+          var f = d.__force__;
+          if (!f) {
+            var s = lm.from(d);
+            var t = lm.to(d);
+            var id = nm.key(d);
+            f = d.__force__ = {index: id, source: s.__force__, target: t.__force__, d: d};
+          }
+          return f;
+        });
+
+        // TODO: We need to check if any new data items have been added or old ones
+        // removed. So the following may be a bit slow.
+        function isDiff(a1, a2) {
+          if (a1.length != a2.length) return true;
+
+          var i1 = _.map(a1, function(d) {return d.index; });
+          var i2 = _.map(a2, function(d) {return d.index; });
+          var d = _.difference(i1, i2);
+          return d.length > 0;
+        }
+        var force = this.force;
+        if (isDiff(force.nodes(), nodes) || isDiff(force.links(), links)) {
+          force.nodes(nodes);
+          force.links(links);
+          force.start();
+        }
+      }
 
       this.redraw({links: ldata, nodes: ndata});
     },
 
     redraw:  function(data) {
       var self = this;
+      self.data = data;
       var o = this.opts;
       var mapping = this.mapping; //o.mapping || {};
       var ca = this.widget_area;
 
       var x = function(v) {
-        var x = v * ca.w + ca.x;
+        //var x = v * ca.w + ca.x;
         var x = v * ca.w;
         return x;
       };
       var y = function(v) {
-        var y = -1 * (v * ca.h + ca.y);
+        //var y = -1 * (v * ca.h + ca.y);
         var y = -1 * (v * ca.h);
         return y;
       };
@@ -141,7 +237,7 @@ define(["graph/abstract_chart"], function (abstract_chart) {
       var nmapping = mapping.nodes;
       var iline_f = d3.svg.line().interpolate('basis');
 
-      // curved line
+      // curved line or straight depending on line_mode
       var line_f = function(d) {
         var a = 0.2;
         var b = 0.3;
@@ -158,6 +254,9 @@ define(["graph/abstract_chart"], function (abstract_chart) {
         var dx = x3 - x1;
         var dy = y3 - y1;
         var l = Math.sqrt(dx * dx + dy * dy);
+        if (l == 0 || self.opts.line_mode != 'curved') {
+          return iline_f([[x1, y1], [x3, y3]]);
+        }
 
         var mx = x1 + a * dx;
         var my = y1 + a * dy;
