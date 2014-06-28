@@ -1,0 +1,35 @@
+
+
+
+# Simple tab showing a line chart with supporting table
+#
+
+server:
+  name: 'Topology Discovery'
+  page_title: 'Topology Discovery'
+  port: 4020
+
+
+
+repositories:
+  - id: content
+    type: file
+    top_dir: .
+
+include: widgets/network.yaml
+
+widgets:
+  - id: main
+    name: Main
+    top_level: true
+    priority: 900
+    type: layout/two_columns/33_66
+    left:
+      - name: Introduction
+        type: text
+        content:
+          url: file:content:introduction.md
+    right:
+      - network
+
+

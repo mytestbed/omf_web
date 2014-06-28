@@ -1,0 +1,44 @@
+
+data_sources:
+  - id: network/nodes
+    file: data_sources/nodes.csv
+  - id: network/links
+    file: data_sources/links.csv
+
+widgets:
+  - id: network
+    name: Network
+    type: data/network2
+    #data_source: network
+    data_sources:
+      - name: nodes
+        stream: network/nodes
+      - name: links
+        stream: network/links
+
+    mapping:
+      nodes:
+        x: auto
+        y: auto
+        # radius:
+          # property: capacity
+          # scale: 20
+          # min: 4
+        fill_color: white
+          # property: capacity
+          # color: red_yellow20_green()
+        stroke_width: 2
+        label_color: black
+        label_size: 14
+      links:
+        stroke_width: 8
+        stroke_color:
+          property: zone
+          color: category10()
+
+    force:
+      link_distance: 150
+      charge: -1000
+
+    line_mode: straight
+
