@@ -1,0 +1,10 @@
+nodeID, property, value
+00:0,name,Router 1
+00:0,mac,00:0
+00:0,type,router
+00:1,name,Host 1
+00:1,mac,00:1
+00:1,type,host
+00:2,name,Host 2
+00:2,mac,00:2
+00:2,type,host

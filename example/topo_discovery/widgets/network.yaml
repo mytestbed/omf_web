@@ -1,9 +1,9 @@
 
 data_sources:
   - id: network/nodes
-    file: data_sources/nodes.csv
+    file: data_sources/nodes2.csv  # checking that node ids can be anything
   - id: network/links
-    file: data_sources/links.csv
+    file: data_sources/links2.csv
 
 widgets:
   - id: network
@@ -41,4 +41,5 @@ widgets:
       charge: -1000
 
     line_mode: straight
+    interaction_mode: click
 

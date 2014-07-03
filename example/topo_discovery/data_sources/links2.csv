@@ -1,0 +1,3 @@
+id:int,from_id:string,to_id:string,zone:int
+0,00:0,00:1,0
+1,00:1,00:2,1
