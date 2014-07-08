@@ -295,19 +295,40 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
              return v;
            };
          case 'color':
-           var color_fname = descr.color;
-           if (color_fname == undefined) {
-             throw "Missing color function for '" + mname + "'.";
+           var color_fdecl = descr.color;
+           if (color_fdecl == undefined) {
+             throw "Missing color mapping declaration for '" + mname + "'.";
            }
-           var color_fp = self.decl_color_func[color_fname];
-           if (color_fp == undefined) {
-             throw "Unknown color function '" + color_fname + "'.";
+           var color_f = null;
+           if (typeof color_fdecl == 'string') {
+             var color_fp = self.decl_color_func[color_fdecl];
+             if (color_fp == undefined) {
+               throw "Unknown color function '" + color_fname + "'.";
+             }
+             color_f = color_fp();
+           } else if (color_fdecl instanceof Object) {
+             if (color_fdecl instanceof Array) {
+               var l = color_fdecl.length;
+               color_f = function(v) {
+                 if (v < 0) v = 0;
+                 if (v >= l) v = l - 1;
+                 return color_fdecl[v];
+               };
+             } else {
+               // hash table, mapping some name to color
+               return function(d) {
+                 var key = d[index];
+                 var c = color_fdecl[key] || 'black';
+                 return c;
+               };
+             }
+           } else {
+             throw "Unknown color function type '" + color_fdecl + "'.";
            }
-           var color_f = color_fp();
            var scale = descr.scale;
            var min_value = descr.min;
            return function(d) {
-             var v = d[index];
+             var v = parseInt(d[index]);
              if (scale != undefined) v = v * scale;
              if (min_value != undefined && v < min_value) v = min_value;
              var color = color_f(v);
