@@ -9,6 +9,7 @@ widgets:
   - id: network
     name: Network
     type: data/network2
+    height: 1.0
     #data_source: network
     data_sources:
       - name: nodes
@@ -20,11 +21,17 @@ widgets:
       nodes:
         x: auto
         y: auto
-        # radius:
+        radius: 15
           # property: capacity
           # scale: 20
           # min: 4
-        fill_color: white
+        fill_color: #white
+          property: type
+          color:
+            router: orange
+            switch: green
+            host: lightblue
+            unknown: gray
           # property: capacity
           # color: red_yellow20_green()
         stroke_width: 2
@@ -37,7 +44,7 @@ widgets:
           color: category10()
 
     force:
-      link_distance: 150
+      link_distance: 50
       charge: -1000
 
     line_mode: straight

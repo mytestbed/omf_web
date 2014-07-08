@@ -1,4 +1,11 @@
-id:string,name
-00:0,Node 0
-00:1,Node 1
-00:2,Node 2
+id:string,name,type
+00:00:00:00:c1:00,x1,unknown
+00:00:00:00:c2:00,x2,unknown
+10:10:10:10:10:fe,x3,unknown
+rf1,rf1,router
+rf2,rf2,router
+rf3,rf3,router
+ba:5e:ba:11:00:00,x4,unknown
+ba:5e:ba:11:00:01,x5,host
+ba:5e:ba:11:ad:00,x6,unknown
+ba:5e:ba:11:db:00,x7,unknown
