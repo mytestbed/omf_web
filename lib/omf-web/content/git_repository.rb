@@ -80,5 +80,16 @@ module OMF::Web
       end
       res
     end
+
+    protected
+
+    def _create_if_not_exists
+      unless File.exist?("#{@top_dir}/.git")
+        FileUtils.mkdir_p(@top_dir)
+        Dir.chdir(@top_dir) do
+          system "git init"
+        end
+      end
+    end
   end # class
 end # module

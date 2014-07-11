@@ -33,7 +33,6 @@ module OMF::Web
       end
     end
 
-    #
     # Return an array of file names which are in the repository and
     # match 'search_pattern'
     #
@@ -51,5 +50,10 @@ module OMF::Web
       end.compact
     end
 
+    protected
+
+    def _create_if_not_exists
+      FileUtils.mkdir_p(@top_dir) unless File.exist?(@top_dir)
+    end
   end # class
 end # module
