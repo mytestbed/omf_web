@@ -43,6 +43,16 @@ module OMF::Web::Widget::Text
       ::Maruku.new(content)
     end
 
+    # The markdown document may have some meta instructions at the
+    # beginning of the document which are formatted like an HTTP header
+    def self.count_header_lines(content)
+      count = 0
+      match = (content =~ /\A((\w[\w\s\_\-]+: .*\n)+)\s*\n/)
+      return 0 if match != 0
+
+      headers = $1
+      headers.split("\n").length + 1
+    end
 
     class WidgetElement < OMF::Base::LObject
 
@@ -138,7 +148,8 @@ if __FILE__ == $0
   if fname = ARGV[0]
     content = File.open(fname).read
   else
-    content = %{
+    content = %{title: Lorem2
+
 # Lorem ipsum dolor sit
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin
@@ -152,6 +163,10 @@ lorem, gravida scelerisque velit est vitae eros. Suspendisse eu
 lacinia elit.
 }
   end
+
+
   x = OMF::Web::Widget::Text::Maruku.format_content(content)
+  puts "HEADER LENGTH: #{OMF::Web::Widget::Text::Maruku.count_header_lines(content)}"
+
   puts x.to_html(suppress_section: false)
 end
