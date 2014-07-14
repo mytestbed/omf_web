@@ -1,45 +1,67 @@
 
 // Copied from http://fgnass.github.io/spin.js
 
-  // var opts = {
-    // lines: 13, // The number of lines to draw
-    // length: 20, // The length of each line
-    // width: 10, // The line thickness
-    // radius: 30, // The radius of the inner circle
-    // corners: 1, // Corner roundness (0..1)
-    // rotate: 0, // The rotation offset
-    // direction: 1, // 1: clockwise, -1: counterclockwise
-    // color: '#000', // #rgb or #rrggbb
-    // speed: 1, // Rounds per second
-    // trail: 60, // Afterglow percentage
-    // shadow: false, // Whether to render a shadow
-    // hwaccel: false, // Whether to use hardware acceleration
-    // className: 'spinner', // The CSS class to assign to the spinner
-    // zIndex: 2e9, // The z-index (defaults to 2000000000)
-    // top: 'auto', // Top position relative to parent in px
-    // left: 'auto' // Left position relative to parent in px
-  // };
+/*
+
+Basic Usage:
+============
+
+$('#el').spin(); // Creates a default Spinner using the text color of #el.
+$('#el').spin({ ... }); // Creates a Spinner using the provided options.
+
+$('#el').spin(false); // Stops and removes the spinner.
+
+Using Presets:
+==============
+
+$('#el').spin('small'); // Creates a 'small' Spinner using the text color of #el.
+$('#el').spin('large', '#fff'); // Creates a 'large' white Spinner.
+
+Adding a custom preset:
+=======================
+
+$.fn.spin.presets.flower = {
+  lines: 9
+  length: 10
+  width: 20
+  radius: 0
+}
+
+$('#el').spin('flower', 'red');
+
+*/
 
 function _jquery_spin_(Spinner) {
-  $.fn.spin = function(opts) {
-    this.each(function() {
+  $.fn.spin = function(opts, color) {
+
+    return this.each(function() {
       var $this = $(this),
-          data = $this.data();
+        data = $this.data();
 
       if (data.spinner) {
         data.spinner.stop();
         delete data.spinner;
       }
       if (opts !== false) {
-        data.spinner = new Spinner($.extend({left: '0px', color: $this.css('color')}, opts)).spin(this);
+        opts = $.extend(
+          { color: color || $this.css('color') },
+          $.fn.spin.presets[opts] || opts
+        );
+        data.spinner = new Spinner(opts).spin(this);
       }
     });
-    return this;
+  };
+
+  $.fn.spin.presets = {
+    tiny: { lines: 8, length: 2, width: 2, radius: 3 },
+    small: { lines: 8, length: 4, width: 3, radius: 5 },
+    large: { lines: 10, length: 8, width: 4, radius: 8 }
   };
 }
 
+
 if (typeof(define) != undefined) {
-  define(['vendor/spin/spin.min'], function(Spinner) {
+  define(['vendor/spin/spin'], function(Spinner) {
     _jquery_spin_(Spinner)
   });
 } else {
