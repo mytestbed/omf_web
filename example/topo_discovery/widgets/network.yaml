@@ -19,7 +19,7 @@ widgets:
 
     mapping:
       nodes:
-        x: auto
+        x: auto  # force layout
         y: auto
         radius: 15
           # property: capacity
