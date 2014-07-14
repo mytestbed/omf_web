@@ -199,6 +199,7 @@ module OMF::Web
 
     # params opts [Hash]
     # opts read_only [Boolean] If true, write will fail
+    # opts create_if_not_exists [Boolean]
     def initialize(name, opts)
       @name = name
       @url_prefix = "#{@name}:"
@@ -210,6 +211,8 @@ module OMF::Web
         end
         @top_dir = File.expand_path(@top_dir)
         debug "Creating repo '#{name} with top dir: #{@top_dir}"
+
+        _create_if_not_exists if opts[:create_if_not_exists]
       end
     end
 
@@ -316,7 +319,6 @@ module OMF::Web
       return path
     end
 
-    #
     # Return a URL for a path in this repo
     #
     def get_url_for_path(path)
@@ -327,6 +329,12 @@ module OMF::Web
     def to_s
       #"\#<#{self.class}-#{@name} - #{@top_dir}>"
       "\#<#{self.class}-#{@name}>"
+    end
+
+    protected
+
+    def _create_if_not_exists
+      raise NotImplementedError, "#{__method__} NOT implementated in #{self.class}"
     end
   end # class
 end # module
