@@ -19,6 +19,24 @@ function omf_web_data_source(opts) {
     event_name: event_name,
   };
 
+  var on_schema_callbacks = [];
+
+  data_source.on_schema = function(callback) {
+    if (schema) {
+      callback(schema);
+    } else {
+      // delay
+      on_schema_callbacks.push(callback);
+    }
+  };
+
+  function set_schema(new_schema) {
+    schema = data_source.schema = new_schema;
+    _.each(on_schema_callbacks, function(cbk) {
+      cbk(new_schema);
+    });
+  }
+
   var indexes = {};
   var unique_index_check = null;
 
@@ -188,7 +206,7 @@ function omf_web_data_source(opts) {
 
     if (first_time) {
       var self = this;
-      L.require(['vendor/jquery/jquery.js', 'vendor/jquery/jquery.periodicalupdater.js'], function() {
+      require(['vendor/jquery/jquery.periodicalupdater.js'], function() {
         var update_interval = self.update_interval * 1000;
         if (update_interval < 1000) update_interval = 3000;
         var opts = {
@@ -213,7 +231,7 @@ function omf_web_data_source(opts) {
   }
 
   function fetch_data(data_url) {
-    require(['vendor/jquery/jquery'], function() {
+    require(['jquery'], function() {
       $.ajax({
         url: data_url,
         dataType: 'json',
@@ -221,9 +239,11 @@ function omf_web_data_source(opts) {
         type: 'GET'
       }).done(function(reply) {
         var data = reply.data;
-        rows.splice(0, rows.length); // this is an update, not an add
-        _.each(data, function(r) { rows.push(r); });
+        set_schema(reply.schema);
 
+        // need to update 'rows' in place as it's referenced in other closures
+        rows.splice(0, rows.length);
+        _.each(data, function(r) { rows.push(r); });
         update_indexes();
         var evt = {data_source: data_source};
         OHUB.trigger(event_name, evt);
