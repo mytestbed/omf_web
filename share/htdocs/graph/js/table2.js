@@ -1,15 +1,11 @@
 
-require.config({
-  shim: {
-   'vendor/slickgrid/slick.formatters': ['vendor/slickgrid/slick.core'],
-   'vendor/slickgrid/slick.editors': ['vendor/slickgrid/slick.core'],
-   'vendor/slickgrid/plugins/slick.rowselectionmodel': ['vendor/slickgrid/slick.core'],
-   'vendor/slickgrid/slick.grid': ['vendor/slickgrid/slick.core'],
-   'vendor/slickgrid/slick.dataview': ['vendor/slickgrid/slick.core'],
-   'vendor/slickgrid/controls/slick.pager': ['vendor/slickgrid/slick.core'],
-   'vendor/slickgrid/controls/slick.columnpicker': ['vendor/slickgrid/slick.core']
-  }
-});
+OML.require_dependency('vendor/slickgrid/slick.formatters', ['vendor/slickgrid/slick.core']);
+OML.require_dependency('vendor/slickgrid/slick.editors', ['vendor/slickgrid/slick.core']);
+OML.require_dependency('vendor/slickgrid/plugins/slick.rowselectionmodel', ['vendor/slickgrid/slick.core']);
+OML.require_dependency('vendor/slickgrid/slick.grid', ['vendor/slickgrid/slick.core']);
+OML.require_dependency('vendor/slickgrid/slick.dataview', ['vendor/slickgrid/slick.core']);
+OML.require_dependency('vendor/slickgrid/controls/slick.pager', ['vendor/slickgrid/slick.core']);
+OML.require_dependency('vendor/slickgrid/controls/slick.columnpicker', ['vendor/slickgrid/slick.core']);
 
 
 define(["graph/abstract_widget",

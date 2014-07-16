@@ -1,9 +1,5 @@
 
-require.config({
-  shim: {
-    "vendor/nv_d3/js/nv.d3": ["vendor/d3/d3", "css!vendor/nv_d3/css/nv.d3"]
-  }
-});
+OML.require_dependency("vendor/nv_d3/js/nv.d3", ["vendor/d3/d3", "css!vendor/nv_d3/css/nv.d3"]);
 
 define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_chart) {
 
@@ -37,9 +33,18 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
 
     configure_base_layer: function(vis) {
       this.base_layer = vis;
-      var chart = this.chart = this._create_model(); //nv.models.lineWithFocusChart();
-      this._configure_mapping(this.mapping, chart);
-      this._configure_options(this.opts, chart);
+      this._configure_options(this.opts, this.get_chart());
+    },
+
+    get_chart: function() {
+      if (! this.chart) {
+        this.chart = this._create_model(); //nv.models.lineWithFocusChart();
+      }
+      return this.chart;
+    },
+
+    init_mapping: function() {
+      this._configure_mapping(this.mapping, this.get_chart());
     },
 
     _configure_mapping: function(m, chart) {

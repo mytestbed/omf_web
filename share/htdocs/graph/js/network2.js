@@ -90,20 +90,80 @@ define(["graph/abstract_chart"], function (abstract_chart) {
     },
 
     process_schema: function() {
-      this.schema = {
-        nodes: this.process_single_schema(this.data_source.nodes),
-        links: this.process_single_schema(this.data_source.links)
-      };
+      var self = this;
+      var ds_names = ['nodes', 'links'];
+      var outstanding_schemas = ds_names.slice(0); // real copy
 
-      var om = this.opts.mapping;
-      if (om.links == undefined || om.nodes == undefined) {
-        throw "Missing mapping instructions in 'options' for either 'links' or 'nodes', or both.";
-      }
-      this.mapping = {
-        nodes: this.process_single_mapping('nodes', om.nodes, this.decl_properties.nodes),
-        links: this.process_single_mapping('links', om.links, this.decl_properties.links)
-      };
+      // CHeck for all the schemas first and when we have them, really
+      // process the schemas
+      _.each(ds_names, function(name) {
+        self.data_source[name].on_schema(function() {
+          outstanding_schemas = _.without(outstanding_schemas, name);
+          if (_.isEmpty(outstanding_schemas.length)) {
+            self._process_schema();
+          }
+        });
+      });
     },
+
+    _process_schema: function() {
+      var self = this;
+      var ds_names = ['nodes', 'links'];
+      var om = self.opts.mapping;
+      if (om == undefined) {
+        throw "Missing mapping instructions in 'options'.";
+      }
+      self.mapping = {};
+      var schemas = self.schema = {};
+
+      _.each(ds_names, function(ds_name) {
+        schemas[ds_name] = self.process_single_schema(self.data_source[ds_name]);
+      });
+
+      _.each(ds_names, function(ds_name) {
+        var mapping = om[ds_name];
+        if (mapping == undefined) {
+          throw "Missing mapping instructions in 'options' for '" + ds_name + "'.";
+        }
+        self.mapping[ds_name] = self.process_single_mapping(ds_name, mapping, self.decl_properties[ds_name]);
+      });
+      self.init_mapping();
+    },
+
+
+    // process_schema: function() {
+//
+//
+      // var self = this;
+      // var schemas = this.schema = {};
+      // var mappings = this.mapping = {};
+      // var om = this.opts.mapping;
+      // // if (om.links == undefined || om.nodes == undefined) {
+        // // throw "Missing mapping instructions in 'options' for either 'links' or 'nodes', or both.";
+      // // }
+        // // links: this.process_single_schema(this.data_source.links)
+      // // };
+      // // this.data_source.nodes.on_schema(function() {
+        // // schemas.nodes = self.process_single_schema(self.data_source.nodes);
+        // // mappings.nodes = self.process_single_mapping('nodes', om.nodes, self.decl_properties.nodes);
+      // // });
+//
+      // _.each(['nodes', 'links'], function(name) {
+        // if (om[name] == undefined) {
+          // throw "Missing mapping instructions in 'options' for '" + name + "'.";
+        // }
+        // self.data_source[name].on_schema(function() {
+          // schemas[name] = self.process_single_schema(self.data_source[name]);
+          // mappings[name] = self.process_single_mapping(name, om[name], self.decl_properties[name]);
+        // });
+      // });
+//
+//
+      // // this.mapping = {
+        // // nodes: this.process_single_mapping('nodes', om.nodes, this.decl_properties.nodes),
+        // // links: this.process_single_mapping('links', om.links, this.decl_properties.links)
+      // // };
+    // },
 
     /*
      * Return schema for +stream+.

@@ -19,6 +19,11 @@ module OMF::Web::Theme
     depends_on :script, %{
       // ABSTRACT PAGE
       if (typeof(OML) == "undefined") OML = {};
+      OML._shim = {}
+      OML.require_dependency = function(target, dependencies) {
+        OML._shim[target] = dependencies
+        require.config({shim: OML._shim});
+      }
     }
 
     attr_reader :opts

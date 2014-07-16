@@ -1,11 +1,7 @@
 
-require.config({
-  shim: {
-    "vendor/nv_d3/js/nv.d3": ["vendor/d3/d3", "css!vendor/nv_d3/css/nv.d3"],
-    "vendor/nv_d3/js/models/line": ["vendor/nv_d3/js/nv.d3"],
-    "vendor/nv_d3/js/models/lineChart": ["vendor/nv_d3/js/models/line"],
-  }
-});
+OML.require_dependency("vendor/nv_d3/js/nv.d3", ["vendor/d3/d3", "css!vendor/nv_d3/css/nv.d3"]);
+OML.require_dependency("vendor/nv_d3/js/models/line", ["vendor/nv_d3/js/nv.d3"]);
+OML.require_dependency("vendor/nv_d3/js/models/lineChart", ["vendor/nv_d3/js/models/line"]);
 
 define(["graph/abstract_nv_chart",
           "graph/abstract_chart", "graph/axis",

@@ -142,12 +142,17 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       return ds;
     },
 
+    init_mapping: function() {},
 
     process_schema: function() {
-      this.schema = this.process_single_schema(this.data_source);
-      if (typeof(this.decl_properties) != "undefined") {
-        this.mapping = this.process_single_mapping(null, this.opts.mapping, this.decl_properties);
-      }
+      var self = this;
+      this.data_source.on_schema(function() {
+        self.schema = self.process_single_schema(self.data_source);
+        if (typeof(self.decl_properties) != "undefined") {
+          self.mapping = self.process_single_mapping(null, self.opts.mapping, self.decl_properties);
+        }
+        self.init_mapping();
+      });
     },
 
     process_single_schema: function(data_source) {
@@ -155,8 +160,12 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       var o = this.opts;
       var schema = {};
       _.map(data_source.schema, function(s, i) {
-          s['index'] = i;
-          schema[s.name] = s;
+        // TODO: Remove, this is quick hack to addres a bug in Job Service
+        if (_.isArray(s)) { s = {name: s[0], type: s[1]}; }
+        // End of hack
+
+        s['index'] = i;
+        schema[s.name] = s;
       });
       return schema;
     },
