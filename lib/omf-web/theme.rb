@@ -40,13 +40,13 @@ module OMF::Web::Theme
 
   # Return a named renderer for this theme initialised with 'widget'
   #
-  def self.create_renderer(name, widget)
+  def self.create_renderer(name, widget, opts = {})
     name = name.to_sym
     @@search_order.each do |theme|
       if tr = @@additional_renderers[theme.to_s]
         if klass = tr[name]
           #self.require(name)
-          return klass.new(widget)
+          return klass.new(widget, opts)
         end
       end
     end
