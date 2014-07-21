@@ -121,9 +121,10 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
       var self = this;
       abstract_nv_chart.__super__.resize.call(this);
       if (this.chart) {
-        this.chart.width(self.width);
-        this.chart.height(self.height);
-        //this.chart.update();
+        // this.chart.width(self.width);
+        // this.chart.height(self.height);
+        this.chart.width(self.w);
+        this.chart.height(self.h);
       }
     },
 
