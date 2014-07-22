@@ -26,7 +26,7 @@ module OMF::Web::Theme
 
   def self.register_renderer(name, klass, theme = DEFAULT_THEME)
     tr = @@additional_renderers[theme.to_s] ||= {}
-    tr[name] = klass
+    tr[name.to_sym] = klass
   end
 
   # Set additional themes to search in the given order for
@@ -50,7 +50,14 @@ module OMF::Web::Theme
         end
       end
     end
-    raise "Can't find class implementing renderer '#{name}' in '#{@@search_order.join(', ')}'"
+    renderers = Set.new
+    @@search_order.each do |theme|
+      if tr = @@additional_renderers[theme.to_s]
+        tr.keys.each {|n| renderers << n}
+      end
+    end
+    #raise "Can't find class implementing renderer '#{name}' in '#{@@search_order.join(', ')}'"
+    raise "Can't find class implementing renderer '#{name}' - #{renderers.to_a.inspect}"
   end
 
   def self.require(name)
