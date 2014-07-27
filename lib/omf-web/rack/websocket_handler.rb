@@ -87,7 +87,8 @@ module OMF::Web::Rack
                   action: action
                   #offset: offset
                 }
-                send_data(msg.to_json.force_encoding("UTF-8"))
+                # http://stackoverflow.com/questions/17022394/convert-string-to-utf8-in-ruby
+                send_data(msg.to_json.encode("iso-8859-1").force_encoding("UTF-8"))
                 rows.clear
               end
 
