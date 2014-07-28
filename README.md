@@ -1,11 +1,19 @@
 # OMF Web
 
-This Ruby 1.9 gem provides the components for building a web-based data visualization service. 
+This Ruby gem provides the components for building a web-based data visualization service.
 The typical use case is to allow a user to investigate a data set stored in one or more databases
 as well as life data streams.
 
 Installation
 ------------
+
+    gem install omf_web
+
+or if you want to create a standalone visualisation solution you may want to
+add the following to a local 'Gemfile':
+
+    source 'https://rubygems.org'
+    gem 'omf_web'
 
 At this stage the best course of action is to clone the repository
 
@@ -14,12 +22,16 @@ At this stage the best course of action is to clone the repository
     % export OMF_WEB=`pwd`
     % bundle install
     
-On some systems you will need to install 'libicu'
+On some systems you will need to install 'libicu'.
+
+    sudo apt-get install libicu-dev
+
+On Debian (Ubuntu)
 
 On Mac with Ports
 
-    % sudo port install icu
-    % bundle config build.charlock_holmes --with-icu-dir=/opt/local
+    sudo port install icu
+    bundle config build.charlock_holmes --with-icu-dir=/opt/local
 
 Getting Started
 ---------------
@@ -27,16 +39,20 @@ Getting Started
 There are a few example sites in the 'example' directory. They have been developed in the context of various demos and 
 may not always be kept up to date. The one which should always work is 'example/simple'. Try it out.
 
-    % $OMF_WEB/bin/omf_web_server.rb --config $OMF_WEB/example/simple/simple.yaml start
+    omf_web_server --example simple start
     
-This starts a webserver which can be accessed locally via 'http:localhost:4050'. Connecting to it through your favorite 
+This starts a webserver which can be accessed locally via 'http:localhost:4010'. Connecting to it through your favorite
 web browser should display a web page approx. looking like:
 
 ![Screenshot of starting page](https://raw.github.com/mytestbed/omf_web/master/doc/screenshot2.png "Screenshot")
 
 Don't forget to press the icon buttons 
 ![icon buttons](https://raw.github.com/mytestbed/omf_web/master/doc/widget_detail.png "icon buttons")
-on the left widget header.
+on the right widget header.
+
+A list of all the available examples can be obtained through:
+
+    omf_web_server --example
 
 Overview
 --------
