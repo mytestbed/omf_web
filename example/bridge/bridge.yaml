@@ -2,6 +2,17 @@
 server:
   page_title: Bridge Monitoring
   port: 4020
+  options:
+    - separator: "BRIDGE options:"
+    - name: fake-events
+      var_name: oml_database
+      description: If set, create fake sensor events
+      var_name: fake_bridge_events
+    - name: oml-database
+      param: DATABASE
+      var_name: oml_database
+      default: sqlite://example/bridge/data_sources/test3.sq3
+      description: "Database containing bridge data"
 
 include: tabs/*.yaml
 

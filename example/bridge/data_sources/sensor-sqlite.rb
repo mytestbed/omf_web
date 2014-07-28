@@ -98,4 +98,4 @@ class BridgeSensor < OMF::Base::LObject
     end
   end
 end
-wv = BridgeSensor.new($oml_database, $fake_bridge_events).run()
+wv = BridgeSensor.new($oml_database || 'sqlite://example/bridge/data_sources/test3.sq3', $fake_bridge_events).run()
