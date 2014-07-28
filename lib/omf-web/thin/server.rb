@@ -23,6 +23,13 @@ module OMF::Web
           pre_parse: lambda do |p, runner|
             p.on("--config CONF_FILE", "File holding description of web site") {|f| runner.options[:omf_config_file] = f}
             p.on("--top-dir DIR", "Directory to start from for relative data paths [directory of config file]") {|td| @top_dir = td }
+            p.on("--example [EXAMPLE]", "Run an example [#{list_of_examples.join(', ')}]")  do |e|
+              unless e
+                puts "Available examples: #{list_of_examples.join(', ')}"
+                exit 0
+              end
+              runner.options[:omf_config_file] = "example:#{e}"
+            end
           end
         },
         authentication: {
@@ -44,13 +51,16 @@ module OMF::Web
 
     def load_environment(opts)
       unless cf = opts[:omf_config_file]
-        fatal "Missing config file"
+        fatal "Missing config file '--config'"
         abort
       end
 
       unless File.readable? cf
-        fatal "Can't read config file '#{cf}'"
-        abort
+        unless cf2 = check_for_builtin(cf, opts)
+          fatal "Can't read config file '#{cf}'"
+          abort
+        end
+        cf = cf2 # found a builtin config file
       end
 
       @cfg_dir = File.dirname(cf)
@@ -59,12 +69,43 @@ module OMF::Web
       load_config_file(cf, opts)
     end
 
-    def load_config_file(cf, opts)
-      unless File.readable? cf
-        fatal "Can't read config file '#{cf}'"
+    def check_for_builtin(cf, opts)
+      pa = cf.split(':')
+      unless pa.length == 2 && pa[0] == 'example'
+        return nil
+      end
+      path = File.join(@top_dir, 'example', pa[1])
+      if File.directory? path
+        dir = path
+        path = File.join(dir, "#{pa[1]}.yaml")
+        unless File.readable? path
+          # check .yml
+          path = File.join(dir, "#{pa[1]}.yml")
+        end
+      end
+      unless File.readable?(path)
+        da = list_of_examples
+        ex = pa[1].split('/')[0]
+        if da.include? ex
+          ya = Dir.glob(File.join(@top_dir, 'example', ex, '*.yaml')).map do |fn|
+            File.basename(fn)
+          end
+          fatal "Unknown config file. Did you mean '#{ya.join(', ')}'?"
+        else
+          fatal "Unknown example '#{}'. Did you mean '#{da.join(', ')}'?"
+        end
         abort
       end
+      return path
+    end
 
+    def list_of_examples()
+      Dir.entries(File.join(@top_dir, 'example')).select do |n|
+        !(n == 'NOT_WORKING' || n.start_with?('.'))
+      end
+    end
+
+    def load_config_file(cf, opts)
       debug "Loading config file '#{cf}'"
       cfg = _rec_sym_keys(YAML.load_file(cf))
 
