@@ -1,0 +1,23 @@
+data_sources:
+  - id: node_info_gt
+    file: data_sources/node_info_groundtruth.csv
+
+widgets:
+  - id: node_info_groundtruth
+    type: data/table2
+    title: Node Info
+    data_source:
+      name: node_info_gt
+      slice:
+        slice_column: nodeID
+        event:
+          name: "graph.network/nodes.selected"
+          key: id
+    columns:
+      - field: property
+        #name: Name
+      - field: value
+        #name: Value
+
+    margin:
+      left: 5

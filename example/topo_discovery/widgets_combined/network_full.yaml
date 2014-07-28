@@ -1,0 +1,57 @@
+
+data_sources:
+  - id: network/nodes
+    file: data_sources/nodes_full.csv  # checking that node ids can be anything
+  - id: network/links
+    file: data_sources/links_full.csv
+
+widgets:
+  - id: network_full
+    name: Discovered Network
+    type: data/network2
+    height: 1.0
+    #data_source: network
+    data_sources:
+      - name: nodes
+        stream: network/nodes
+      - name: links
+        stream: network/links
+
+    mapping:
+      nodes:
+        x: auto
+        y: auto
+        radius: 15
+          # property: capacity
+          # scale: 20
+          # min: 4
+        fill_color: #white
+          property: type
+          color:
+            router: orange
+            switch: '#FFDD00' 
+            genericclient: lightskyblue 
+            unknown: white 
+            dbserver: '#D473D4' #Mauve is the best colour for a DB: http://search.dilbert.com/comic/Database%20Color
+            dbclient: '#915F6D' # clients have similar colour
+            wwwserver: darkgreen
+            admin: '#0000FF' # deep blue for admin
+            internet: '#eeeeee'
+          # property: capacity
+          # color: red_yellow20_green()
+        stroke_width: 2
+        label_color: black
+        label_size: 14
+      links:
+        stroke_width: 8
+        stroke_color:
+          property: zone
+          color: category10()
+
+    force:
+      link_distance: 50
+      charge: -1000
+
+    line_mode: straight
+    interaction_mode: click
+

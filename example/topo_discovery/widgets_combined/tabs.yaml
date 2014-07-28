@@ -1,0 +1,49 @@
+
+widgets:
+  - id: main
+    name: Home
+    top_level: true
+    priority: 900
+    type: layout/two_columns/50_50
+    left:
+      - name: Introduction
+        type: text
+        content:
+          url: file:content:introduction.md
+    right:
+      - network_groundtruth
+
+  - id: full
+    name: Full
+    top_level: true
+    priority: 800
+    type: layout/two_columns/66_33
+    left:
+      - network_full
+    right:
+      - type: layout/one_column
+        widgets:
+          - name: Introduction
+            type: text
+            content:
+              url: file:content:full_network.md
+          - node_info_full
+          - network_groundtruth_small
+
+  - id: incomplete
+    name: Incomplete
+    top_level: true
+    priority: 700
+    type: layout/two_columns/66_33
+    left:
+      - network_incomplete
+    right:
+      - type: layout/one_column
+        widgets:
+          - name: Introduction
+            type: text
+            content:
+              url: file:content:incomplete_network.md
+          - node_info_incomplete
+          - network_groundtruth_small
+

@@ -1,0 +1,16 @@
+id:string,name,type
+00:00:00:00:c1:00,00:00:00:00:c1:00,genericclient
+00:00:00:00:c2:00,00:00:00:00:c2:00,genericclient
+10:10:10:10:10:fe,10:10:10:10:10:fe,unknown
+sw1,sw1,switch
+sw2,sw2,switch
+sw3,sw3,switch
+sw4,sw4,switch
+sw5,sw5,switch
+rf1,rf1,router
+rf2,rf2,router
+rf3,rf3,router
+ba:5e:ba:11:00:00,ba:5e:ba:11:00:00,wwwserver
+ba:5e:ba:11:00:01,ba:5e:ba:11:00:01,dbclient
+ba:5e:ba:11:ad:00,ba:5e:ba:11:ad:00,admin
+ba:5e:ba:11:db:00,ba:5e:ba:11:db:00,dbserver

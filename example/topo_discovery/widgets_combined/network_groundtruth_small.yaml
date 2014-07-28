@@ -1,0 +1,59 @@
+
+
+
+widgets:
+  - id: network_groundtruth_small
+    name: Ground Truth
+    type: data/network2
+    height: 1.0
+    #data_source: network
+    data_sources:
+      - name: nodes
+        stream: network_gt/nodes
+      - name: links
+        stream: network_gt/links
+
+    mapping:
+      nodes:
+        x: auto
+        y: auto
+        radius: 10
+          # property: capacity
+          # scale: 20
+          # min: 4
+        fill_color: #white
+          property: type
+          color:
+            router: orange
+            switch: '#FFDD00' 
+            client: lightskyblue 
+            unknown: white 
+            PsqlServer: '#D473D4' #Mauve is the best colour for a DB: http://search.dilbert.com/comic/Database%20Color
+            PsqlClient: '#915F6D' # clients have similar colour
+            WWWServer: darkgreen
+            admin: '#0000FF' # deep blue for admin
+            Internet: '#eeeeee'
+          # property: capacity
+          # color: red_yellow20_green()
+        stroke_width: 2
+        label_color: black
+        label_size: 8
+      links:
+        stroke_width: 2
+        stroke_color:
+          property: zone
+          color: category10()
+
+    force:
+      link_distance: 15
+      charge: -300
+
+    line_mode: straight
+    interaction_mode: none
+
+    margin:
+      left: 20
+      top:  20
+      right: 20
+      bottom: 20
+

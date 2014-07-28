@@ -1,0 +1,25 @@
+
+
+
+# Simple tab showing a line chart with supporting table
+#
+
+server:
+  name: 'Topology Discovery'
+  page_title: 'Topology Discovery'
+  port: 4020
+  footer_left: NICTA
+  footer_right: V1.2
+
+
+
+repositories:
+  - id: content
+    type: file
+    top_dir: ./docs
+
+include: widgets_combined/*.yaml
+
+
+
+

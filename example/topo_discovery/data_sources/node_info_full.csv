@@ -1,0 +1,55 @@
+nodeID, property, value
+rf1,name,rf1
+rf1,type,router
+rf1,intf,MAC 30:00:00:00:01:00 with IP 192.168.1.254
+rf1,intf,MAC 30:00:00:00:01:01 with IP 192.168.2.1
+rf2,name,rf2
+rf2,type,router
+rf2,intf,MAC 30:00:00:00:02:00 with IP 192.168.2.254
+rf2,intf,MAC 30:00:00:00:02:01 with IP 192.168.4.1
+rf2,intf,MAC 30:00:00:00:02:02 with IP 192.168.10.1
+rf3,name,rf3
+rf3,type,router
+rf3,intf,MAC 30:00:00:00:03:00 with IP 192.168.3.254
+rf3,intf,MAC 30:00:00:00:03:01 with IP 192.168.4.2
+sw1,name,sw1
+sw1,type,sw1
+sw1,intf,MAC 20:00:00:00:01:00
+sw1,intf,MAC 20:00:00:00:01:01
+sw2,name,sw2
+sw2,type,sw2
+sw2,intf,MAC 20:00:00:00:02:01
+sw2,intf,MAC 20:00:00:00:02:01
+sw3,name,sw3
+sw3,type,sw3
+sw3,intf,MAC 20:00:00:00:03:00
+sw3,intf,MAC 20:00:00:00:03:01
+sw4,name,sw4
+sw4,type,sw4
+sw4,intf,MAC 20:00:00:00:04:00
+sw4,intf,MAC 20:00:00:00:04:01
+sw5,name,sw5
+sw5,type,sw5
+sw5,intf,MAC 20:00:00:00:05:00
+sw5,intf,MAC 20:00:00:00:05:01
+00:00:00:00:c1:00,name,device1
+00:00:00:00:c1:00,type,WWW client
+00:00:00:00:c1:00,intf,MAC 192.168.1.22 with IP 192.168.1.22
+00:00:00:00:c2:00,name,device2
+00:00:00:00:c2:00,type,WWW client
+00:00:00:00:c2:00,intf,MAC 192.168.1.23 with IP 192.168.1.23
+ba:5e:ba:11:00:00,name,device3
+ba:5e:ba:11:00:00,type,WWW server
+ba:5e:ba:11:00:00,intf,MAC 192.168.2.22 with IP 192.168.2.22
+ba:5e:ba:11:00:01,name,device4
+ba:5e:ba:11:00:01,type,DB client
+ba:5e:ba:11:00:01,intf,MAC 192.168.3.22 with IP 192.168.3.22
+ba:5e:ba:11:ad:00,name,device5
+ba:5e:ba:11:ad:00,type,admin
+ba:5e:ba:11:ad:00,intf,MAC 192.168.4.22 with IP 192.168.4.22
+ba:5e:ba:11:db:00,name,device6
+ba:5e:ba:11:db:00,type,DB
+ba:5e:ba:11:db:00,intf,MAC 192.168.3.23 with IP 192.168.3.23
+10:10:10:10:10:fe,name,device1
+10:10:10:10:10:fe,type,unknown
+10:10:10:10:10:fe,intf,MAC 10:10:10:10:10:fe with IP 192.168.10.22

@@ -1,0 +1,15 @@
+id:string,name,type
+client1,client1,client
+client2,client2,client
+Internet,Internet,Internet
+sw1,sw1,switch
+sw2,sw2,switch
+sw3,sw3,switch
+sw4,sw4,switch
+sw5,sw5,switch
+rf1,rf1,router
+rf2,rf2,router
+rf3,rf3,router
+WWWServer,WWWServer,WWWServer
+admin,admin,admin
+PsqlServer,PsqlServer,PsqlServer
