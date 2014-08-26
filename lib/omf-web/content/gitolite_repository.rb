@@ -23,7 +23,7 @@ module OMF::Web
     def write(content_descr, content, message, opts = {})
       orig_content = read(content_descr)
 
-      unless orig_content && content == orig_content
+      unless content == orig_content
         raise ReadOnlyContentRepositoryException.new if @read_only
         path = _get_path(content_descr)
         commit_content!(content, {
