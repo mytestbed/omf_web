@@ -27,22 +27,31 @@ module OMF::Web
     }
 
     REPO_PLUGINS = {
-      git: lambda do |name, opts|
-              require 'omf-web/content/git_repository'
-              return GitContentRepository.new(name, opts)
-          end,
-      file: lambda do |name, opts|
-              require 'omf-web/content/file_repository'
-              return FileContentRepository.new(name, opts)
-          end,
-      irods: lambda do |name, opts|
-              require 'omf-web/content/irods_repository'
-              return IRodsContentRepository.new(name, opts)
-          end,
-      static: lambda do |name, opts|
-              require 'omf-web/content/static_repository'
-              return StaticContentRepository.new(name, opts)
-          end
+      git:
+        lambda do |name, opts|
+          require 'omf-web/content/git_repository'
+          return GitContentRepository.new(name, opts)
+        end,
+      gitolite:
+        lambda do |name, opts|
+          require 'omf-web/content/gitolite_repository'
+          return GitoliteContentRepository.new(name, opts)
+        end,
+      file:
+        lambda do |name, opts|
+          require 'omf-web/content/file_repository'
+          return FileContentRepository.new(name, opts)
+        end,
+      irods:
+        lambda do |name, opts|
+          require 'omf-web/content/irods_repository'
+          return IRodsContentRepository.new(name, opts)
+        end,
+      static:
+        lambda do |name, opts|
+          require 'omf-web/content/static_repository'
+          return StaticContentRepository.new(name, opts)
+        end
     }
 
     # Repo to be used for all newly created content
@@ -209,7 +218,9 @@ module OMF::Web
         if @top_dir.start_with?('.') && ContentRepository.reference_dir
           @top_dir = File.join(ContentRepository.reference_dir, @top_dir)
         end
-        @top_dir = File.expand_path(@top_dir)
+        unless @top_dir =~ /^.+@.+:(.+)\.git$/
+          @top_dir = File.expand_path(@top_dir)
+        end
         debug "Creating repo '#{name} with top dir: #{@top_dir}"
 
         _create_if_not_exists if opts[:create_if_not_exists]
