@@ -7,6 +7,18 @@ require 'omf-web/content/gitolite'
 
 module OMF::Web
   # This class provides an interface to a GIT repository served via Gitolite.
+  #
+  # To enable this in LW, provide the following configuration:
+  #
+  #    gitolite:
+  #      admin_repo: git@localhost:gitolite-admin.git
+  #      credentials:
+  #        username: git
+  #        publickey: /home/test/.ssh/bob.pub
+  #        privatekey: /home/test/.ssh/bob
+  #
+  #    top_dir: git@localhost:test.git
+  #    create_if_not_exists: true
   class GitoliteContentRepository < ContentRepository
     include OMF::Web::RuggedHelper
 
