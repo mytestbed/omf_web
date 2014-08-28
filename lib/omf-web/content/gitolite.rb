@@ -32,10 +32,12 @@ module OMF::Web
 
     def fetch!(opts = {})
       repo.fetch("origin", nil, opts.merge(default_git_opts))
+      repo.reset("origin/master", :hard)
     end
 
     def push!(opts = {})
       repo.push("origin", ["refs/heads/master"], opts.merge(default_git_opts))
+      repo.reset("origin/master", :hard)
     end
 
     def read_blob(path)
@@ -83,8 +85,12 @@ module OMF::Web
     end
 
     def setup(opts)
+      raise ArgumentError, "Missing Gitolite options." if opts.nil?
+      raise ArgumentError, "Missing Gitolite admin repo address." if opts[:admin_repo].nil?
+      raise ArgumentError, "Missing credentials to connect to Gitolite." if opts[:credentials].nil?
+
       @credentials = Rugged::Credentials::SshKey.new(opts[:credentials])
-      @repo = setup_repo(opts[:admin_repo], WORKING_DIR, { bare: true })
+      @repo = setup_repo(opts[:admin_repo], WORKING_DIR, {})
     end
 
     # Adding a new repository for the end user

@@ -29,7 +29,7 @@ module OMF::Web
     def initialize(name, opts)
       Gitolite.instance.setup(opts[:gitolite])
       super
-      @repo = setup_repo(@top_dir, "#{WORKING_DIR_BASE}/#{name}", { bare: true })
+      @repo = setup_repo(@top_dir, "#{WORKING_DIR_BASE}/#{name}", {})
     end
 
     def write(content_descr, content, message, opts = {})
