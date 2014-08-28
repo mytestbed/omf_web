@@ -31,11 +31,13 @@ module OMF::Web
     end
 
     def fetch!(opts = {})
+      return if repo.empty?
       repo.fetch("origin", nil, opts.merge(default_git_opts))
       repo.reset("origin/master", :hard)
     end
 
     def push!(opts = {})
+      return if repo.empty?
       repo.push("origin", ["refs/heads/master"], opts.merge(default_git_opts))
       repo.reset("origin/master", :hard)
     end
