@@ -166,7 +166,7 @@ module OMF::Web
     #   * :mime_type - Only return files with that specific mime type.
     #   * :repo_iterator [Iterator] - Iterator over repos to search
     #
-    def self.find_files(selector, opts = {})
+    def self.find_files(selector, opts = {}, &cbk)
       fsa = (opts[:repo_iterator] || [@@primary_repository]).map do |repo|
         repo.find_files(selector, opts)
       end
@@ -179,6 +179,7 @@ module OMF::Web
       if (max = opts[:max])
         fs = fs[0, max]
       end
+      fs.each &cbk if cbk
       fs
     end
 
