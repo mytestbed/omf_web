@@ -14,7 +14,7 @@ module OMF::Web::Rack
       super nil, opts[:cache_control]
       @roots = roots
       if opts[:sub_path]
-        @sub_path = opts[:sub_path].split SEPS
+        @sub_path = opts[:sub_path].split ::Rack::Utils::PATH_SEPS
       end
       if @version = opts[:version]
         # read VERSION_MAP.yaml files
@@ -35,7 +35,7 @@ module OMF::Web::Rack
 
     def _call(env)
       @path_info = ::Rack::Utils.unescape(env["PATH_INFO"])
-      parts = @path_info.split SEPS
+      parts = @path_info.split ::Rack::Utils::PATH_SEPS
       if @version_map
         if pkg_name = @version_map[parts[1]]
           parts[1] = pkg_name # replace with version
