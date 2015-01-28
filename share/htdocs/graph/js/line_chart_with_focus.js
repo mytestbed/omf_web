@@ -1,4 +1,4 @@
-define(["graph/line_chart3"], function (line_chart3) {
+define(["graph/line_chart_ec"], function (line_chart3) {
 
   return line_chart3.extend({
 

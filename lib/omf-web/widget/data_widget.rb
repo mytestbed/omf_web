@@ -22,13 +22,13 @@ module OMF::Web::Widget
     #
     def initialize(opts = {})
       opts = opts.dup # not sure why we may need to this. Is this hash used anywhere wlse?
-      unless vizType = opts[:type].split('/')[-1]
+      unless vizType = opts[:type].split('/')[1 .. -1]
         raise "Missing widget option ':viz_type' for widget '#{name}' (#{opts.inspect})"
       end
       name = opts[:name] ||= 'Unknown'
-      opts[:js_module] = "graph/#{vizType}"
-      opts[:js_url] = "graph/js/#{vizType}.js"
-      opts[:js_class] = "OML.#{vizType}"
+      opts[:js_module] = "graph/#{vizType.join('/')}"
+      opts[:js_url] = "graph/js/#{vizType.join('/')}.js"
+      opts[:js_class] = "OML.#{vizType.join('-')}"
       opts[:base_el] = "\##{dom_id}"
       super opts
 
@@ -43,7 +43,12 @@ module OMF::Web::Widget
       if data_sources.kind_of? Hash
         # turn into array an set stream
         data_sources = data_sources.map do |sname, ds_descr|
-          ds_descr[:stream] ||= sname
+          #puts ">>>>> #{sname} -- #{ds_descr.class}"
+          if ds_descr.is_a? String
+            ds_descr = {name: ds_descr}
+          end
+          ds_descr[:label] ||= sname
+          ds_descr
         end
       end
       unless data_sources.kind_of? Array
@@ -55,7 +60,9 @@ module OMF::Web::Widget
         unless ds_descr.is_a? Hash
           ds_descr = {:name => ds_descr}
         end
-        ds_descr[:alias] = "#{name}_#{self.object_id}_#{i += 1}"
+        # What do we need this really for?
+        #ds_descr[:alias] = "#{name}_#{self.object_id}_#{i += 1}"
+
         #{:stream => ds_descr, :name => name}
         unless OMF::Web::DataSourceProxy.validate_ds_description(ds_descr)
           raise "Unknown data source requested for data widget - #{ds_descr}"

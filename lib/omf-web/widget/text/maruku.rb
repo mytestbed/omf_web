@@ -11,6 +11,8 @@ require 'omf-web/widget/text/maruku/input/parse_block'
 require 'omf-web/widget/text/maruku/output/to_html'
 require 'omf-web/widget/text/maruku/helpers'
 
+require 'omf-web/theme/abstract_page'
+
 require 'rexml/document'
 require 'yaml'
 
@@ -87,8 +89,15 @@ module OMF::Web::Widget::Text
       end
 
       def to_html
+        h = ""
+        # Declare any referenced datasources
+        if dss = OMF::Web::Theme::AbstractPage.render_data_sources([@widget])
+          h += dss
+        end
+
         content = @widget.content
-        h = content.to_html
+        h += content.to_html
+
         klass = ['embedded']
         if caption = @wdescr[:caption] || @widget.title
           if mt = @wdescr[:'mime-type']
@@ -125,7 +134,13 @@ module OMF::Web::Widget::Text
           line = src.shift_line
         end
         lines << $1
-        descr = YAML::load(lines.join("\n"))
+        begin
+          ytxt = lines.join("\n")
+          descr = YAML::load(ytxt)
+        rescue Exception => ex
+          warn "#{ex} - #{ytxt}"
+          next
+        end
         descr = OMF::Web::deep_symbolize_keys(descr)
         if (wdescr = descr[:widget])
           wel = WidgetElement.create(wdescr)

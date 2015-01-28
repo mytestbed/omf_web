@@ -29,7 +29,7 @@ widgets:
         info: This widget shows ?????.
         widgets:
           - name: WRID
-            type: data/line_chart3
+            type: data/line_chart_ec
             data_source:
               name: rtc_stats
             mapping:

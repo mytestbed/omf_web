@@ -14,6 +14,7 @@ function omf_web_data_source(opts) {
     name: name,
     schema: schema,
     rows: function() { return rows; },
+    row_id: row_id,
     index_for_column: index_for_column,
     is_dynamic: is_dynamic,
     event_name: event_name,
@@ -35,6 +36,16 @@ function omf_web_data_source(opts) {
     _.each(on_schema_callbacks, function(cbk) {
       cbk(new_schema);
     });
+  }
+
+  // Return function to obtain row index for a specific row.
+  // Not sure if this still works with indices.
+  function row_id() {
+    if (schema[0].name != '__id__') {
+      OML.warn("Expected first column in " + name + " to be __id__");
+      return null;
+    }
+    return function(d) { return d[0]; }
   }
 
   var indexes = {};

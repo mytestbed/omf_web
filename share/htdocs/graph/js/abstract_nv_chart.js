@@ -1,5 +1,6 @@
 
-OML.require_dependency("vendor/nv_d3/js/nv.d3", ["vendor/d3/d3", "css!vendor/nv_d3/css/nv.d3"]);
+//OML.append_require({shim: {"vendor/nv_d3/js/nv.d3": {deps: ["vendor/d3/d3", "css!vendor/nv_d3/css/nv.d3"]}}});
+OML.append_require_shim("vendor/nv_d3/js/nv.d3", {deps: ["vendor/d3/d3", "css!vendor/nv_d3/css/nv.d3"]});
 
 define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_chart) {
 

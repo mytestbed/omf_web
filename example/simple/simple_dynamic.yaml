@@ -40,7 +40,7 @@ widgets:
         info: This widget shows the output measurements of three stacked generators.
         widgets:
           - name: Signal
-            type: data/line_chart3
+            type: data/line_chart_ec
             data_source:
               name: signal
               dynamic: 2

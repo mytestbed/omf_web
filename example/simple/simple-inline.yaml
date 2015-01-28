@@ -9,12 +9,12 @@ server:
   page_title: 'Simple Demo'
   port: 4010
 
-data_sources:
-  - id: signal
-    database:
-      table: wave
-      #id: sample
-      url: sqlite:sample.sq3
+#data_sources:
+#  - id: signal
+#    table: wave
+#    database:
+#      id: sample
+#      url: sqlite:sample.sq3
 
 repositories:
   - id: simple
@@ -39,7 +39,10 @@ widgets:
           - name: Signal
             type: data/line_chart_ec
             data_source:
-              name: signal
+              id: signal
+              database:
+                table: wave
+                url: sqlite:sample.sq3
             mapping:
               x_axis:
                 property: t

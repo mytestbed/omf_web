@@ -1,6 +1,7 @@
 
 
 require 'omf_base/lobject'
+require 'omf-web/data_source_factory'
 require 'omf_oml/network'
 
 module OMF::Web
@@ -37,6 +38,7 @@ module OMF::Web
       if data_source.is_a? OMF::OML::OmlNetwork
         raise "Register link and node table separately "
       end
+      debug "Registering data source '#{name}'"
       @@datasources[name] = data_source
     end
 
@@ -58,14 +60,20 @@ module OMF::Web
       dsp
     end
 
-    def self.validate_ds_description(ds_descr)
+    def self.validate_ds_description(ds_descr, check_for_inline = true)
       debug "Validate datasource - #{ds_descr}"
       unless ds_descr.is_a? Hash
         raise "Expected Hash, but got '#{ds_descr.class}::#{ds_descr.inspect}'"
       end
       return true if ds_descr[:data_url] # We can fetch the data in the browser if necessary
       unless ds_name = ds_descr[:id] || ds_descr[:stream] || ds_descr[:name]
-        raise "Missing 'name' attribute in datasource description. (#{ds_descr.inspect})"
+        # check if we have an inline description
+        if check_for_inline && DataSourceFactory.instance.create(ds_descr, false, false)
+          # 'ds_descr' should now be amended with an 'id'
+          return validate_ds_description(ds_descr, false)
+        else
+          raise "Can't find or create datasource from this description. - #{ds_descr.inspect}"
+        end
       end
       if ds_descr[:sub_sources]
         res = ds_descr[:sub_sources].inject(true) do |ok, name|
@@ -80,8 +88,17 @@ module OMF::Web
         # Check for automatic sub sources
         top = "#{ds_name}/"
         names = @@datasources.keys.find_all { |ds_name| ds_name.to_s.start_with? top }
-        !names.empty?
+        res = !names.empty?
       end
+      if  !res && check_for_inline
+        # last attempt is to check if 'ds_descr' contains an inline declaration of
+        # a datasource
+        if DataSourceFactory.instance.create(ds_descr, false, false)
+          # looks like we found something, try again
+          return validate_ds_description(ds_descr, false)
+        end
+      end
+      res
     end
 
     # Return proxies for 'ds_name'. Note, there can be more then
@@ -93,12 +110,12 @@ module OMF::Web
     # TODO: This seems to hardcode networks.
     #
     def self.for_source(ds_descr)
-      #raise "FOO #{ds_descr.inspect}"
+      debug "for_source:  #{ds_descr.inspect}"
       unless ds_descr.is_a? Hash
         raise "Expected Hash, but got '#{ds_descr.class}::#{ds_descr.inspect}'"
       end
-      unless ds_name = ds_descr[:stream] || ds_descr[:name]
-        raise "Missing 'stream' or 'name' attribute in datasource description. (#{ds_descr.inspect})"
+      unless ds_name = ds_descr[:id] || ds_descr[:stream] || ds_descr[:name]
+        raise "Missing 'id', stream' or 'name' attribute in datasource description. (#{ds_descr.inspect})"
       end
       ds_name = ds_name.to_sym
       ds = @@datasources[ds_name]

@@ -34,6 +34,44 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       };
     },
 
+    decl_color_func: {
+      // scale
+      "green_yellow80_red()": function() {
+                                return d3.scale.linear()
+                                        .domain([0, 0.8, 1])
+                                        .range(["green", "yellow", "red"]);
+                              },
+      "green_red()":          function() {
+                                return d3.scale.linear()
+                                        .domain([0, 1])
+                                        .range(["green", "red"]);
+                              },
+      "red_yellow20_green()": function() {
+                                return d3.scale.linear()
+                                        .domain([0, 0.2, 1])
+                                        .range(["red", "yellow", "green"]);
+                              },
+      "red_green()":          function() {
+                                return d3.scale.linear()
+                                        .domain([0, 1])
+                                        .range(["red", "green"]);
+                              },
+      // category
+      "category10()":         function() {
+                                return d3.scale.category10();
+                              },
+      "category20()":         function() {
+                                return d3.scale.category20();
+                              },
+      "category20b()":        function() {
+                                return d3.scale.category20b();
+                              },
+      "category20c()":        function() {
+                                return d3.scale.category20c();
+                              },
+    },
+
+
     //base_css_class: 'oml-chart',
 
     initialize: function(opts) {
@@ -60,13 +98,21 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       }
 
       var data;
-      if ((data = this.data_source.rows()) == null) {
-        throw "Missing rows in data source"
+      if (this.data_source != null) {
+        if ((data = this.data_source.rows()) == null) {
+          throw "Missing rows in data source"
+        }
+      } else if (this.data_sources != null) {
+        data = {};
+        _.pairs(this.data_sources).forEach(function(ds_pair) {
+          var name = ds_pair[0];
+          var ds = ds_pair[1];
+          if ((data[name] = ds.rows()) == null) {
+            throw "Missing rows in data source '" + name + "'.";
+          }
+        });
       }
-      if (data.length == 0) return;
-
       this.redraw(data);
-
     },
 
     resize: function() {
@@ -146,12 +192,40 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
 
     process_schema: function() {
       var self = this;
-      this.data_source.on_schema(function() {
-        self.schema = self.process_single_schema(self.data_source);
-        if (typeof(self.decl_properties) != "undefined") {
-          self.mapping = self.process_single_mapping(null, self.opts.mapping, self.decl_properties);
-        }
-        self.init_mapping();
+      var dss;
+
+      if (this.data_sources != null) {
+        dss = _.pairs(this.data_sources);
+      } else if (this.data_source != null) {
+        dss = [[null, this.data_source]];
+      } else {
+        OML.warn("Can't find any data sources defined");
+        return;
+      }
+      dss.forEach(function(ds_decl) {
+        var name = ds_decl[0];
+        var ds = ds_decl[1];
+        ds.on_schema(function () {
+          var schema = self.process_single_schema(ds);
+          if (name == null) {
+            self.schema = schema;
+          } else {
+            if (self.schemas == null) self.schemas = {};
+            self.schemas[name] = schema;
+          }
+          if (typeof(self.decl_properties) != "undefined") {
+            var mapping = (name == null) ? self.opts.mapping : self.opts.mapping[name];
+            var decl_properties = (name == null) ? self.decl_properties : self.decl_properties[name];
+            var mapping = self.process_single_mapping(schema, mapping, decl_properties);
+            if (name == null) {
+              self.mapping = mapping;
+            } else {
+              if (self.mapping == null) self.mapping = {};
+              self.mapping[name] = mapping;
+            }
+          }
+          self.init_mapping();
+        });
       });
     },
 
@@ -170,14 +244,14 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       return schema;
     },
 
-    process_single_mapping: function(source_name, mapping_decl, properties_decl) {
+    process_single_mapping: function(schema, mapping_decl, properties_decl) {
       var self = this;
       var m = {};
       var om = mapping_decl || {};
       _.map(properties_decl, function(a) {
         var pname = a[0]; var type = a[1]; var def = a[2];
         var descr = om[pname];
-        m[pname] = self.create_mapping(pname, descr, source_name, type, def);
+        m[pname] = self.create_mapping(pname, descr, schema, type, def);
       });
       return m;
     },
@@ -185,9 +259,10 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
     /*
      * Return schema for +stream+.
      */
-    schema_for_stream: function(stream) {
-      if (stream != undefined) {
-        throw "Can't provide named stream '" + stream + "'.";
+    schema_for_stream: function(name) {
+      if (name != undefined) {
+        return this.schemas[name];
+        //throw "Can't provide named stream '" + stream + "'.";
       }
       return this.schema;
     },
@@ -202,16 +277,16 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       return this.data_source;
     },
 
-    create_mapping: function(mname, descr, stream, type, def) {
+    create_mapping: function(mname, descr, schema, type, def) {
        var self = this;
        if (descr == undefined && typeof(def) == 'object') {
          descr = def;
        }
        if (descr == undefined || typeof(descr) != 'object' ) {
          if (type == 'index') {
-           return this.create_mapping(mname, def, stream, type, null);
+           return this.create_mapping(mname, def, schema, type, null);
          } else if (type == 'key') {
-           return this.create_mapping(mname, {property: descr}, stream, type, def);
+           return this.create_mapping(mname, {property: descr}, schema, type, def);
          } else {
            var value = (descr == undefined) ? def : descr;
            if (type == 'color' && /\(\)$/.test(value)) { // check if value ends with () indicating color function
@@ -224,18 +299,18 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
            return value;
          }
        }
-       if (descr.stream != undefined) {
-         stream = descr.stream;  // override stream
-       }
-       var schema = this.schema_for_stream(stream);
+       //if (descr.stream != undefined) {
+       //  schema = descr.stream;  // override stream
+       //}
+       //var schema = this.schema_for_stream(schema);
        if (schema == undefined) {
-         throw "Can't find schema for stream '" + stream + "'.";
+         throw "Missing schema.";
        }
 
        if (type == 'index') {
          var key = descr.key;
-         if (key == undefined || stream == undefined) {
-           throw "Missing 'key' or 'stream' in mapping declaration for '" + mname + "'.";
+         if (key == undefined) {
+           throw "Missing 'key' in mapping declaration for '" + mname + "'.";
          }
          var col_schema = schema[key];
          if (col_schema == undefined) {
@@ -269,6 +344,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
            return t;
          };
        } else {
+         var pname = descr.property;
          if (descr.values) {
            // provided custom mapping for values
            var values = descr.values;
@@ -277,7 +353,27 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
              return values[x] || def_value;
            };
          }
-         var pname = descr.property;
+         if (descr.ranges) {
+           // provided custom mapping for values
+           var ranges = descr.ranges;
+           var def_value = descr['default'];
+           var index = null;
+           if (pname) {
+             var se = schema[pname];
+             if (se == undefined) {
+               throw "Unknown property '" + pname + "'.";
+             }
+             index = se.index
+           }
+           return function(x) {
+             if (index) x = x[index];
+             var res = _.find(ranges, function(r) {
+               return x < r[0];
+             });
+             return res == null ? def_value : res[1];
+           };
+         }
+
          if (pname == undefined) {
            throw "Missing 'property' declaration for mapping '" + mname + "'.";
          }

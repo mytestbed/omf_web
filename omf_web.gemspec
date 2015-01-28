@@ -23,13 +23,13 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "omf_oml", "~> 1.0"
   s.add_runtime_dependency "omf_base"
   s.add_runtime_dependency "erector", "~> 0.9.0"
-  s.add_runtime_dependency "activesupport", "~> 3.0.0" # required by erector:table
+  #s.add_runtime_dependency "activesupport", "~> 3.0.0" # required by erector:table
   s.add_runtime_dependency "rack", "~> 1.0"
   s.add_runtime_dependency "thin", "~> 1.0"
   s.add_runtime_dependency "coderay", "~> 1.0"
   s.add_runtime_dependency "maruku", "~> 0.6.0"
   s.add_runtime_dependency "ritex", "~> 1.0.0"
-  s.add_runtime_dependency "json", "~> 1.7.0"
+  s.add_runtime_dependency "json" #, "~> 1.7.0"
   s.add_runtime_dependency "gitlab-grit"
   s.add_runtime_dependency "websocket-rack", "~> 0.4.0"
   s.add_runtime_dependency "rack-accept", "~> 0.4.0"

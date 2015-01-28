@@ -5,31 +5,54 @@ require 'omf-web/data_source_proxy'
 module OMF::Web::Theme
   class AbstractPage < Erector::Widget
 
-    depends_on :js,  '/resource/vendor/stacktrace/stacktrace.js'
+    depends_on :js, '/resource/vendor/stacktrace/stacktrace.js'
 
-    depends_on :js,  '/resource/vendor/require/require.js'
-    depends_on :js,  '/resource/js/app.js'
-
+    depends_on :js, '/resource/vendor/require/require.js'
+    depends_on :js, '/resource/vendor/underscore/underscore.js'
+    depends_on :js, '/resource/js/app.js'
 
     depends_on :js, '/resource/vendor/jquery/jquery.js'
-    depends_on :js, '/resource/vendor/underscore/underscore.js'
     depends_on :js, '/resource/vendor/backbone/backbone.js'
     depends_on :js, "/resource/theme/abstract/abstract.js"
 
-    depends_on :script, %{
-      // ABSTRACT PAGE
-      if (typeof(OML) == "undefined") OML = {};
-      OML._shim = {}
-      OML.require_dependency = function(target, dependencies) {
-        OML._shim[target] = dependencies
-        require.config({shim: OML._shim});
-      }
-    }
+    #depends_on :js, 'http://echarts.baidu.com/build/dist/echarts.js'
+    depends_on :js, '/resource/vendor/echarts/echarts.js'
+
+
 
     attr_reader :opts
 
     def self.add_depends_on(type, url)
       depends_on type.to_sym, url
+    end
+
+   def self.render_data_sources(widgets)
+      dss = Set.new
+      widgets.each do |w|
+        if w.respond_to? :collect_data_sources
+          w.collect_data_sources(dss)
+        end
+      end
+      return if dss.empty?
+
+      js = dss.map do |ds|
+        dspa = OMF::Web::DataSourceProxy.for_source(ds)
+        dspa.collect do |dsp|
+          dsp.reset()
+          dsp.to_javascript(ds)
+        end.join("\n")
+      end
+
+      # Calling 'javascript' doesn't seem to work here. No idea why, so let's do it by hand
+      %{
+        <script type="text/javascript">
+          // <![CDATA[
+            require(['omf/data_source_repo'], function(ds) {
+              #{js.join("\n")}
+            });
+          // ]]>
+        </script>
+      }
     end
 
     def initialize(widget, opts)

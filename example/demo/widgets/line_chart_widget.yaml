@@ -11,7 +11,7 @@
 widget:
   id: line_chart
   name: Line Chart (Dynamic)
-  type: data/line_chart3
+  type: data/line_chart_ec
   data_source: 
     name: generator
     dynamic: 1  # check once a second

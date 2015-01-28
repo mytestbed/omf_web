@@ -1,6 +1,4 @@
 
-//L.provide('OML.abstract_chart', ["graph/js/abstract_widget", "#OML.abstract_widget", "vendor/d3/d3.js"], function () {
-
 define(["graph/abstract_widget"], function (abstract_widget) {
 
   var abstract_chart = abstract_widget.extend({

@@ -11,7 +11,7 @@ tabs:
     priority: 300
     widgets:
       - name: Generator
-        type: data/line_chart3
+        type: data/line_chart_ec
         data_source:
           name: voltage
         mapping:

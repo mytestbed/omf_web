@@ -43,7 +43,7 @@ widget:
 
   right:
     - name: Link Stats
-      type: data/line_chart3
+      type: data/line_chart_ec
       #area: true # color the area between line and zero line
       width: 1.0
       height: 0.8

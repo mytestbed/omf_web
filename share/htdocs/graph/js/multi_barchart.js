@@ -62,12 +62,16 @@ define(["graph/abstract_nv_chart"], function (abstract_nv_chart) {
       var m = this.mapping;
 
       var group_by = m.group_by;
-      var datum;
+      var value_f = m.value;
+      var values, labels;
       if (group_by != null) {
+        values = _.map(this.group_by(data, group_by), value_f);
+        labels =
         datum = _.map(this.group_by(data, group_by), function(gdata) {
+          var values = _.map(gdata, value_f);
           return {
             key: group_by(gdata[0]),
-            values: gdata
+            values: values
           };
         });
       } else {

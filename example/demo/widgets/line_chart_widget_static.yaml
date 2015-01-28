@@ -11,7 +11,7 @@
 widget:
   id: line_chart_static
   name: Line Chart (Static)
-  type: data/line_chart3
+  type: data/line_chart_ec
   #area: true # color the area between line and zero line
   data_source: 
     name: generator_static

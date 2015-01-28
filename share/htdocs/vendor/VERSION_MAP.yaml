@@ -14,3 +14,5 @@ require:      require-2.1.8
 require-css:  require-css-0.0.7
 font-awesome: font-awesome-4.1.0
 smartmenus:   smartmenus-0.9.6
+echarts:      echarts-2.1.10
+leaflet:      leaflet-0.7.3

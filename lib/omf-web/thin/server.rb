@@ -51,19 +51,20 @@ module OMF::Web
 
     def load_environment(opts)
       unless cf = opts[:omf_config_file]
-        fatal "Missing config file '--config'"
+        fail "Missing config file '--config'"
         abort
       end
 
       unless File.readable? cf
         unless cf2 = check_for_builtin(cf, opts)
-          fatal "Can't read config file '#{cf}'"
+          fail "Can't read config file '#{cf}'"
           abort
         end
         cf = cf2 # found a builtin config file
       end
 
-      @cfg_dir = File.dirname(cf)
+      require 'omf-web/data_source_factory'
+      @cfg_dir = OMF::Web::DataSourceFactory.instance.cfg_dir = File.dirname(cf)
       opts[:static_dirs].insert(0, File.absolute_path(File.join(@cfg_dir, 'htdocs')))
       @top_dir ||= @cfg_dir
       load_config_file(cf, opts)
@@ -90,9 +91,9 @@ module OMF::Web
           ya = Dir.glob(File.join(@top_dir, 'example', ex, '*.yaml')).map do |fn|
             File.basename(fn)
           end
-          fatal "Unknown config file. Did you mean '#{ya.join(', ')}'?"
+          fail "Unknown config file. Did you mean '#{ya.join(', ')}'?"
         else
-          fatal "Unknown example '#{}'. Did you mean '#{da.join(', ')}'?"
+          fail "Unknown example '#{}'. Did you mean '#{da.join(', ')}'?"
         end
         abort
       end
@@ -123,7 +124,8 @@ module OMF::Web
         end
       end
       (cfg[:data_sources] || []).each do |ds|
-        load_datasource(ds)
+        DataSourceFactory.instance.create(ds)
+        #load_datasource(ds)
       end
       (cfg[:repositories] || []).each do |repo|
         load_repository(repo)
@@ -157,7 +159,7 @@ module OMF::Web
             load_ruby_file(f)
           end
           unless found_something
-            fatal "Couldn't find any load file for pattern '#{g}'"
+            fail "Couldn't find any load file for pattern '#{g}'"
             abort
           end
         end
@@ -178,7 +180,7 @@ module OMF::Web
             load_config_file(f, opts)
           end
           unless found_something
-            fatal "Couldn't find any config file for pattern '#{g}'"
+            fail "Couldn't find any config file for pattern '#{g}'"
             abort
           end
         end
@@ -186,164 +188,166 @@ module OMF::Web
 
     end
 
-    def load_datasource(config)
-      unless id = config[:id]
-        fatal "Missing id in datasource configuration"
-        abort
-      end
-      if config[:database]
-        load_database(id, config)
-      elsif config[:file]
-        load_datasource_file(id, config)
-      elsif config[:omsp]
-        load_omsp_endpoint(id, config)
-      elsif config[:generator]
-        load_generator(id, config[:generator])
-      else
-        abort "Unknown datasource type - #{config}"
-      end
-    end
-
-    def load_database(id, config)
-      unless db_cfg = config[:database]
-        fatal "Missing database configuration in datasource '#{config}'"
-        abort
-      end
-      db = get_database(db_cfg)
-      if query_s = config[:query]
-        unless schema = config[:schema]
-          fatal "Missing schema configuration in datasource '#{config}'"
-          abort
-        end
-        require 'omf_oml/schema'
-        config[:schema] = OMF::OML::OmlSchema.create(schema)
-        table = db.create_table(id, config)
-      else
-        unless table_name = config.delete(:table)
-          fatal "Missing 'table' in datasource configuration '#{config}'"
-          abort
-        end
-        config[:name] = id
-        unless table = db.create_table(table_name, config)
-          fatal "Can't find table '#{table_name}' in database '#{db_cfg}'"
-          abort
-        end
-      end
-      OMF::Web.register_datasource table, name: id
-    end
-
-    def get_database(config)
-      require 'omf_oml/table'
-      require 'omf_oml/sql_source'
-      if config.is_a? String
-        if db = @databases[config]
-          return db
-        end
-        fatal "Database '#{config}' not defined - (#{@databases.keys})"
-        abort
-      end
-      if id = config.delete(:id)
-        if db = @databases[id.to_s] # already known
-          return db
-        end
-      end
-
-      # unless id = config[:id]
-        # fatal "Database '#{config}' not defined - (#{@databases.keys})"
-        # abort
-      # end
-      unless url = config.delete(:url)
-        fatal "Missing URL for database '#{id}'"
-        abort
-      end
-      if url.start_with?('sqlite:') && ! url.start_with?('sqlite:/')
-        # inject top dir
-        url.insert('sqlite:'.length, '//' + @cfg_dir + '/')
-      end
-      #config[:check_interval] ||= 3.0
-      #puts "URL: #{url} - #{config}"
-      begin
-        db = OMF::OML::OmlSqlSource.new(url, config)
-        @databases[id] = db if id
-        return db
-      rescue Exception => ex
-        fatal "Can't connect to database '#{id}' - #{ex}"
-        abort
-      end
-    end
-
-    # The data to be served as a datasource is contained in a file. We
-    # currently support CSV with headers, and JSON which turns into a
-    # 1 col by 1 row datasource.
+    # def load_datasource(config)
+    #   unless id = config[:id]
+    #     fatal "Missing id in datasource configuration"
+    #     abort
+    #   end
+    #   if config[:database]
+    #     load_database(id, config)
+    #   elsif config[:file]
+    #     load_datasource_file(id, config)
+    #   elsif config[:omsp]
+    #     load_omsp_endpoint(id, config)
+    #   elsif config[:generator]
+    #     load_generator(id, config[:generator])
+    #   else
+    #     abort "Unknown datasource type - #{config}"
+    #   end
+    # end
     #
-    def load_datasource_file(name, opts)
-      unless file = opts[:file]
-        fatal "Data source file is not defined in '#{opts}'"
-        abort
-      end
-      unless file.start_with? '/'
-        file = File.absolute_path(file, @cfg_dir)
-      end
-      unless File.readable? file
-        fatal "Can't read file '#{file}'"
-        abort
-      end
-      unless content_type = opts[:content_type]
-        content_type = File.extname(file)[1 ..  -1]
-      end
-      case content_type.to_s
-      when 'json'
-        ds = JSONDataSource.new(file)
-      when 'csv'
-        require 'omf_oml/csv_table'
-        ds = OMF::OML::OmlCsvTable.create name, file, has_csv_header: true
-      else
-        fatal "Unknown content type '#{content_type}'"
-        abort
-      end
-      OMF::Web.register_datasource ds, name: name
-    end
-
-    def load_omsp_endpoint(id, config)
-      oconfig = config[:omsp]
-      unless port = oconfig[:port]
-        fatal "Need port in OMSP definition '#{oconfig}' - datasource '#{id}'"
-        abort
-      end
-      ep = @omsp_endpoints[port] ||= OmspEndpointProxy.new(port)
-      ep.add_datasource(id, config)
-    end
-
-    def load_generator(id, config)
-      if file = config[:load]
-        load_ruby_file(file)
-      end
-      unless klass_name = config[:class]
-        fatal "Missing 'class' options for generator '#{id}'"
-        abort
-      end
-      klass = nil
-      begin
-        klass = Kernel.const_get(klass_name)
-      rescue
-        fatal "Can't find class '#{klass_name}' referenced in generator '#{id}'"
-        abort
-      end
-      opts = config[:opts] || {}
-      debug "Creating new generator '#{id}' from '#{klass_name}' with '#{opts}'"
-      unless klass.respond_to? :create_data_source
-        fatal "Class '#{klass_name}' doesn't have a 'create_data_source' class method."
-        abort
-      end
-      klass.create_data_source(id, opts)
-    end
+    # def load_database(id, config)
+    #   unless db_cfg = config[:database]
+    #     fatal "Missing database configuration in datasource '#{config}'"
+    #     abort
+    #   end
+    #   db = get_database(db_cfg)
+    #   if query_s = config[:query]
+    #     unless schema = config[:schema]
+    #       fatal "Missing schema configuration in datasource '#{config}'"
+    #       abort
+    #     end
+    #     require 'omf_oml/schema'
+    #     config[:schema] = OMF::OML::OmlSchema.create(schema)
+    #     table = db.create_table(id, config)
+    #   else
+    #     unless table_name = config.delete(:table)
+    #       fatal "Missing 'table' in datasource configuration '#{config}'"
+    #       abort
+    #     end
+    #     config[:name] = id
+    #     unless table = db.create_table(table_name, config)
+    #       fatal "Can't find table '#{table_name}' in database '#{db_cfg}'"
+    #       abort
+    #     end
+    #   end
+    #   OMF::Web.register_datasource table, name: id
+    # end
+    #
+    # def get_database(config)
+    #   require 'omf_oml/table'
+    #   require 'omf_oml/sql_source'
+    #   if config.is_a? String
+    #     if db = @databases[config]
+    #       return db
+    #     end
+    #     fatal "Database '#{config}' not defined - (#{@databases.keys})"
+    #     abort
+    #   end
+    #   if id = config.delete(:id)
+    #     if db = @databases[id.to_s] # already known
+    #       return db
+    #     end
+    #   end
+    #
+    #   # unless id = config[:id]
+    #     # fatal "Database '#{config}' not defined - (#{@databases.keys})"
+    #     # abort
+    #   # end
+    #   unless url = config.delete(:url)
+    #     fatal "Missing URL for database '#{id}'"
+    #     abort
+    #   end
+    #   if url.start_with?('sqlite:') && ! url.start_with?('sqlite:/')
+    #     # inject top dir
+    #     url.insert('sqlite:'.length, '//' + @cfg_dir + '/')
+    #   end
+    #   #config[:check_interval] ||= 3.0
+    #   #puts "URL: #{url} - #{config}"
+    #   begin
+    #     db = OMF::OML::OmlSqlSource.new(url, config)
+    #     @databases[id] = db if id
+    #     return db
+    #   rescue Exception => ex
+    #     # TODO: Should catch load errors regarding database adapters
+    #     # LoadError: cannot load such file -- pg
+    #     fatal "Can't connect to database '#{id}' - #{ex}"
+    #     abort
+    #   end
+    # end
+    #
+    # # The data to be served as a datasource is contained in a file. We
+    # # currently support CSV with headers, and JSON which turns into a
+    # # 1 col by 1 row datasource.
+    # #
+    # def load_datasource_file(name, opts)
+    #   unless file = opts[:file]
+    #     fatal "Data source file is not defined in '#{opts}'"
+    #     abort
+    #   end
+    #   unless file.start_with? '/'
+    #     file = File.absolute_path(file, @cfg_dir)
+    #   end
+    #   unless File.readable? file
+    #     fatal "Can't read file '#{file}'"
+    #     abort
+    #   end
+    #   unless content_type = opts[:content_type]
+    #     content_type = File.extname(file)[1 ..  -1]
+    #   end
+    #   case content_type.to_s
+    #   when 'json'
+    #     ds = JSONDataSource.new(file)
+    #   when 'csv'
+    #     require 'omf_oml/csv_table'
+    #     ds = OMF::OML::OmlCsvTable.create name, file, has_csv_header: true
+    #   else
+    #     fatal "Unknown content type '#{content_type}'"
+    #     abort
+    #   end
+    #   OMF::Web.register_datasource ds, name: name
+    # end
+    #
+    # def load_omsp_endpoint(id, config)
+    #   oconfig = config[:omsp]
+    #   unless port = oconfig[:port]
+    #     fatal "Need port in OMSP definition '#{oconfig}' - datasource '#{id}'"
+    #     abort
+    #   end
+    #   ep = @omsp_endpoints[port] ||= OmspEndpointProxy.new(port)
+    #   ep.add_datasource(id, config)
+    # end
+    #
+    # def load_generator(id, config)
+    #   if file = config[:load]
+    #     load_ruby_file(file)
+    #   end
+    #   unless klass_name = config[:class]
+    #     fatal "Missing 'class' options for generator '#{id}'"
+    #     abort
+    #   end
+    #   klass = nil
+    #   begin
+    #     klass = Kernel.const_get(klass_name)
+    #   rescue
+    #     fatal "Can't find class '#{klass_name}' referenced in generator '#{id}'"
+    #     abort
+    #   end
+    #   opts = config[:opts] || {}
+    #   debug "Creating new generator '#{id}' from '#{klass_name}' with '#{opts}'"
+    #   unless klass.respond_to? :create_data_source
+    #     fatal "Class '#{klass_name}' doesn't have a 'create_data_source' class method."
+    #     abort
+    #   end
+    #   klass.create_data_source(id, opts)
+    # end
 
     def load_ruby_file(file)
       unless file.start_with? '/'
         file = File.absolute_path(file, @cfg_dir)
       end
       unless File.readable? file
-        fatal "Can't read file '#{file}'"
+        fail "Can't read file '#{file}'"
         abort
       end
       debug "Loading #{file}"
@@ -353,11 +357,11 @@ module OMF::Web
 
     def load_repository(config)
       unless id = config[:id]
-        fatal "Missing id in respository configuration"
+        fail "Missing id in respository configuration"
         abort
       end
       unless type = config[:type]
-        fatal "Missing 'type' in respository configuration '#{id}'"
+        fail "Missing 'type' in respository configuration '#{id}'"
         abort
       end
 
@@ -365,7 +369,7 @@ module OMF::Web
       case type
       when 'file'
         unless top_dir = config[:top_dir]
-          fatal "Missing 'top_dir' in respository configuration '#{id}'"
+          fail "Missing 'top_dir' in respository configuration '#{id}'"
           abort
         end
         unless top_dir.start_with? '/'
@@ -374,7 +378,7 @@ module OMF::Web
         #puts "TOP>>> #{File.absolute_path top_dir}"
         OMF::Web::ContentRepository.register_repo(id, type: :file, top_dir: top_dir)
       else
-        fatal "Unknown repository type '#{type}'. Only supporting 'file'."
+        fail "Unknown repository type '#{type}'. Only supporting 'file'."
         abort
       end
 

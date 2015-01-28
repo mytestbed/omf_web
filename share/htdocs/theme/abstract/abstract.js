@@ -1,9 +1,10 @@
 
-OML = {
+if (typeof(OML) == "undefined") OML = {};
+_.extend(OML, {
   data_sources: {},
   widgets: {},
   window_size: {width: null, height: null}
-};
+});
 
 var OHUB = {};
 _.extend(OHUB, Backbone.Events);

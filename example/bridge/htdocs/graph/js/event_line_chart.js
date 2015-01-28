@@ -1,5 +1,5 @@
 
-define(["graph/line_chart3"], function (line_chart3) {
+define(["graph/line_chart_ec"], function (line_chart3) {
 
   var event_line_chart  = line_chart3.extend({
     defaults: function() {

@@ -7,6 +7,8 @@ module OMF
     module Rack; end
     module Widget; end
 
+    class OMFWebException < Exception; end
+
     #VERSION = 'git:release-5.4'
 
     def self.start(opts, &block)
@@ -22,8 +24,9 @@ module OMF
       runner.run!
     end
 
-    @@datasources = {}
-    @@widgets = {}
+    #@@datasources = {}
+    #@@widgets = {}
+
     def self.register_datasource(data_source, opts = {})
       require 'omf-web/data_source_proxy'
       OMF::Web::DataSourceProxy.register_datasource(data_source, opts)

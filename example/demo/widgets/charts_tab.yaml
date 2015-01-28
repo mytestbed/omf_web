@@ -27,7 +27,7 @@ widget:
             format: false
     
     - name: Line Chart
-      type: data/line_chart3
+      type: data/line_chart_ec
       data_source: 
         name: downloads
       mapping:

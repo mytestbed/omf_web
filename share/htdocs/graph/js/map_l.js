@@ -1,0 +1,691 @@
+
+
+//OML.append_require({paths: {leaflet: '/vendor/leaflet'}, shim: {leaflet: {exports: 'L'}}}
+OML.append_require_shim("vendor/leaflet/leaflet-src", {
+  exports: 'L',
+  deps: ["vendor/d3/d3", "css!vendor/leaflet/leaflet"]
+});
+
+define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstract, L) {
+
+  var ctxt = abstract.extend({
+    //this.opts = opts;
+
+    decl_properties: {
+      nodes: [
+        ['id', 'key', {property: 'id', optional: true}],
+        ['latitude', 'key', {property: 'latitude'}],
+        ['longitude', 'key', {property: 'longitude'}],
+        //['radius', 'key', {property: 'radius', type: 'int', default: 10}],
+        ['radius', 'int', 10],
+        ['fill_color', 'color', 'mediumpurple'],
+        ['stroke_width', 'int', 1],
+        ['stroke_color', 'color', 'white'],
+      ],
+      links: [
+        ['id', 'key', {property: 'id', optional: true}],
+        ['from', 'key', {property: 'from_id'}],
+        ['to', 'key', {property: 'to_id'}],
+        ['fill_color', 'color', 'red'],
+        ['stroke_width', 'int', 2],
+        ['stroke_color', 'color', 'gray'],
+      ]
+    },
+
+    defaults: function() {
+      return this.deep_defaults({
+        margin: {
+          left: 0,
+          top:  10,
+          right: 20,
+          bottom: 0
+        },
+        location: { lat: 39.0997300	, lon: -94.5785700}, // Kansas City
+        zoom_level: 4,
+        tile_provider: 'esri_world_topo',
+        nodes: {
+          anchor: {
+            radius: 5,
+            fill: 'black'
+          },
+          stick: {
+            color: "gray",
+            width: 2
+          }
+        },
+        links: {
+          min_distance: 50
+        },
+        interaction_mode: 'click',
+        events: {
+          // click: event_name
+        }
+      }, ctxt.__super__.defaults.call(this));
+    },
+
+    // See http://leaflet-extras.github.io/leaflet-providers/preview/ for more options
+    tile_providers: {
+      osm: {
+        url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>, under CC BY SA'
+      },
+      //mapbox: {
+      //  url: 'http://{s}.tiles.mapbox.com/v3/...Insert MapID.../{z}/{x}/{y}.png',
+      //  attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+      //},
+      surfer: {
+        url: 'http://openmapsurfer.uni-hd.de/tiles/roads/x={x}&y={y}&z={z}',
+        minZoom: 0,
+        maxZoom: 20,
+        attribution: 'Imagery from <a href="http://giscience.uni-hd.de/">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      },
+      esri_nat_geo_world: {
+        url: 'http://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',
+        attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
+        maxZoom: 16
+      },
+      esri_world_topo: {
+        url: 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+      },
+      esri_world_imagery: {
+        url: 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+      },
+      stamen_watercolor: {
+        url: 'http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png',
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        subdomains: 'abcd',
+        minZoom: 1,
+        maxZoom: 16
+      },
+      stamen_toner_lite: {
+        url: 'http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}.png',
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        subdomains: 'abcd',
+        minZoom: 0,
+        maxZoom: 20
+      },
+      stamen_toner_background: {
+        url: 'http://{s}.tile.stamen.com/toner-background/{z}/{x}/{y}.png',
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        subdomains: 'abcd',
+        minZoom: 0,
+        maxZoom: 20
+      },
+      stamen_toner: {
+        url: 'http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png',
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        subdomains: 'abcd',
+        minZoom: 0,
+        maxZoom: 20
+      },
+      stamen_terrain: {
+        url: 'http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png',
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        subdomains: 'abcd',
+        minZoom: 4,
+        maxZoom: 18
+      },
+      stamen_terrain_background: {
+        url: 'http://{s}.tile.stamen.com/terrain-background/{z}/{x}/{y}.png',
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        subdomains: 'abcd',
+        minZoom: 4,
+        maxZoom: 18
+      }
+    },
+
+    initialize: function(opts) {
+      ctxt.__super__.initialize.call(this, opts);
+      this.map = this._create_map(opts);
+
+      var m = this.opts.margin;
+      var svg = this.svg = d3.select(this.map.getPanes().overlayPane).append("svg")
+        .attr("height", this.h - m.top - m.bottom)
+        .attr("width", this.w - m.left - m.right)
+        ;
+      this.data_layer = svg.append("g").attr("class", "leaflet-zoom-hide");
+      this.stick_layer = this.data_layer.append("g").attr("class", "oml-mapl-stick");
+      this.anchor_layer = this.data_layer.append("g").attr("class", "oml-mapl-anchor");
+      this.link_layer = this.data_layer.append("g").attr("class", "oml-mapl-link");
+      this.marker_layer = this.data_layer.append("g").attr("class", "oml-mapl-marker");
+      this.data_layer_ne = this.map.getBounds()._northEast;
+      this.nodes_state = {};
+      this.marker_force = d3.layout.force()
+        .gravity(0)
+        .linkDistance(0)
+        // .charge(-200) // Defined dynamically later
+        .size([this.w, this.h])
+      ;
+
+      this._on_map_changed();
+
+    },
+
+    // Find the appropriate data sources and bind to it.
+    // If we only get one, we use it for 'nodes', otherwise we expect
+    // one with labels 'nodes' and 'links' respectively.
+    //
+    init_data_source: function() {
+      var o = this.opts;
+      var sources = o.data_sources;
+      var self = this;
+
+      if (! (sources instanceof Array)) {
+        throw "Expected an array";
+      }
+      var dss = this.data_sources = {};
+      sources.forEach(function(ds) {
+        if (ds.label == null) ds.label = 'nodes';
+        var label = ds.label;
+        if (label == 'nodes' || label == 'links') {
+          dss[label] = self.init_single_data_source(ds);
+        } else {
+          OML.error("received unknown data source: %s", ds);
+        }
+      });
+    },
+
+    _create_map: function(opts) {
+      var m = this.opts.margin;
+      var inner_h = this.h - m.top - m.bottom;
+      var map_div = opts.map_div = this.base_el.append("div").style('height', inner_h + 'px');
+
+      var loc = opts.location;
+      var map_dom = map_div[0][0];
+      var map = L.map(map_dom);
+      var self = this;
+      map.on('load', function(e) {
+        self.update();
+      });
+      map.setView(
+           [loc.lat, loc.lon],
+           opts.zoom_level
+      );
+      map.on("viewreset", function(e) {
+        self._on_map_changed();
+        console.log("view reset", e);
+      });
+      map.on("dragend", function(e) {
+        self._on_map_changed();
+      });
+      this._create_tile_layer(opts).addTo(map);
+      return map;
+    },
+
+    _on_map_changed: function() {
+      var map = this.map;
+      var old_ne = map.getBounds()._northEast;
+      var offset = this.offset = map.latLngToLayerPoint(old_ne);
+      offset.x = offset.x - map.getSize().x;
+      this.svg
+        .attr("style", "transform: translate3d(" + offset.x + "px, " + offset.y + "px, 0px);")
+        ;
+      this.update();
+    },
+
+    _create_tile_layer: function(opts) {
+      var tp = opts.tile_provider;
+      if (typeof(tp) == "string") {
+        tp = this.tile_providers[tp];
+      }
+      if (tp == null) {
+        OML.warn("Unknown tile_provider. Use default one");
+        tp = _.values(this.tile_providers)[0];
+      }
+      var url = tp.url;
+      if (url == null) {
+        OML.warn("Missing URL for tile_provider. Use default one");
+        opts.tile_provider = _.values(this.tile_providers)[0];
+        return this._tile_layer(opts); // Better make sure that default has URL
+      }
+      var topts = _.omit(tp, 'url');
+      var tl = L.tileLayer(tp.url, topts);
+      return tl;
+    },
+
+    //_resize: function() {
+    //  var self = this;
+    //
+    //  if (self.svg_layer) {
+    //    var map_el = self.map_el;
+    //    var map = $('#' + map_el);
+    //    var div = $('#' + map_el + '_div');
+    //    var svg = $('#' + map_el + '_svg');
+    //    var map_offset = map.offset();
+    //    var div_offset = div.offset();
+    //
+    //    svg.width($('#' + map_el).width());
+    //    svg.height($('#' + map_el).height());
+    //
+    //
+    //  }
+    //},
+
+    redraw: function(data) {
+      if (this.data_layer) {
+        this._draw(data, this.data_layer);
+      }
+    },
+
+    _draw: function(data, overlay) {
+      this._draw_nodes(data, overlay);
+      this._draw_links(data.links, overlay);
+    },
+
+    _draw_nodes: function(data, overlay) {
+      var self = this;
+      var map = this.map;
+      var m = this.mapping.nodes;
+      var offset = this.offset;
+      var x_f = function (d) {
+        var lat = m.latitude(d.value);
+        var lng = m.longitude(d.value);
+        var point = map.latLngToLayerPoint(new L.LatLng(lat, lng));
+        var a = d.state.anchor;
+        a.p = point;
+        a.x = a.px = point.x - offset.x;
+        a.y = a.py = point.y - offset.y;
+        a.fixed = true; // fixed as far as the graph layout is concerned
+        return a.x ;
+      };
+      var y_f = function (d) {
+        return d.state.anchor.y;
+      };
+
+      var id_f = m.id || self.data_sources.nodes.row_id();
+      var state = self.nodes_state;
+      var nodes = _.map(data.nodes, function(d) {
+        var key = "k" + id_f(d);
+        var s = state[key];
+        if (s == null) {
+          s = state[key] = {
+            anchor: {key: key},
+            marker: {}
+          };
+        }
+        return {
+          key: key,
+          value: d,
+          state: s
+          //anchor: {key: key},
+          //marker: {}
+        };
+      });
+
+      // anchor point to tie marker off
+      var aopts = this.opts.nodes.anchor;
+      var anchors = overlay.select('.oml-mapl-anchor').selectAll('.anchor')
+          .data(nodes, function (d) {
+            return d.key;
+          })
+          .attr("cx", x_f)
+          .attr("cy", y_f)
+        ;
+      var ae = anchors.enter().append('svg:circle')
+        .attr("class", "anchor")
+        .attr("cx", x_f)
+        .attr("cy", y_f)
+        .attr("r", aopts.radius)
+        .style("fill", aopts.fill)
+      ;
+      anchors.exit().remove();
+
+      this._update_markers(nodes, overlay, data);
+    },
+
+    _update_markers: function(nodes, overlay, data) {
+      var self = this;
+      var m = this.mapping.nodes;
+      var m_f = function (d, m) {
+        return (typeof m === "function") ? m(d.value) : m;
+      };
+
+      var markers = overlay.select('.oml-mapl-marker').selectAll('.marker')
+          .data(nodes, function (d) {
+            return d.key;
+          })
+        ;
+
+      markers.enter().append('svg:circle')
+        .attr("class", "marker")
+        .call(this._style_marker, m_f, m)
+        .call(self._configure_events, self.opts.events, self)
+        .style("cursor", 'pointer')
+        .on('click', function (d) {
+          var x = self;
+          var i = 0;
+        })
+        // .on('mouseover', function(d) {
+        // var x = self;
+        // var i = 0;
+        // })
+      ;
+      markers.exit().remove();
+
+      this._update_marker_position(nodes, markers, overlay, data);
+    },
+
+    _update_marker_position: function(node_data, markers, overlay, data) {
+      var nodes = [];
+      var links = [];
+      node_data.forEach(function(d) {
+        var m = d.state.marker;
+        var a = d.state.anchor;
+        nodes.push(m);
+        nodes.push(a);
+        links.push({source : m, target: a, weight : 1, stick: true});
+      });
+      // Also add links between markers if there is a link and the corresponding anchors are very close together
+      // as to keep them separated
+      var key2node = _.reduce(node_data, function(h, n) {
+        h[n.key] = n;
+        return h;
+      }, {});
+      var m = this.mapping.links;
+      var min_distance = this.opts.links.min_distance;
+      var d2_thres = min_distance * min_distance;
+      data.links.forEach(function(d) {
+        var from = key2node['k' + m.from(d)];
+        var to = key2node['k' + m.to(d)];
+       if (from == null || to == null) {
+          throw "Unknown node references"
+        }
+        var a1 = from.state.anchor;
+        var a2 = to.state.anchor;
+        var dx = a1.x - a2.x;
+        var dy = a1.y - a2.y;
+        var d2 = dx * dx + dy * dy;
+        if (d2 < d2_thres)
+          links.push({source : from.state.marker, target: to.state.marker, weight : 1, stick: false});
+      });
+
+      // Draw a line between the anchor and the marker
+      var sticks = overlay.select('.oml-mapl-stick').selectAll("line.link")
+          .data(_.filter(links, function(d) { return d.stick; }), function(d) { return d.target.key; });
+      // Enter any new links.
+      var so = this.opts.nodes.stick;
+      sticks.enter().insert("svg:line", ".node")
+        .attr("class", "link")
+        .attr("stroke", so.color)
+        .attr("stroke-width", so.width)
+      ;
+      // Exit any old links.
+      sticks.exit().remove();
+
+
+      // Restart the label force layout.
+      var self = this;
+      this.marker_force
+        .nodes(nodes)
+        .links(links)
+        .charge(function(d) {
+          // fixed anchors don't repel
+          return d.fixed ? 0 : -100;
+        })
+        .linkDistance(function(d) {
+          return d.stick ? 0 : min_distance;
+        })
+        .on("tick", function(e) {
+          var offset = self.offset;
+          var offx = offset.x;
+          var offy = offset.y;
+
+          markers
+            .attr("cx", function(d) {
+              return d.state.marker.x;
+            })
+            .attr("cy", function(d) {
+              return d.state.marker.y;
+            })
+          ;
+          sticks
+            .attr("x1", function(d) {
+              return d.source.x;
+            })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; })
+          ;
+          if (self.links) {
+            self.links
+              .attr("x1", function(d) { return d.from.x; })
+              .attr("y1", function(d) { return d.from.y; })
+              .attr("x2", function(d) { return d.to.x; })
+              .attr("y2", function(d) { return d.to.y; })
+            ;
+          }
+
+        })
+        .start();
+    },
+
+    _style_marker: function(sel, m_f, m) {
+      sel
+        //.attr("cx", x_f)
+        //.attr("cx", function(d) {
+        //  var x = x_f(d);
+        //  return x;
+        //})
+        //.attr("cy", y_f)
+        //.attr("r", function(d) {return m_f(d, m.radius);})
+        .attr("r", m.radius)
+        .style("fill", function(d) {return m_f(d, m.fill_color);})
+        .style("stroke", function(d) {return m_f(d, m.stroke_color);})
+        .style("stroke-width", function(d) {
+          return m_f(d, m.stroke_width);
+        })
+      ;
+
+    },
+
+    _draw_links: function(rows, overlay) {
+      var self = this;
+      var m = this.mapping.links;
+      var offset = this.offset;
+      var state = this.nodes_state;
+      var id_f = m.id || self.data_sources.nodes.row_id();
+      var data = _.map(rows, function(d) {
+        var from = state["k" + m.from(d)];
+        var to = state["k" + m.to(d)];
+        if (from == null || to == null) {
+          throw "Unknown node references"
+        }
+        var key = id_f(d);
+        return {
+          key: key,
+          from: from.marker,
+          to: to.marker,
+          data: d
+        };
+      });
+      var offx = offset.x;
+      var offy = offset.y
+      function x1_f(d) {
+        return d.from.x - offx;
+      }
+      function y1_f(d) {
+        return d.from.y - offy;
+      }
+      function x2_f(d) {
+        return d.to.x - offx;
+      }
+      function y2_f(d) {
+        return d.to.y - offy;
+      }
+      // Draw a line between the anchor and the marker
+      this.links = overlay.select('.oml-mapl-link').selectAll("line.link")
+          .data(data, function(d) { return d.key; })
+          .call(self._style_links, x1_f, y1_f, x2_f, y2_f, m)
+        ;
+      // Enter any new links.
+      this.links.enter().insert("svg:line", ".link")
+        .attr("class", "link")
+        //.style("cursor", 'pointer')
+        .call(self._style_links, x1_f, y1_f, x2_f, y2_f, m)
+        .call(self._set_link_interaction_mode, self)
+        //.on('click', function (d) {
+        //  var x = self;
+        //  var i = 0;
+        //})
+      ;
+      // Exit any old links.
+      this.links.exit().remove();
+    },
+
+    _style_links: function(sel, x1_f, y1_f, x2_f, y2_f, m) {
+      sel
+        .attr("x1", x1_f)
+        .attr("y1", y1_f)
+        .attr("x2", x2_f)
+        .attr("y2", y2_f)
+        .attr("stroke", function(d) {
+          return m.stroke_color(d.data);
+        })
+        .attr("stroke-width", function(d) {
+          return m.stroke_width(d.data);
+        })
+      ;
+
+    },
+
+    _set_link_interaction_mode: function(le, self) {
+      var o = self.opts;
+
+      if (o.interaction_mode == 'hover') {
+        le.on("mouseover", function(d) {
+          self._on_link_selected(d);
+        })
+        .on("mouseout", function(d) {
+          self._on_link_selected(d);
+        })
+        ;
+      } else if (o.interaction_mode == 'click') {
+        le.on("click", function(d) {
+          self._on_link_selected(d);
+        })
+        .style('cursor', 'pointer')
+        ;
+      }
+    },
+
+    _on_link_selected: function(d) {
+      var id = d.key;
+
+      if (this.selected_link == id) {
+        // if same link is clicked twice, unselect it
+        this._render_selected_link(null);
+        //this._render_selected_node(null);
+      } else {
+        this._render_selected_link(id);
+        //this._render_selected_node('_NONE_');
+        this._report_selected(id, 'links', d.data);
+      }
+    },
+
+   // Make all but 'selected_id' link semi-transparent. If 'selected_id' is null
+    // revert selection.
+    //
+    _render_selected_link: function(selected_id) {
+      if (selected_id == null || selected_id == '_NONE_') {
+        if (this.selected_link) {
+          this._report_deselected(this.selected_link, 'links');
+          this.selected_link = null;
+        }
+      } else {
+        this.selected_link = selected_id;
+      }
+
+      var opacity = this.opts.links.selected_opacity || 0.3
+      this.links
+        .transition()
+        .style("opacity", function(d) {
+          if (selected_id) {
+            return d.key == selected_id ? 1 : opacity;
+          } else {
+            return 1;
+          }
+        })
+        .delay(0)
+        .duration(300);
+      ;
+      //// Ensure that selected link is shown fully
+      //this.graph_layer.selectAll("path.link")
+      // .filter(function(d) {
+      //   var key = key_f(d);
+      //   return selected_id == null || key == selected_id;
+      // })
+      // .transition()
+      //   .style("opacity", 1.0)
+      //   .delay(0)
+      //   .duration(300);
+
+    },
+
+    _configure_events: function(el, events, self) {
+      _.each(events, function(v, event) {
+        el.on(event, function(d) {
+          var ev_name = v;
+          OHUB.trigger(ev_name, {el: self, datum: d.value, schema: self.schema});
+        });
+      });
+    },
+
+    //// Should only call this after Google map is initialised
+    //_configure_base_layer: function(vis) {
+    //  var overlay = this.overlay = new google.maps.OverlayView();
+    //  var self = this;
+    //
+    //  // Add the container when the overlay is added to the map.
+    //  overlay.onAdd = function() {
+    //    var overlay_layer = this.getPanes().overlayMouseTarget;
+    //    d3.select(overlay_layer).attr('id', self.map_el + '_over');
+    //    self.div_layer = d3.select(overlay_layer).append("div")
+    //        .attr('id', self.map_el + '_div')
+    //        //.style("position", "absolute")
+    //        //.attr('class', this.base_css_class);
+    //        ;
+    //    self.svg_layer = self.div_layer.append("svg:svg")
+    //        .attr('id', self.map_el + '_svg')
+    //        //.style("position", "absolute")
+    //        .style('z-index', '10')
+    //        ;
+    //    self.draw_layer = self.svg_layer.append("svg:g")
+    //        ;
+    //    self._resize();
+    //
+    //    overlay.draw = function() {
+    //      //console.log("overlay draw");
+    //      self._draw(this);
+    //    };
+    //  };
+    //  overlay.setMap(this.map);
+    //}
+
+    _report_selected: function(selected_id, type, datum) {
+      var ds = this.data_sources[type];
+      var msg = {id: selected_id, type: type, source: this, data_source: ds, datum: datum};
+      OHUB.trigger("graph.selected", msg);
+      OHUB.trigger("graph." + ds.name + ".selected", msg);
+    },
+
+    _report_deselected: function(selected_id, type, datum) {
+      var ds = this.data_sources[type];
+      var msg = {id: selected_id, type: type, source: this, data_source: ds, datum: datum};
+      OHUB.trigger("graph.deselected", msg);
+      OHUB.trigger("graph." + ds.name + ".deselected", msg);
+    }
+  });
+
+  return ctxt;
+});
+
+
+/*
+  Local Variables:
+  mode: Javascript
+  tab-width: 2
+  indent-tabs-mode: nil
+  End:
+*/

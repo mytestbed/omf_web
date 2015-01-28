@@ -14,7 +14,7 @@ tabs:
         info: This widget shows the voltage reported for varous generators
         widgets:
           - name: Generator
-            type: data/line_chart3
+            type: data/line_chart_ec
             data_source:
               name: voltage
             mapping:
