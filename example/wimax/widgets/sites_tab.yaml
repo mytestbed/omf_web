@@ -1,0 +1,11 @@
+tabs:
+  - id: sites_tab
+    name: Sites
+    #top_level: true
+    priority: 910
+    type: layout/one_column
+    widgets:
+      - name: Sites Parameters
+        type: data/table2
+        data_source:
+          name: sites

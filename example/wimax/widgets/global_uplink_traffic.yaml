@@ -1,0 +1,35 @@
+
+widgets:
+  - id: global_uplink
+    name: Uplink Traffic
+    type: layout/stacked
+    info: This widget shows the combined uplink traffic for this BSS
+    widgets:
+      - type: data/line_chart_ec
+        data_source:
+          name: bss
+        mapping:
+          x_axis:
+            property: oml_ts_server
+          y_axis:
+            property: ulpdu
+            min: 0
+            max: 10
+          group_by: oml_sender
+        axis:
+          x:
+            ticks:
+              type: dateTime
+              format: "%x %X"
+      #        transition: 0
+            legend: Time
+          y:
+            legend: Uplink Traffic (# of PDUs)
+        margin:
+          left: 100
+
+      - name: Table
+        type: data/table2
+        data_source:
+          name: bss
+

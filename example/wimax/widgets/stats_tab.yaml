@@ -1,0 +1,11 @@
+tabs:
+  - id: stats
+    name: Stats
+    priority: 900
+    type: layout/two_columns/50_50
+    left: [global_uplink]
+    right: [global_downlink]
+
+include:
+  - global_*_traffic.yaml
+

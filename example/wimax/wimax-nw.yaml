@@ -1,0 +1,138 @@
+
+
+
+# Wimax
+#
+
+server:
+  name: 'wimax'
+  page_title: 'Map Example'
+  port: 3000
+
+data_sources:
+#  - id: sites
+#    table: sites
+#    file: data_sources/sites.csv
+#    content_type: csv
+
+  - id: network
+    generator:
+      load: data_sources/network.rb
+      class: NetworkGenerator
+
+
+#  - id: bss
+#    database:
+#      table: wimax_bss02_bs
+#      id: bss
+#      url: sqlite:data_sources/wimax_bss02.sq3
+
+repositories:
+  - id: wimax
+    type: file
+    top_dir: repository
+
+
+tabs:
+  - id: home
+    name: Home
+    #top_level: true
+    priority: 920
+    type: layout/two_columns/66_33
+    left:
+      - name: Map
+        type: layout/stacked
+        info: This map shows the location of the currently deployed WiMAX base stations
+        widgets:
+          - type: data/map_l
+            data_sources:
+              nodes: network/nodes
+              links: network/links
+
+            width: 1.0
+            map:
+              center: [-98.0, 35.0]
+              zoom: 4
+            mapping:
+              nodes:
+                id: id
+                latitude:
+                  property: latitude
+                longitude:
+                  property: longitude
+                radius: 10
+              links:
+                from: from_id
+                to: to_id
+                stroke_color:
+                  property: load_wild
+                  ranges:
+                    - [0.5, 'green']
+                    - [0.8, 'orange']
+                    - [10, 'red']
+                stroke_width:
+                  property: load_wild
+                  scale: 10
+                  min: 1
+
+          - name: Table
+            type: data/table2
+            data_source:
+              name: network/nodes
+    right:
+      - name: Link
+        type: layout/one_column
+        info: This column shows details about a selected link
+        widgets:
+          - name: Load (filtered)
+            type: data/ec/line_chart
+            height: 0.6
+            data_source:
+              name: link_history
+              # Only fetch a 'slice' of the underlying data source. A slice
+              # is defined by specific value in the 'slice_column' of all rows
+              slice:
+                slice_column: id
+                event:
+                  name: "graph.network/links.selected"
+                  key: id
+            mapping:
+              x_axis: ts
+              y_axis:
+                property: load
+
+          - name: Load (raw)
+            type: data/ec/line_chart
+            height: 0.6
+            data_source:
+              name: link_history
+              # Only fetch a 'slice' of the underlying data source. A slice
+              # is defined by specific value in the 'slice_column' of all rows
+              slice:
+                slice_column: id
+                event:
+                  name: "graph.network/links.selected"
+                  key: id
+            mapping:
+              x_axis: ts
+              y_axis:
+                property: load_wild
+
+#          - name: Table
+#            type: data/table2
+#            data_source:
+#              name: link_history
+#              # Only fetch a 'slice' of the underlying data source. A slice
+#              # is defined by specific value in the 'slice_column' of all rows
+#              slice:
+#                slice_column: id
+#                event:
+#                  name: "graph.network/links.selected"
+#                  key: id
+
+
+include:
+
+#  - widgets/stats_tab.yaml
+
+

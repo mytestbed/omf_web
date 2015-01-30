@@ -1,0 +1,28 @@
+
+widgets:
+  - id: global_downlink
+    name: Downlink Traffic
+    type: data/ec/line_chart
+    data_source:
+      name: bss
+    mapping:
+      x_axis:
+        property: oml_ts_server
+      y_axis:
+        property: dlpdu
+        min: 0
+        max: 10
+      group_by: oml_sender
+    axis:
+      x:
+        ticks:
+          type: dateTime
+          format: "%x %X"
+  #        transition: 0
+        legend: Time
+      y:
+        legend: Downlink Traffic (# of PDUs)
+    margin:
+      left: 100
+
+

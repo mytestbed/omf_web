@@ -1,0 +1,71 @@
+
+
+
+# Wimax
+#
+
+server:
+  name: 'wimax'
+  page_title: 'GENI WiMAX Monitoring'
+  port: 3000
+
+data_sources:
+  - id: sites
+    table: sites
+    file: data_sources/sites.csv
+    content_type: csv
+
+  - id: bss
+    database:
+      table: wimax_bss02_bs
+      id: bss
+      url: sqlite:data_sources/wimax_bss02.sq3
+
+repositories:
+  - id: wimax
+    type: file
+    top_dir: repository
+
+
+tabs:
+  - id: home
+    name: Home
+    #top_level: true
+    priority: 920
+    type: layout/two_columns/33_66
+    left:
+      - name: Embedded Text
+        type: text
+        content:
+          url: file:wimax:wimax-overview.md
+
+    right:
+      - name: Deployment Map
+        type: layout/stacked
+        info: This map shows the location of the currently deployed WiMAX base stations
+        widgets:
+          - type: data/map_l
+            data_source: sites
+            width: 1.0
+            map:
+              center: [-98.0, 35.0]
+              zoom: 4
+            mapping:
+              latitude:
+                property: latitude
+              longitude:
+                property: longitude
+              radius: 10
+              fill_color: blue
+
+          - name: Table
+            type: data/table2
+            data_source:
+              name: sites
+
+
+include:
+#  - widgets/sites_tab
+  - widgets/stats_tab.yaml
+
+
