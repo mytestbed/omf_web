@@ -56,11 +56,18 @@ tabs:
             mapping:
               nodes:
                 id: id
+                zoom_visibility: zoom_viz
                 latitude:
                   property: latitude
                 longitude:
                   property: longitude
                 radius: 10
+                fill_color:
+                  property: load_wild
+                  ranges:
+                    - [0.5, 'green']
+                    - [0.8, 'orange']
+                    - [10, 'red']
               links:
                 from: from_id
                 to: to_id
@@ -74,6 +81,9 @@ tabs:
                   property: load_wild
                   scale: 10
                   min: 1
+            zoom_visibility:
+              primary: {} # Always
+              secondary: {from: 6} # visible from and including 6
 
           - name: Table
             type: data/table2

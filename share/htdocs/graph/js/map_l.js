@@ -14,6 +14,8 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
     decl_properties: {
       nodes: [
         ['id', 'key', {property: 'id', optional: true}],
+        // If set, the visibility can be switched on/off depending on zoom level
+        ['zoom_visibility', 'key', {property: 'zoom_visibility', optional: true}],
         ['latitude', 'key', {property: 'latitude'}],
         ['longitude', 'key', {property: 'longitude'}],
         //['radius', 'key', {property: 'radius', type: 'int', default: 10}],
@@ -271,7 +273,9 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
 
     _draw: function(data, overlay) {
       this._draw_nodes(data, overlay);
-      this._draw_links(data.links, overlay);
+      if (data.links) {
+        this._draw_links(data.links, overlay);
+      }
     },
 
     _draw_nodes: function(data, overlay) {
@@ -296,14 +300,43 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
 
       var id_f = m.id || self.data_sources.nodes.row_id();
       var state = self.nodes_state;
+      var zoom = map.getZoom();
+      var zopts = this.opts.zoom_visibility;
+      var zm = m.zoom_visibility;
+      //var nodes = m.zoom_visibility ? _.filter(data.nodes, function(d) {
+      //  var k = m.zoom_visibility(d);
+      //  var o = zopts[k];
+      //  if (o == undefined) return; // default is visible
+      //  var from = o.from || 0;
+      //  var to = o.to || 10000;
+      //  return from <= zoom && zoom <= to;
+      //}) : data.nodes;
       var nodes = _.map(data.nodes, function(d) {
         var key = "k" + id_f(d);
         var s = state[key];
         if (s == null) {
           s = state[key] = {
             anchor: {key: key},
-            marker: {}
+            marker: {},
           };
+        }
+        // Check if node is visible at the current zoom level
+        s.visibility = true;
+        if (zm) {
+          var k = zm(d);
+          var o = zopts[k];
+          if (o) { // default is visible
+            var from = o.from || 0;
+            var to = o.to || 10000;
+            s.visibility =  from <= zoom && zoom <= to
+          }
+        }
+        // Check if the node has a proper location, otherwise don't display anchor
+        var lat = m.latitude(d);
+        var lon = m.latitude(d);
+        s.showAnchor = s.marker.isAnchored = (Math.abs(lat) <= 90 && Math.abs(lon) <= 180);
+        if (!s.showAnchor) {
+          var i = 0;
         }
         return {
           key: key,
@@ -317,7 +350,9 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       // anchor point to tie marker off
       var aopts = this.opts.nodes.anchor;
       var anchors = overlay.select('.oml-mapl-anchor').selectAll('.anchor')
-          .data(nodes, function (d) {
+          .data(nodes.filter(function(d) {
+            return d.state.visibility && d.state.showAnchor;
+          }), function (d) {
             return d.key;
           })
           .attr("cx", x_f)
@@ -343,9 +378,12 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       };
 
       var markers = overlay.select('.oml-mapl-marker').selectAll('.marker')
-          .data(nodes, function (d) {
+          .data(nodes.filter(function(d) {
+            return d.state.visibility;
+          }), function (d) {
             return d.key;
           })
+          .call(this._style_marker, m_f, m)
         ;
 
       markers.enter().append('svg:circle')
@@ -371,35 +409,51 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       var nodes = [];
       var links = [];
       node_data.forEach(function(d) {
-        var m = d.state.marker;
-        var a = d.state.anchor;
+        var s = d.state;
+        if (!(s.visibility)) return;
+        var m = s.marker;
         nodes.push(m);
+        if (!(s.showAnchor)) return;
+        var a = s.anchor;
         nodes.push(a);
-        links.push({source : m, target: a, weight : 1, stick: true});
+        links.push({source : m, target: a, weight : 1, stick: true, anchored: true});
       });
+
       // Also add links between markers if there is a link and the corresponding anchors are very close together
-      // as to keep them separated
-      var key2node = _.reduce(node_data, function(h, n) {
-        h[n.key] = n;
-        return h;
-      }, {});
-      var m = this.mapping.links;
-      var min_distance = this.opts.links.min_distance;
-      var d2_thres = min_distance * min_distance;
-      data.links.forEach(function(d) {
-        var from = key2node['k' + m.from(d)];
-        var to = key2node['k' + m.to(d)];
-       if (from == null || to == null) {
-          throw "Unknown node references"
-        }
-        var a1 = from.state.anchor;
-        var a2 = to.state.anchor;
-        var dx = a1.x - a2.x;
-        var dy = a1.y - a2.y;
-        var d2 = dx * dx + dy * dy;
-        if (d2 < d2_thres)
-          links.push({source : from.state.marker, target: to.state.marker, weight : 1, stick: false});
-      });
+      // as to keep them separated.
+      // Also add links where at least one of them is NOT anchored.
+      if (data.links) {
+        var key2node = _.reduce(node_data, function (h, n) {
+          h[n.key] = n;
+          return h;
+        }, {});
+        var m = this.mapping.links;
+        var min_distance = this.opts.links.min_distance;
+        var d2_thres = min_distance * min_distance;
+        data.links.forEach(function (d) {
+          var from = key2node['k' + m.from(d)];
+          var to = key2node['k' + m.to(d)];
+          if (from == null || to == null) {
+            throw "Unknown node references"
+          }
+          if (! (from.state.visibility && to.state.visibility)) return;
+
+          if (from.state.showAnchor && to.state.showAnchor) {
+            // stick
+            var a1 = from.state.anchor;
+            var a2 = to.state.anchor;
+            var dx = a1.x - a2.x;
+            var dy = a1.y - a2.y;
+            var d2 = dx * dx + dy * dy;
+            if (d2 < d2_thres)
+              links.push({source: from.state.marker, target: to.state.marker, weight: 1, anchored: true, stick: false});
+          } else {
+            // un-anchored
+            links.push({source: from.state.marker, target: to.state.marker, weight: 1, anchored: false, stick: false});
+          }
+        });
+      }
+
 
       // Draw a line between the anchor and the marker
       var sticks = overlay.select('.oml-mapl-stick').selectAll("line.link")
@@ -425,7 +479,15 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
           return d.fixed ? 0 : -100;
         })
         .linkDistance(function(d) {
-          return d.stick ? 0 : min_distance;
+          if (d.stick) {
+            return 0;
+          } else {
+            if (d.anchored) {
+              return min_distance;
+            } else {
+              return 30;
+            }
+          }
         })
         .on("tick", function(e) {
           var offset = self.offset;
@@ -486,12 +548,13 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       var offset = this.offset;
       var state = this.nodes_state;
       var id_f = m.id || self.data_sources.nodes.row_id();
-      var data = _.map(rows, function(d) {
+      var data = _.compact(_.map(rows, function(d) {
         var from = state["k" + m.from(d)];
         var to = state["k" + m.to(d)];
         if (from == null || to == null) {
           throw "Unknown node references"
         }
+        if (! (from.visibility && to.visibility)) return;
         var key = id_f(d);
         return {
           key: key,
@@ -499,7 +562,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
           to: to.marker,
           data: d
         };
-      });
+      }));
       var offx = offset.x;
       var offy = offset.y
       function x1_f(d) {
