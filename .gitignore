@@ -17,6 +17,9 @@ tmp
 .yardoc
 _yardoc
 
+# RubyMINE
+.idea
+
 Gemfile.lock
 share/htdocs/vendor/valums-file-uploader-cf7bfb1/.gitignore
 share/htdocs/vendor/valums-file-uploader-cf7bfb1/.gitignore
