@@ -192,7 +192,12 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
     _create_map: function(opts) {
       var m = this.opts.margin;
       var inner_h = this.h - m.top - m.bottom;
-      var map_div = opts.map_div = this.base_el.append("div").style('height', inner_h + 'px');
+      var inner_w = this.w - m.left - m.right;
+      var map_div = this.map_div = this.base_el.append("div")
+        //.class("mapl-container")
+        .style('height', inner_h + 'px')
+        .style('width', inner_w + 'px');
+      ;
 
       var loc = opts.location;
       var map_dom = map_div[0][0];
@@ -245,6 +250,25 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       var topts = _.omit(tp, 'url');
       var tl = L.tileLayer(tp.url, topts);
       return tl;
+    },
+
+    _resize: function(w, h) {
+      ctxt.__super__._resize.call(this, w, h);
+      var m = this.opts.margin;
+      if (this.map_div) {
+        this.map_div
+          .style('height', this.h + 'px')
+          .style('width', this.w + 'px');
+      }
+      if (this.svg) {
+        this.svg
+          .attr("height", this.h)
+          .attr("width", this.w);
+      }
+      if (this.map) {
+        this.map.invalidateSize();
+        this._on_map_changed();
+      }
     },
 
     //_resize: function() {
