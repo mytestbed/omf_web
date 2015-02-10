@@ -13,6 +13,7 @@ OML.error = function(msg) {
   console.error(arguments);
 };
 
+OML.widget_proto = {};
 
 OML.require_config = {
   //By default load any module IDs from js/lib
