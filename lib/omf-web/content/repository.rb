@@ -23,6 +23,7 @@ module OMF::Web
       :oedl => 'text/ruby',
       :r => 'text/r',
       :svg => 'text/svg',
+      :csv => 'text/csv',
       :txt => 'text'
     }
 
@@ -267,9 +268,11 @@ module OMF::Web
       @read_only
     end
 
-    def exist?(path)
+    def exist?(content_descr)
+      path = _get_path(content_descr)
       Dir.chdir(@top_dir) do
-        return nil if File.exist?(path)
+        #return nil if File.exist?(path)
+        return File.exist?(path)
       end
     end
 
