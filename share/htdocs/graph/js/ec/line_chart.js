@@ -129,14 +129,14 @@ define(["graph/ec/abstract_echart",
                 formatter: '{value} s'
               },
               //boundaryGap : false,
-              data: x.slice(-40)
+              data: x
               //data : []
             }
           ],
           series: [{
             type: 'line',
             name: 'Line1',
-            data: y.slice(-40),
+            data: y,
           }]
         };
         chart.setOption(o);
