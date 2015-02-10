@@ -13,7 +13,7 @@ define(["graph/abstract_nv_chart",
     decl_properties: [
       ['x_axis', 'key', {property: 'x'}],
       ['y_axis', 'key', {property: 'y'}],
-      ['group_by', 'key', {property: 'id', optional: true}],
+      ['group_by', 'key', {optional: true}],
       ['stroke_width', 'int', 2],
       ['stroke_color', 'color', 'category10()'],
       ['stroke_fill', 'color', 'blue']
