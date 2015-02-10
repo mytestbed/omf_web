@@ -118,7 +118,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
     resize: function() {
       var o = this.opts;
       var w = o.width;
-      if (w <= 1.0) {
+      if (w <= 3.0) {
         // check width of enclosing div (base_el)
         var bel = $(o.base_el).parents(".widget_container");
         var el = bel[0];
@@ -134,16 +134,19 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       }
 
       var h = o.height;
-      if (h <= 1.0) {
+      if (h <= 3.0) {
         h = h * w;
       }
-      this._resize_base_el(w,h);
+      this._resize(w,h);
 
       OHUB.trigger(o.id + '.resize', {width: w, height: h});
 
       return this;
     },
 
+    _resize: function(w, h) {
+      this._resize_base_el(w, h);
+    },
 
     _resize_base_el: function(w, h) {
       var m = this.opts.margin;
@@ -375,6 +378,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
          }
 
          if (pname == undefined) {
+           if (descr.optional == true) return;
            throw "Missing 'property' declaration for mapping '" + mname + "'.";
          }
          var col_schema = schema[pname];
