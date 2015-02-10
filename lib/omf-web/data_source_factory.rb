@@ -143,27 +143,34 @@ module OMF::Web
     def load_datasource_file(name, opts)
       unless file = opts[:file]
         fail "Data source file is not defined in '#{opts}'"
-        
       end
-      unless file.start_with? '/'
-        file = File.absolute_path(file, @cfg_dir)
-      end
-      unless File.readable? file
-        fail "Can't read file '#{file}'"
-        
-      end
-      unless content_type = opts[:content_type]
-        content_type = File.extname(file)[1 ..  -1]
+      if (handler = OMF::Web::SessionStore[:contentHandler, :repos])
+        unless cd = handler.call(file)
+          fail "Can't load data source file '#{opts}' through repo handler"
+        end
+        content_type = cd[:mime_type]
+        content = cd[:content]
+      else
+        unless file.start_with? '/'
+          file = File.absolute_path(file, @cfg_dir)
+        end
+        unless File.readable? file
+          fail "Can't read file '#{file}'"
+        end
+        content = file.read
+        unless content_type = opts[:content_type]
+          ext = File.extname(file)[1 ..  -1]
+          content_type = OMF::Web::ContentRepository::MIME_TYPE[ext] || 'text'
+        end
       end
       case content_type.to_s
-      when 'json'
-        ds = JSONDataSource.new(file)
-      when 'csv'
+      when 'text/json'
+        ds = JSONDataSource.new(content)
+      when 'text/csv'
         require 'omf_oml/csv_table'
-        ds = OMF::OML::OmlCsvTable.create name, file, has_csv_header: true
+        ds = OMF::OML::OmlCsvTable.new name, nil, text: content, has_csv_header: true
       else
         fail "Unknown content type '#{content_type}'"
-        
       end
       OMF::Web.register_datasource ds, name: name
       ds
@@ -219,9 +226,8 @@ module OMF::Web
     #
     class JSONDataSource < OMF::Base::LObject
 
-      def initialize(file)
-        raw = File.read(file)
-        @content = [[JSON.parse(raw)]]
+      def initialize(string)
+        @content = [[JSON.parse(string)]]
       end
 
       #  * rows Returns an array of rows
