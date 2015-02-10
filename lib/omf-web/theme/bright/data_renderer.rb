@@ -14,12 +14,24 @@ module OMF::Web::Theme
     end
 
     def content()
-      div :id => @base_id, :class => "#{@js_class.gsub('.', '_').downcase}" do
+      #div :id => @base_id, :class => "omf_data_widget #{@js_class.gsub('.', '_').downcase}" do
+      div :id => @base_id, :class => "omf_data_widget_container" do
         javascript(%{
+        /*
           require(['#@js_module'], function(Graph) {
             var w = OML.widgets.#{@base_id} = new Graph(#{@wopts.to_json});
             var i = 0;
           });
+        */
+          (OML.widget_proto.#{@base_id} = function(id) {
+            var inner_el = id + "_i";
+            $("#" + id).append("<div id='" + inner_el + "' class='omf_data_widget #{@js_class.gsub('.', '_').downcase}' />")
+            var opts = #{@wopts.to_json};
+            opts.base_el = "#" + inner_el;
+            require(['#@js_module'], function(Graph) {
+              OML.widgets[id] = new Graph(opts);
+            });
+          })('#{@base_id}');
         })
       end
     end
