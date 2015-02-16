@@ -42,9 +42,11 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
           right: 20,
           bottom: 0
         },
-        location: { lat: 39.0997300	, lon: -94.5785700}, // Kansas City
-        zoom_level: 4,
-        tile_provider: 'esri_world_topo',
+        map: {
+          lat: 39.0997300, lon: -94.5785700, // Kansas City
+          zoom_level: 4,
+          tile_provider: 'esri_world_topo'
+        },
         nodes: {
           anchor: {
             radius: 5,
@@ -199,7 +201,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
         .style('width', inner_w + 'px');
       ;
 
-      var loc = opts.location;
+      var mopts = opts.map;
       var map_dom = map_div[0][0];
       var map = L.map(map_dom);
       var self = this;
@@ -207,8 +209,8 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
         self.update();
       });
       map.setView(
-           [loc.lat, loc.lon],
-           opts.zoom_level
+           [mopts.lat, mopts.lon],
+           mopts.zoom_level
       );
       map.on("viewreset", function(e) {
         self._on_map_changed();
@@ -217,7 +219,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       map.on("dragend", function(e) {
         self._on_map_changed();
       });
-      this._create_tile_layer(opts).addTo(map);
+      this._create_tile_layer(mopts).addTo(map);
       return map;
     },
 
