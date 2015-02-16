@@ -1,6 +1,8 @@
 require 'singleton'
 require 'omf_base/lobject'
-require 'omf_oml/network'
+#require 'omf_oml/network'
+require 'omf-web/session_store'
+require 'omf-web/content/repository'
 
 module OMF::Web
 
@@ -25,7 +27,7 @@ module OMF::Web
     # NOTE: If an OMSP type is declared, an OmspEndpointProxy instance is
     # returned instead.
     #
-    def create(ds_descr, require_id = true, throw_exception = true)
+    def create(ds_descr, require_id = true, throw_exception = true, use_session_context = true)
       begin
         unless id = ds_descr[:id]
           if require_id
@@ -37,7 +39,7 @@ module OMF::Web
         if ds_descr[:database]
           load_database(id, ds_descr)
         elsif ds_descr[:file]
-          load_datasource_file(id, ds_descr)
+          load_datasource_file(id, ds_descr, use_session_context)
         elsif ds_descr[:omsp]
           load_omsp_endpoint(id, ds_descr)
         elsif ds_descr[:generator]
@@ -140,11 +142,11 @@ module OMF::Web
     # currently support CSV with headers, and JSON which turns into a
     # 1 col by 1 row datasource.
     #
-    def load_datasource_file(name, opts)
+    def load_datasource_file(name, opts, use_session_context)
       unless file = opts[:file]
         fail "Data source file is not defined in '#{opts}'"
       end
-      if (handler = OMF::Web::SessionStore[:contentHandler, :repos])
+      if (use_session_context && handler = OMF::Web::SessionStore[:contentHandler, :repos])
         unless cd = handler.call(file)
           fail "Can't load data source file '#{opts}' through repo handler"
         end
@@ -157,10 +159,10 @@ module OMF::Web
         unless File.readable? file
           fail "Can't read file '#{file}'"
         end
-        content = file.read
+        content = File.read(file)
         unless content_type = opts[:content_type]
           ext = File.extname(file)[1 ..  -1]
-          content_type = OMF::Web::ContentRepository::MIME_TYPE[ext] || 'text'
+          content_type = OMF::Web::ContentRepository::MIME_TYPE[ext.to_sym] || 'text'
         end
       end
       case content_type.to_s

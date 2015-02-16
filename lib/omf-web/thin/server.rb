@@ -124,7 +124,7 @@ module OMF::Web
         end
       end
       (cfg[:data_sources] || []).each do |ds|
-        DataSourceFactory.instance.create(ds)
+        DataSourceFactory.instance.create(ds, true, true, false)
         #load_datasource(ds)
       end
       (cfg[:repositories] || []).each do |repo|
