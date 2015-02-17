@@ -18,6 +18,7 @@ function omf_web_data_source(opts) {
     index_for_column: index_for_column,
     is_dynamic: is_dynamic,
     event_name: event_name,
+    generation_id: 0 // increments whenever the content changes
   };
 
   var on_schema_callbacks = [];
@@ -149,11 +150,13 @@ function omf_web_data_source(opts) {
   };
 
   function on_update(msg) {
+    var changed = false;
     if (unique_index_check) {
       // Let's first see if we simply replace a row
       _.each(msg.rows, function(r) {
         if (!unique_index_check(r)) {
           rows.push(r); // new index
+          changed = true;
         }
       });
     } else {
@@ -165,29 +168,37 @@ function omf_web_data_source(opts) {
       // }
       switch (msg.action) {
         case 'added':
-          _.each(msg.rows, function(r) { rows.push(r) });
+          if (msg.rows.length > 0) {
+            _.each(msg.rows, function (r) {
+              rows.push(r)
+            });
+            changed = true;
+          }
           break;
         case 'removed':
-          // This could most likely be made a bit faster.
-          _.each(msg.rows, function(row) {
-            var id = row[0]; // first column is ALWAYS a unique row id
-            var l = rows.length;
-            var row_no;
-            for (row_no = 0; row_no < l; row_no++) {
-              if (rows[row_no][0] == id) break;
-            }
-            if (row_no < l) {
-              rows.splice(row_no, 1);
-            } else {
-              var xxx = 0; // Removing non existing row
-            }
-          });
+          if (msg.rows.length > 0) {
+            // This could most likely be made a bit faster.
+            _.each(msg.rows, function (row) {
+              var id = row[0]; // first column is ALWAYS a unique row id
+              var l = rows.length;
+              var row_no;
+              for (row_no = 0; row_no < l; row_no++) {
+                if (rows[row_no][0] == id) break;
+              }
+              if (row_no < l) {
+                rows.splice(row_no, 1);
+              } else {
+                var xxx = 0; // Removing non existing row
+              }
+            });
+            changed = true;
+          }
           break;
         default:
           throw "Unknown message action '" + msg.action + "'.";
       }
     }
-
+    if (changed) { data_source.generation_id += 1 }
     update_indexes();
     var evt = {data_source: data_source};
     OHUB.trigger(event_name, evt);
@@ -201,6 +212,7 @@ function omf_web_data_source(opts) {
     active_slice_column_id = col_value;
     // Reset state
     rows = [];
+    data_source.generation_id += 1;
     update_indexes();
     var sm = {col_name: active_slice_col_name, col_value: col_value};
     send_server_msg('request_slice', {slice: sm});
@@ -255,6 +267,7 @@ function omf_web_data_source(opts) {
         // need to update 'rows' in place as it's referenced in other closures
         rows.splice(0, rows.length);
         _.each(data, function(r) { rows.push(r); });
+        data_source.generation_id += 1;
         update_indexes();
         var evt = {data_source: data_source};
         OHUB.trigger(event_name, evt);
