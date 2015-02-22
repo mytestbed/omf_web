@@ -1,0 +1,48 @@
+server:
+  name: 'Pollution Demo'
+  page_title: 'Pollution Demo'
+  port: 4010
+
+data_sources:
+  - id: map
+    table: sites
+    file: uspm25-map.csv
+  - id: data
+    table: sites
+    file: uspm25-data.csv
+
+
+widgets:
+widgets:
+  - id: main
+    name: Main
+    top_level: true
+    priority: 900
+    type: layout/one_column
+    widgets:
+      - id: pollution
+        name: Pollution
+        type: layout/stacked
+        info: This widget shows the pollution across the US
+        widgets:
+          - name: Pollution
+            type: data/abstract_map_l
+            type: data/map_l_grid
+            data_sources:
+              map: map
+              data: data
+            mapping:
+              # defaults
+              data:
+                value: value
+                fill_color:
+                  property: value
+                  scale: 0.018
+                  color: green_red()
+
+          - name: Table
+            type: data/table2
+            data_source:
+              name: map
+
+
