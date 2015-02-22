@@ -87,8 +87,9 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
 
       var self = this;
       OHUB.bind('layout.resize', function(e) {
-        self.resize();
-        self.update();
+        if (self.resize()) {
+          self.update();
+        }
       });
     },
 
@@ -128,6 +129,9 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
           alert(i);
         });
         var elw = bel.width();
+        if (!elw || elw == 0) {
+          return false;
+        }
         w = w * elw;
         //w = w * this.base_el[0][0].clientWidth;
         if (isNaN(w)) w = 800;
@@ -141,7 +145,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
 
       OHUB.trigger(o.id + '.resize', {width: w, height: h});
 
-      return this;
+      return true;
     },
 
     _resize: function(w, h) {
@@ -186,7 +190,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       var ds = ds_repo.lookup(ds_descr);
       var self = this;
       OHUB.bind(ds.event_name, function() {
-        self.update();;
+        self.update(ds);
       });
       return ds;
     },
