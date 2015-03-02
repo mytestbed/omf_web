@@ -72,7 +72,8 @@ module OMF::Web
     end
     
     def load_database(id, config)
-      unless db_cfg = config[:database]
+      puts ">>>DATASOURCE ID: #{id}"
+      unless db_cfg = config[:database].dup
         fail "Missing database configuration in datasource '#{config}'"
       end
       db = get_database(db_cfg)
@@ -81,8 +82,8 @@ module OMF::Web
           fail "Missing 'schema' definition in datasource configuration '#{config}'"
         end
         require 'omf_oml/schema'
-        config[:schema] = OMF::OML::OmlSchema.create(schema)
-        table = db.create_table(id, config)
+        db_cfg[:schema] = OMF::OML::OmlSchema.create(schema)
+        table = db.create_table(id, db_cfg)
       else
         unless table_name = db_cfg[:table]
           fail "Missing 'database/table' definition in datasource configuration '#{config}'"

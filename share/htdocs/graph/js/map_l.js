@@ -6,7 +6,7 @@ OML.append_require_shim("vendor/leaflet/leaflet-src", {
   deps: ["vendor/d3/d3", "css!vendor/leaflet/leaflet"]
 });
 
-define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstract, L) {
+define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/TileLayer.Grayscale"], function (abstract, L) {
 
   var ctxt = abstract.extend({
     //this.opts = opts;
@@ -14,12 +14,15 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
     decl_properties: {
       nodes: [
         ['id', 'key', {property: 'id', optional: true}],
+        ['site', 'key', {property: 'site', optional: true}],
+        ['status', 'key', {property: 'status', optional: true}], // this is used to create the pie for status distribution
         // If set, the visibility can be switched on/off depending on zoom level
         ['zoom_visibility', 'key', {property: 'zoom_visibility', optional: true}],
         ['latitude', 'key', {property: 'latitude'}],
         ['longitude', 'key', {property: 'longitude'}],
         //['radius', 'key', {property: 'radius', type: 'int', default: 10}],
         ['radius', 'int', 10],
+        ['site_radius', 'int', 20],
         ['fill_color', 'color', 'mediumpurple'],
         ['stroke_width', 'int', 1],
         ['stroke_color', 'color', 'white'],
@@ -28,6 +31,8 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
         ['id', 'key', {property: 'id', optional: true}],
         ['from', 'key', {property: 'from_id'}],
         ['to', 'key', {property: 'to_id'}],
+        ['from_site', 'key', {property: 'from_site', optional: true}],
+        ['to_site', 'key', {property: 'to_site', optional: true}],
         ['fill_color', 'color', 'red'],
         ['stroke_width', 'int', 2],
         ['stroke_color', 'color', 'gray'],
@@ -235,6 +240,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
     },
 
     _create_tile_layer: function(opts) {
+      var use_grayscale = opts.grayscale || false;
       var tp = opts.tile_provider;
       if (typeof(tp) == "string") {
         tp = this.tile_providers[tp];
@@ -250,7 +256,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
         return this._tile_layer(opts); // Better make sure that default has URL
       }
       var topts = _.omit(tp, 'url');
-      var tl = L.tileLayer(tp.url, topts);
+      var tl = use_grayscale ? L.tileLayer.grayscale(tp.url, topts) : L.tileLayer(tp.url, topts);
       return tl;
     },
 
@@ -298,25 +304,42 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
     },
 
     _draw: function(data, overlay) {
-      this._draw_nodes(data, overlay);
+      /** Check if we want to hide the site internals for this zoom level ***/
+      var hide_site_internals = false;
+      var shopts = this.opts.hide_site_internals
+      if (shopts && this.mapping.nodes.site) {
+        var zoom = this.map.getZoom();
+        var from = shopts.from || 0;
+        var to = shopts.to || 10000;
+        hide_site_internals =  from <= zoom && zoom <= to;
+      }
+
+      this._draw_nodes(data, overlay, hide_site_internals);
       if (data.links) {
-        this._draw_links(data.links, overlay);
+        this._draw_links(data.links, overlay, hide_site_internals);
       }
     },
 
-    _draw_nodes: function(data, overlay) {
+    _draw_nodes: function(data, overlay, hide_site_internals) {
       var self = this;
       var map = this.map;
       var m = this.mapping.nodes;
       var offset = this.offset;
+      var anchors_moved = false;
+
       var x_f = function (d) {
-        var lat = m.latitude(d.value);
-        var lng = m.longitude(d.value);
+        var lat = d.state.lat;
+        var lng = d.state.lon;
         var point = map.latLngToLayerPoint(new L.LatLng(lat, lng));
         var a = d.state.anchor;
         a.p = point;
-        a.x = a.px = point.x - offset.x;
-        a.y = a.py = point.y - offset.y;
+        var new_x = point.x - offset.x;
+        var new_y = point.y - offset.y;
+        if (a.x != new_x || a.y != new_y) {
+          a.x = a.px = new_x;
+          a.y = a.py = new_y;
+          anchors_moved = true;
+        }
         a.fixed = true; // fixed as far as the graph layout is concerned
         return a.x ;
       };
@@ -324,54 +347,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
         return d.state.anchor.y;
       };
 
-      var id_f = m.id || self.data_sources.nodes.row_id();
-      var state = self.nodes_state;
-      var zoom = map.getZoom();
-      var zopts = this.opts.zoom_visibility;
-      var zm = m.zoom_visibility;
-      //var nodes = m.zoom_visibility ? _.filter(data.nodes, function(d) {
-      //  var k = m.zoom_visibility(d);
-      //  var o = zopts[k];
-      //  if (o == undefined) return; // default is visible
-      //  var from = o.from || 0;
-      //  var to = o.to || 10000;
-      //  return from <= zoom && zoom <= to;
-      //}) : data.nodes;
-      var nodes = _.map(data.nodes, function(d) {
-        var key = "k" + id_f(d);
-        var s = state[key];
-        if (s == null) {
-          s = state[key] = {
-            anchor: {key: key},
-            marker: {},
-          };
-        }
-        // Check if node is visible at the current zoom level
-        s.visibility = true;
-        if (zm) {
-          var k = zm(d);
-          var o = zopts[k];
-          if (o) { // default is visible
-            var from = o.from || 0;
-            var to = o.to || 10000;
-            s.visibility =  from <= zoom && zoom <= to
-          }
-        }
-        // Check if the node has a proper location, otherwise don't display anchor
-        var lat = m.latitude(d);
-        var lon = m.latitude(d);
-        s.showAnchor = s.marker.isAnchored = (Math.abs(lat) <= 90 && Math.abs(lon) <= 180);
-        if (!s.showAnchor) {
-          var i = 0;
-        }
-        return {
-          key: key,
-          value: d,
-          state: s
-          //anchor: {key: key},
-          //marker: {}
-        };
-      });
+      var nodes = hide_site_internals ? this._prepare_sites(data) : this._prepare_nodes(data);
 
       // anchor point to tie marker off
       var aopts = this.opts.nodes.anchor;
@@ -393,14 +369,106 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       ;
       anchors.exit().remove();
 
-      this._update_markers(nodes, overlay, data);
+      this._update_markers(nodes, overlay, data, anchors_moved, hide_site_internals);
     },
 
-    _update_markers: function(nodes, overlay, data) {
+    _prepare_nodes: function(data) {
+      var self = this;
+      var map = this.map;
+      var m = this.mapping.nodes;
+      var id_f = m.id || self.data_sources.nodes.row_id();
+      var state = self.nodes_state;
+      var zoom = map.getZoom();
+      var zopts = this.opts.zoom_visibility;
+      var zm = m.zoom_visibility;
+      var nodes = _.map(data.nodes, function(d) {
+        var key = "k" + id_f(d);
+        var s = state[key];
+        if (s == null) {
+          s = state[key] = {
+            anchor: {key: key},
+            marker: {}
+          };
+        }
+        // Check if node is visible at the current zoom level
+        s.visibility = true;
+        if (zm) {
+          var k = zm(d);
+          var o = zopts[k];
+          if (o) { // default is visible
+            var from = o.from || 0;
+            var to = o.to || 10000;
+            s.visibility =  from <= zoom && zoom <= to
+          }
+        }
+        // Check if the node has a proper location, otherwise don't display anchor
+        var lat = s.lat = m.latitude(d);
+        var lon = s.lon = m.longitude(d);
+        s.showAnchor = s.marker.isAnchored = (Math.abs(lat) <= 90 && Math.abs(lon) <= 180);
+        if (!s.showAnchor) {
+          var i = 0;
+        }
+        return {
+          key: key,
+          value: d,
+          state: s,
+          isSite: false
+        };
+      });
+      return nodes;
+    },
+
+    _prepare_sites: function(data) {
+      var self = this;
+      var map = this.map;
+      var m = this.mapping.nodes;
+      var id_f = m.id || self.data_sources.nodes.row_id();
+      var state = self.nodes_state;
+
+      var sites = _.map(_.groupBy(data.nodes, function(d) { return m.site(d) }), function(ds, site_name) {
+        var key = "s" + site_name;
+        var s = state[key];
+        var fn = ds[0];
+        if (s == null) {
+          s = state[key] = {
+            anchor: {key: key},
+            marker: {},
+            visibility: true
+          };
+        }
+        // Check if the site has a proper location, otherwise don't display anchor
+        var lat = s.lat = m.latitude(fn);
+        var lon = s.lon = m.longitude(fn);
+        s.showAnchor = s.marker.isAnchored = (Math.abs(lat) <= 90 && Math.abs(lon) <= 180);
+        if (!s.showAnchor) {
+          var i = 0;
+        }
+        return {
+          key: key,
+          values: ds,
+          state: s,
+          isSite: true
+        };
+      });
+      return sites;
+    },
+
+
+    _update_markers: function(nodes, overlay, data, anchors_moved, hide_site_internals) {
+      var markers;
+      if (hide_site_internals) {
+        markers = this._update_site_markers(nodes, overlay);
+      } else {
+        markers = this._update_node_markers(nodes, overlay);
+      }
+      this._update_marker_position(nodes, markers, overlay, data, anchors_moved, hide_site_internals);
+    },
+
+    _update_node_markers: function(nodes, overlay) {
       var self = this;
       var m = this.mapping.nodes;
       var m_f = function (d, m) {
-        return (typeof m === "function") ? m(d.value) : m;
+        return m(d.value || d.values[0]);
       };
 
       var markers = overlay.select('.oml-mapl-marker').selectAll('.marker')
@@ -427,11 +495,95 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
         // })
       ;
       markers.exit().remove();
-
-      this._update_marker_position(nodes, markers, overlay, data);
+      return markers;
     },
 
-    _update_marker_position: function(node_data, markers, overlay, data) {
+    _update_site_markers: function(sites, overlay) {
+      var self = this;
+      var m = this.mapping.nodes;
+      var m_f = function (d, m) {
+        return m(d.value || d.values[0]);
+      };
+
+      var arc = d3.svg.arc()
+        .outerRadius(function(d) {
+          // TODO: FIX ME
+          return m.site_radius(d.data[0]);
+        })
+        .innerRadius(0);
+
+      var markers = overlay.select('.oml-mapl-marker').selectAll('.marker')
+          .data(sites, function (d) {
+            return d.key;
+          })
+        ;
+      markers.enter().append('svg:g')
+        .attr("class", "marker")
+        .style("cursor", 'pointer')
+      ;
+      markers.exit().remove();
+
+      var pie_f = d3.layout.pie()
+        .sort(null)
+        .value(function(d) {
+          return d.length;
+        });
+      function style_pie(sel) {
+        sel.attr("d", arc)
+          .style("fill", function(d) {
+            var first = d.data[0];
+            var c = m.fill_color(first);
+            return c;
+          })
+        ;
+      }
+      var pies = markers.selectAll('.arc')
+        .data(function(d) {
+          var g = _.groupBy(d.values, function(d) {
+            var status = m.status(d);
+            return status;
+          });
+          var arcs = pie_f(_.values(g));
+          return arcs;
+        })
+        .call(style_pie);
+
+      pies.enter().append("path")
+        .attr("class", "arc")
+        .call(style_pie);
+      //  .attr("d", arc)
+      //  .style("fill", function(d) {
+      //    var first = d.data[0];
+      //    var c = m.fill_color(first);
+      //    return c;
+      //  });
+      //;
+      pies.exit().remove();
+
+      return markers;
+    },
+
+    _style_site_marker: function(sel, m_f, m) {
+      sel
+        //.attr("cx", x_f)
+        //.attr("cx", function(d) {
+        //  var x = x_f(d);
+        //  return x;
+        //})
+        //.attr("cy", y_f)
+        //.attr("r", function(d) {return m_f(d, m.radius);})
+        .attr("r", m.radius)
+        .style("fill", function(d) {return m_f(d, m.fill_color);})
+        .style("stroke", function(d) {return m_f(d, m.stroke_color);})
+        .style("stroke-width", function(d) {
+          return m_f(d, m.stroke_width);
+        })
+      ;
+
+    },
+
+
+    _update_marker_position: function(node_data, markers, overlay, data, anchors_moved, hide_site_internals) {
       var nodes = [];
       var links = [];
       node_data.forEach(function(d) {
@@ -448,7 +600,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       // Also add links between markers if there is a link and the corresponding anchors are very close together
       // as to keep them separated.
       // Also add links where at least one of them is NOT anchored.
-      if (data.links) {
+      if (data.links && !hide_site_internals) {
         var key2node = _.reduce(node_data, function (h, n) {
           h[n.key] = n;
           return h;
@@ -494,9 +646,26 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       // Exit any old links.
       sticks.exit().remove();
 
+      if (! anchors_moved) return;
 
       // Restart the label force layout.
       var self = this;
+      function position_node(sel) {
+        sel.attr("cx", function(d) {
+          return d.state.marker.x;
+        })
+          .attr("cy", function(d) {
+            return d.state.marker.y;
+          })
+        ;
+      }
+      function position_site(sel) {
+        sel.attr("style", function(d) {
+          var m = d.state.marker;
+          return "transform: translate(" + m.x + "px, " + m.y + "px);"
+        });
+      }
+
       this.marker_force
         .nodes(nodes)
         .links(links)
@@ -520,14 +689,14 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
           var offx = offset.x;
           var offy = offset.y;
 
-          markers
-            .attr("cx", function(d) {
-              return d.state.marker.x;
-            })
-            .attr("cy", function(d) {
-              return d.state.marker.y;
-            })
-          ;
+          markers.call(hide_site_internals ? position_site : position_node);
+          //  .attr("cx", function(d) {
+          //    return d.state.marker.x;
+          //  })
+          //  .attr("cy", function(d) {
+          //    return d.state.marker.y;
+          //  })
+          //;
           sticks
             .attr("x1", function(d) {
               return d.source.x;
@@ -568,27 +737,28 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
 
     },
 
-    _draw_links: function(rows, overlay) {
+    _draw_links: function(rows, overlay, hide_site_internals) {
       var self = this;
       var m = this.mapping.links;
       var offset = this.offset;
-      var state = this.nodes_state;
-      var id_f = m.id || self.data_sources.nodes.row_id();
-      var data = _.compact(_.map(rows, function(d) {
-        var from = state["k" + m.from(d)];
-        var to = state["k" + m.to(d)];
-        if (from == null || to == null) {
-          throw "Unknown node references"
-        }
-        if (! (from.visibility && to.visibility)) return;
-        var key = id_f(d);
-        return {
-          key: key,
-          from: from.marker,
-          to: to.marker,
-          data: d
-        };
-      }));
+      var data = hide_site_internals ? this._prepare_site_links(rows) : this._prepare_node_links(rows);
+      //var state = this.nodes_state;
+      //var id_f = m.id || self.data_sources.nodes.row_id();
+      //var data = _.compact(_.map(rows, function(d) {
+      //  var from = state["k" + m.from(d)];
+      //  var to = state["k" + m.to(d)];
+      //  if (from == null || to == null) {
+      //    throw "Unknown node references"
+      //  }
+      //  if (! (from.visibility && to.visibility)) return;
+      //  var key = id_f(d);
+      //  return {
+      //    key: key,
+      //    from: from.marker,
+      //    to: to.marker,
+      //    data: d
+      //  };
+      //}));
       var offx = offset.x;
       var offy = offset.y
       function x1_f(d) {
@@ -622,6 +792,60 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src"], function (abstra
       // Exit any old links.
       this.links.exit().remove();
     },
+
+    _prepare_node_links: function(rows) {
+      var self = this;
+      var m = this.mapping.links;
+      var state = this.nodes_state;
+      var id_f = m.id || self.data_sources.nodes.row_id();
+      var links = _.compact(_.map(rows, function(d) {
+        var from = state["k" + m.from(d)];
+        var to = state["k" + m.to(d)];
+        if (from == null || to == null) {
+          throw "Unknown node references"
+        }
+        if (! (from.visibility && to.visibility)) return;
+        var key = id_f(d);
+        return {
+          key: key,
+          from: from.marker,
+          to: to.marker,
+          data: d
+        };
+      }));
+      return links;
+    },
+
+    _prepare_site_links: function(rows) {
+      var self = this;
+      var m = this.mapping.links;
+      var state = this.nodes_state;
+      var id_f = m.id || self.data_sources.nodes.row_id();
+      var links = _.compact(_.map(_.groupBy(rows, function(d) {
+        return [m.from_site(d), m.to_site(d)];
+      }), function(ls, key) {
+        var first = ls[0];
+        var from_site = m.from_site(first);
+        var to_site = m.to_site(first);
+        if (from_site == to_site) return null;
+
+        var from = state["s" + from_site];
+        var to = state["s" + to_site];
+        if (from == null || to == null) {
+          throw "Unknown node references"
+        }
+        if (! (from.visibility && to.visibility)) return;
+        return {
+          key: key,
+          from: from.marker,
+          to: to.marker,
+          data: first  /* TODO: This ignores any other link between two sites */
+        };
+      }));
+      return links;
+    },
+
+
 
     _style_links: function(sel, x1_f, y1_f, x2_f, y2_f, m) {
       sel

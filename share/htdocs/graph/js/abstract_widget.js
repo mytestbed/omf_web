@@ -303,7 +303,7 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
                return cf_i(x);
              };
            }
-           return value;
+           return function() { return value };
          }
        }
        //if (descr.stream != undefined) {

@@ -12,3 +12,4 @@ def override_with_local(local_dir, opts = {})
 end
 
 gem 'omf_oml', override_with_local('../omf_oml')
+gem 'pg'

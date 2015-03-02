@@ -61,7 +61,7 @@ module OMF::Web
     end
 
     def self.validate_ds_description(ds_descr, check_for_inline = true)
-      debug "Validate datasource - #{ds_descr}"
+      debug "Validate datasource - #{ds_descr} - check_for_inline: #{check_for_inline}"
       unless ds_descr.is_a? Hash
         raise "Expected Hash, but got '#{ds_descr.class}::#{ds_descr.inspect}'"
       end
