@@ -1,0 +1,106 @@
+
+
+
+# Wimax
+#
+
+server:
+  name: 'wimax'
+  page_title: 'Map Example'
+  port: 3000
+
+
+repositories:
+  - id: wimax
+    type: file
+    top_dir: repository
+
+
+tabs:
+  - id: home
+    name: Home
+    #top_level: true
+    priority: 920
+    type: layout/two_columns/66_33
+    left:
+      - name: Map
+        type: layout/stacked
+        info: This map shows the location of the currently deployed WiMAX base stations
+        widgets:
+          - type: data/map_l
+            data_sources:
+              nodes:
+                schema: [['id', 'int'], ['name'], ['site_id', 'int'], ['site_name'], ['status'], ['lat', 'float'], ['lon', 'float']]
+                database:
+                  query: SELECT n.id, n.name, s.id as site_id, s.name as site_name, n.status, s.lat, s.lon FROM nodes as n, sites as s WHERE n.site_id = s.id
+                  peg_offset: true # resend entire node status every few seconds
+                  mode: update
+                  check_interval: 4
+                  url: postgres://...
+
+              links:
+                schema: [['id', 'int'], ['from_id', 'int'], ['from_if_name'], ['to_id', 'int'], ['to_if_name'], ['status'], ['from_site_id', 'int'], ['to_site_id', 'int']]
+                database:
+                  query: SELECT l.*, fn.site_id as from_site_id, tn.site_id as to_site_id FROM links as l, nodes as fn, nodes as tn WHERE l.from_id = fn.id AND l.to_id = tn.id
+                  peg_offset: true # resend entire node status every few seconds
+                  mode: update
+                  check_interval: 4
+                  url: postgres://...
+
+            width: 1.0
+            hide_site_internals: {to: 6} # visible from and including 6
+            map:
+              center: [-98.0, 35.0]
+              zoom: 4
+              grayscale: true
+              tile_provider: esri_world_topo
+            mapping:
+              nodes:
+                id: id
+                #zoom_visibility: zoom_viz
+                site: site_id # identify site
+                status: status
+                latitude:
+                  property: lat
+                longitude:
+                  property: lon
+                radius: 10
+                fill_color:
+                  property: status
+                  color:
+                    unknown: gray
+                    down: lightblue
+                    up: green
+                    error: red
+#                  ranges:
+#                    - [0.5, 'green']
+#                    - [0.8, 'orange']
+#                    - [10, 'red']
+              links:
+                from: from_id
+                to: to_id
+                from_site: from_site_id # identify site
+                to_site: to_site_id
+                stroke_color:
+                  property: status
+                  color:
+                    unknown: gray
+                    down: orange
+                    up: green
+                    error: red
+                stroke_width: 4
+            zoom_visibility:
+              primary: {} # Always
+              secondary: {from: 6} # visible from and including 6
+
+    right:
+      - name: Link
+        type: layout/one_column
+        info: This column shows details about a selected link
+
+
+include:
+
+#  - widgets/stats_tab.yaml
+
+
