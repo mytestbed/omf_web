@@ -299,11 +299,13 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
            if (type == 'color' && /\(\)$/.test(value)) { // check if value ends with () indicating color function
              var cf = this.decl_color_func[value];
              var cf_i = cf();
-             value = function(x) {
+             return function(x) {
                return cf_i(x);
              };
            }
-           return function() { return value };
+           return function() {
+             return value;
+           };
          }
        }
        //if (descr.stream != undefined) {
