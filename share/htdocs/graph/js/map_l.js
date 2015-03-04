@@ -150,9 +150,16 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
       this.map = this._create_map(opts);
 
       var m = this.opts.margin;
-      var svg = this.svg = d3.select(this.map.getPanes().overlayPane).append("svg")
-        .attr("height", this.h - m.top - m.bottom)
-        .attr("width", this.w - m.left - m.right)
+      var mh = this.h - m.top - m.bottom;
+      var mw = this.w - m.left - m.right;
+      var svg_wrapper = this.svg_wrapper_div = d3.select(this.map.getPanes().overlayPane).append("div")
+        .style('height', mh + 'px')
+        .style('width', mw + 'px');
+      ;
+      //var svg = this.svg = d3.select(this.map.getPanes().overlayPane).append("svg")
+      var svg = this.svg = svg_wrapper.append("svg")
+        .attr("height", mh)
+        .attr("width", mw)
         ;
       this.data_layer = svg.append("g").attr("class", "leaflet-zoom-hide");
       this.stick_layer = this.data_layer.append("g").attr("class", "oml-mapl-stick");
@@ -269,9 +276,20 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
           .style('width', this.w + 'px');
       }
       if (this.svg) {
+        var mh = this.h - m.top - m.bottom;
+        var mw = this.w - m.left - m.right;
+        this.svg_wrapper_div
+          .style('height', mh + 'px')
+          .style('width', mw + 'px');
+        ;
         this.svg
-          .attr("height", this.h)
-          .attr("width", this.w);
+          .attr("height", mh)
+          .attr("width", mw)
+        ;
+
+        //this.svg
+        //  .attr("height", this.h)
+        //  .attr("width", this.w);
       }
       if (this.map) {
         this.map.invalidateSize();
