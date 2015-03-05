@@ -40,13 +40,19 @@ module OMF::Web
       Dir.chdir(@top_dir)
       Dir.glob("**/*#{search_pattern}*").map do |path|
         next if File.directory?(path)
-        mt = mime_type_for_file(path)
-        {
-          name: path,
-          url: get_url_for_path(path),
-          mime_type: mt,
-          size: File.size(path)
-        }
+        next unless File.readable?(path)
+        begin
+          mt = mime_type_for_file(path)
+          {
+            name: path,
+            url: get_url_for_path(path),
+            mime_type: mt,
+            size: File.size(path)
+          }
+        rescue
+          debug "Can't seem to look at '#{path}'"
+          nil
+        end
       end.compact
     end
 

@@ -157,13 +157,14 @@ module OMF::Web
 
       repo = nil
       #puts "REPO SELECTOR: >>>>>>>>> #{opts[:repo_iterator]}"
-      if opts[:repo_iterator]
-        repo = opts[:repo_iterator].find {|r| r.name == name}
+      if repo_it = opts[:repo_iterator] || Thread.current[:repo_iterator]
+        repo = repo_it.find {|r| r.name == name}
       else
         repo = @@repositories[name.to_sym]
       end
       unless repo
-        raise "Unknown repo '#{name}'"
+        rn = repo_it ? repo_it.map {|r| r.name} : @@repositories.keys
+        raise "Unknown repo '#{name}' - know of #{rn.inspect} - #{Thread.current[:repo_iterator]}"
       end
       return repo
     end
