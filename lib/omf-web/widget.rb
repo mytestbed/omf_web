@@ -79,24 +79,29 @@ module OMF::Web::Widget
       if w = @@widgets[wdescr[:id]]
         return w
       end
-      case type = (wdescr[:type] || wdescr['type']).to_s
-      when /^data/
-        require 'omf-web/widget/data_widget'
-        w = OMF::Web::Widget::DataWidget.new(wdescr)
-      when /^layout/
-        require 'omf-web/widget/layout'
-        w =  OMF::Web::Widget::Layout.create_layout_widget(type, wdescr)
-      when /^text/
-        require 'omf-web/widget/text/text_widget'
-        w =  OMF::Web::Widget::TextWidget.create_text_widget(type, wdescr)
-      when /^code/
-        require 'omf-web/widget/code_widget'
-        w =  OMF::Web::Widget::CodeWidget.create_code_widget(type, wdescr)
-      when /^moustache/
-        require 'omf-web/widget/mustache_widget'
-        w =  OMF::Web::Widget::MustacheWidget.create_mustache_widget(type, wdescr)
+      type = wdescr[:type] || wdescr['type']
+      if wc = @@type2class[type.to_sym]
+        w = wc.create(wdescr)
       else
-        raise "Unknown widget type '#{type}' (#{wdescr.inspect})"
+        case type = type.to_s
+        when /^data/
+          require 'omf-web/widget/data_widget'
+          w = OMF::Web::Widget::DataWidget.new(wdescr)
+        when /^layout/
+          require 'omf-web/widget/layout'
+          w =  OMF::Web::Widget::Layout.create_layout_widget(type, wdescr)
+        when /^text/
+          require 'omf-web/widget/text/text_widget'
+          w =  OMF::Web::Widget::TextWidget.create_text_widget(type, wdescr)
+        when /^code/
+          require 'omf-web/widget/code_widget'
+          w =  OMF::Web::Widget::CodeWidget.create_code_widget(type, wdescr)
+        when /^moustache/
+          require 'omf-web/widget/mustache_widget'
+          w =  OMF::Web::Widget::MustacheWidget.create_mustache_widget(type, wdescr)
+        else
+          raise "Unknown widget type '#{type}' (#{wdescr.inspect})"
+        end
       end
       @@widgets[wdescr[:id]] = w
     end
