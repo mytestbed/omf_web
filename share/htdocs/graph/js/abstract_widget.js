@@ -171,9 +171,14 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
     //
     init_data_source: function() {
       var o = this.opts;
-      var sources = o.data_sources;
       var self = this;
 
+      if (o.data_source) {
+        this.data_source = this.init_single_data_source(o.data_source);
+        return;
+      }
+
+      var sources = o.data_sources;
       if (! (sources instanceof Array)) {
         throw "Expected an array";
       }
