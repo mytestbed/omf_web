@@ -126,10 +126,12 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
         // this.chart.height(self.height);
         this.chart.width(self.w);
         this.chart.height(self.h);
+        this.update();
       }
     },
 
     redraw: function(data) {
+      if (! data || !this.base_layer) return;
       var bl = this.base_layer//.select(".chart_layer")
                   .datum(this._datum(data, this.chart))
                   ;
