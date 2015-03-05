@@ -187,20 +187,31 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
       var o = this.opts;
       var sources = o.data_sources;
       var self = this;
-
-      if (! (sources instanceof Array)) {
-        throw "Expected an array";
-      }
       var dss = this.data_sources = {};
-      sources.forEach(function(ds) {
-        if (ds.label == null) ds.label = 'nodes';
-        var label = ds.label;
-        if (label == 'nodes' || label == 'links') {
-          dss[label] = self.init_single_data_source(ds);
-        } else {
-          OML.error("received unknown data source: %s", ds);
-        }
-      });
+
+      if (sources instanceof Array) {
+        sources.forEach(function (ds) {
+          if (ds.label == null) ds.label = 'nodes';
+          var label = ds.label;
+          if (label == 'nodes' || label == 'links') {
+            dss[label] = self.init_single_data_source(ds);
+          } else {
+            OML.error("received unknown data source: %s", ds);
+          }
+        });
+      } else if (sources instanceof Object) {
+        _.each(_.pairs(sources), function(p) {
+          var label = p[0];
+          var ds = p[1];
+          if (label == 'nodes' || label == 'links') {
+            dss[label] = self.init_single_data_source(ds);
+          } else {
+            OML.error("received unknown data source: %s", label);
+          }
+        })
+      } else {
+        throw "Unexpected datasource description type: " + sources;
+      }
     },
 
     _create_map: function(opts) {
