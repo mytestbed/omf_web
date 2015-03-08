@@ -188,6 +188,18 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
       this.data_source = this.init_single_data_source(sources[0]);
     },
 
+    // Tell data source that there is a customer for it
+    ping: function(marker) {
+      if (this.data_source) {
+        this.data_source.ping(marker);
+      }
+      if (this.data_sources) {
+        _.each(this.data_sources, function(ds) {
+          ds.ping(marker);
+        })
+      }
+    },
+
 
     // Find the appropriate data source and bind to it
     //

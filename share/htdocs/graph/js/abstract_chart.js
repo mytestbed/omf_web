@@ -43,7 +43,7 @@ define(["graph/abstract_widget"], function (abstract_widget) {
     defaults: function() {
       return this.deep_defaults({
         margin: {
-          left: 100,
+          left: 80, //100,
           top:  40,
           right: 50,
           bottom: 40

@@ -29,10 +29,16 @@ define(["graph/abstract_nv_chart",
       var y_index = m.y_axis;
       chart.x(function(d) {
         var v = x_index(d);
+        if (!_.isFinite(v)) {
+          return 0;
+        }
         return v;
       });
       chart.y(function(d) {
         var v = y_index(d);
+        if (!_.isFinite(v)) {
+          return 0;
+        }
         return v;
       });
     },

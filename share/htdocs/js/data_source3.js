@@ -3,11 +3,14 @@
 function omf_web_data_source(opts) {
 
   var name = opts.id || opts.name;
+  var is_closed = false;
   var event_name = "data_source." + name + ".changed";
   var rows = opts.rows || [];
   //var offset = opts.offset || -1; // Number of (initial) rows skipped (count towards 'max_rows')
   var offset = opts.offset || 0; // Number of (initial) rows skipped (count towards 'max_rows')
   var schema = opts.schema;
+  var ping_marker;
+  var ohub_bindings = {};
 
   var data_source = {
     version: "0.1",
@@ -18,7 +21,12 @@ function omf_web_data_source(opts) {
     index_for_column: index_for_column,
     is_dynamic: is_dynamic,
     event_name: event_name,
-    generation_id: 0 // increments whenever the content changes
+    generation_id: 0, // increments whenever the content changes
+    ping: function(_) {
+      if (!arguments.length) return ping_marker;
+      ping_marker = _;
+      return data_source;
+    }
   };
 
   var on_schema_callbacks = [];
@@ -114,6 +122,24 @@ function omf_web_data_source(opts) {
     };
   }
 
+  data_source.close = function() {
+    if (is_closed) return; // already closed
+    is_closed = true;
+    if (ws) {
+      ws.close();
+    }
+    rows = [];
+    indexes = {};
+    //schema = null;
+    var evt = {status: "closed", data_source: data_source};
+    _.each(ohub_bindings, function(handler, evt_name) {
+      OHUB.off(evt_name, handler);
+    });
+    ohub_bindings = null;
+    OHUB.trigger(event_name, evt);
+    OHUB.trigger("data_source.closed", evt);
+  }
+
   // Send a message to the server
   //
   // @params type - Type of message
@@ -135,6 +161,8 @@ function omf_web_data_source(opts) {
   };
 
   function on_message(evt) {
+    if (is_closed) return;
+
     // evt.data contains received string.
     var msg = jQuery.parseJSON(evt.data);
     switch(msg.type) {
@@ -200,7 +228,7 @@ function omf_web_data_source(opts) {
     }
     if (changed) { data_source.generation_id += 1 }
     update_indexes();
-    var evt = {data_source: data_source};
+    var evt = {status: changed, data_source: data_source};
     OHUB.trigger(event_name, evt);
     OHUB.trigger("data_source.changed", evt);
   }
@@ -220,38 +248,38 @@ function omf_web_data_source(opts) {
   var active_slice_col_name = null;
   var active_slice_value = null;
 
-  function start_polling_backend() {
-    var first_time = this.update_interval < 0;
-
-    if (this.update_interval < 0 || this.update_interval > interval) {
-      this.update_interval = interval;
-    }
-
-    if (first_time) {
-      var self = this;
-      require(['vendor/jquery/jquery.periodicalupdater.js'], function() {
-        var update_interval = self.update_interval * 1000;
-        if (update_interval < 1000) update_interval = 3000;
-        var opts = {
-              method: 'get',          // method; get or post
-              data: '',                   // array of values to be passed to the page - e.g. {name: "John", greeting: "hello"}
-              minTimeout: update_interval,       // starting value for the timeout in milliseconds
-              maxTimeout: 4 * update_interval,       // maximum length of time between requests
-              multiplier: 2,          // if set to 2, timerInterval will double each time the response hasn't changed (up to maxTimeout)
-              type: 'json',           // response type - text, xml, json, etc.  See $.ajax config options
-              maxCalls: 0,            // maximum number of calls. 0 = no limit.
-              autoStop: 0             // automatically stop requests after this many returns of the same data. 0 = disabled.
-        };
-        $.PeriodicalUpdater(self.update_url, opts, function(reply) {
-          self.events = reply.events;
-          self.update_indexes();
-          reply.data_source = self;
-          OHUB.trigger(self.event_name, reply);
-        });
-      });
-    }
-    return true;
-  }
+  //function start_polling_backend() {
+  //  var first_time = this.update_interval < 0;
+  //
+  //  if (this.update_interval < 0 || this.update_interval > interval) {
+  //    this.update_interval = interval;
+  //  }
+  //
+  //  if (first_time) {
+  //    var self = this;
+  //    require(['vendor/jquery/jquery.periodicalupdater.js'], function() {
+  //      var update_interval = self.update_interval * 1000;
+  //      if (update_interval < 1000) update_interval = 3000;
+  //      var opts = {
+  //            method: 'get',          // method; get or post
+  //            data: '',                   // array of values to be passed to the page - e.g. {name: "John", greeting: "hello"}
+  //            minTimeout: update_interval,       // starting value for the timeout in milliseconds
+  //            maxTimeout: 4 * update_interval,       // maximum length of time between requests
+  //            multiplier: 2,          // if set to 2, timerInterval will double each time the response hasn't changed (up to maxTimeout)
+  //            type: 'json',           // response type - text, xml, json, etc.  See $.ajax config options
+  //            maxCalls: 0,            // maximum number of calls. 0 = no limit.
+  //            autoStop: 0             // automatically stop requests after this many returns of the same data. 0 = disabled.
+  //      };
+  //      $.PeriodicalUpdater(self.update_url, opts, function(reply) {
+  //        self.events = reply.events;
+  //        self.update_indexes();
+  //        reply.data_source = self;
+  //        OHUB.trigger(self.event_name, reply);
+  //      });
+  //    });
+  //  }
+  //  return true;
+  //}
 
   function fetch_data(data_url) {
     require(['jquery'], function() {
@@ -269,7 +297,7 @@ function omf_web_data_source(opts) {
         _.each(data, function(r) { rows.push(r); });
         data_source.generation_id += 1;
         update_indexes();
-        var evt = {data_source: data_source};
+        var evt = {status: "changed", data_source: data_source};
         OHUB.trigger(event_name, evt);
         OHUB.trigger("data_source.changed", evt);
       }).error(function(ajax, textStatus, errorThrown) {
@@ -325,7 +353,8 @@ function omf_web_data_source(opts) {
       var evt_name = so.event.name;
       if (! evt_name)
         throw "Missing event name in slice definition for data source '" + name + "'.";
-      OHUB.bind(evt_name, function(msg) {
+
+      var handler = function(msg) {
         var schema = msg.schema || msg.data_source.schema;
 
         var key = so.event.key;
@@ -337,7 +366,9 @@ function omf_web_data_source(opts) {
             set_slice_column(col_id);
           }
         }
-      });
+      }
+      OHUB.bind(evt_name, handler);
+      ohub_bindings[evt_name] = handler; // keep track for cleaning up
     }
   }
 

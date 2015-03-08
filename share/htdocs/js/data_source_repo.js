@@ -42,6 +42,20 @@ define(['omf/data_source3'], function(data_source) {
       return source;
     };
 
+    context.deregister = function(ds_name) {
+      var ds = sources[ds_name];
+      if (! ds) return; // silently ignore request for unknown repos
+
+      ds.close();
+      delete sources[ds_name];
+    }
+
+    context.each = function(f) {
+      _.each(sources, function(ds, name) {
+        f(ds, name);
+      })
+    }
+
     return context;
   }
   return data_source_repo(); // Create the singleton

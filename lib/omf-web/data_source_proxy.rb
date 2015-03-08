@@ -32,7 +32,8 @@ module OMF::Web
     #
     def self.register_datasource(data_source, opts = {})
       name = (opts[:name] || data_source.name).to_sym
-      if (@@datasources.key? name)
+      if (prior = @@datasources[name])
+        return data_source if prior == data_source
         raise "Repeated try to register data source '#{name}'"
       end
       if data_source.is_a? OMF::OML::OmlNetwork
@@ -68,6 +69,7 @@ module OMF::Web
       return true if ds_descr[:data_url] # We can fetch the data in the browser if necessary
       unless ds_name = ds_descr[:id] || ds_descr[:stream] || ds_descr[:name]
         # check if we have an inline description
+        ds_descr[:id] ||= '???'
         if check_for_inline && DataSourceFactory.instance.create(ds_descr, false, false)
           # 'ds_descr' should now be amended with an 'id'
           return validate_ds_description(ds_descr, false)

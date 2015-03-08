@@ -72,7 +72,7 @@ module OMF::Web
     end
     
     def load_database(id, config)
-      puts ">>>DATASOURCE ID: #{id}"
+      #puts ">>>DATASOURCE ID: #{id}"
       unless db_cfg = config[:database].dup
         fail "Missing database configuration in datasource '#{config}'"
       end
@@ -93,7 +93,9 @@ module OMF::Web
           fail "Can't find table '#{table_name}' in database '#{db_cfg}'"
         end
       end
-      OMF::Web.register_datasource table, name: id
+      OMF::Web.register_datasource table #, name: id
+      #puts ">>>> NEW TABLE #{table}"
+      config[:id] = table.name
       table
     end
 
@@ -105,7 +107,6 @@ module OMF::Web
           return db
         end
         fail "Database '#{config}' not defined - (#{@databases.keys})"
-        
       end
       if id = config.delete(:id)
         if db = @databases[id.to_s] # already known
@@ -128,14 +129,13 @@ module OMF::Web
       #config[:check_interval] ||= 3.0
       #puts "URL: #{url} - #{config}"
       begin
-        db = OMF::OML::OmlSqlSource.new(url, config)
+        db = OMF::OML::OmlSqlSource.create(url, config)
         @databases[id] = db if id
         return db
       rescue Exception => ex
         # TODO: Should catch load errors regarding database adapters
         # LoadError: cannot load such file -- pg
         fail "Can't connect to database '#{id}' - #{ex}"
-        
       end
     end
 

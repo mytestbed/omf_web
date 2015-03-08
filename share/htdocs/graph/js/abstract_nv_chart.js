@@ -132,6 +132,12 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
 
     redraw: function(data) {
       if (! data || !this.base_layer) return;
+      var m = this.opts.margin;
+      var aw = this.w - m.left - m.right;
+      var ah = this.h - m.top - m.bottom;
+      if (aw < 10 || ah < 10) {
+        return;
+      }
       var bl = this.base_layer//.select(".chart_layer")
                   .datum(this._datum(data, this.chart))
                   ;
