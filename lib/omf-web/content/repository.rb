@@ -216,6 +216,9 @@ module OMF::Web
       @name = name
       @url_prefix = "#{@name}:"
       @read_only = (opts[:read_only] == true)
+      # Do not expose in search result
+      @hidden = (opts[:hidden] == true)
+      @no_access = (opts[:no_access] == true)
 
       if @top_dir = opts[:top_dir]
         if @top_dir.start_with?('.') && ContentRepository.reference_dir
@@ -267,6 +270,14 @@ module OMF::Web
     #
     def read_only?
       @read_only
+    end
+
+    def hidden?
+      @hidden
+    end
+
+    def no_access?
+      @no_access
     end
 
     def exist?(content_descr)
