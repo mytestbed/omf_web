@@ -16,6 +16,8 @@ require 'omf-web/theme/abstract_page'
 require 'rexml/document'
 require 'yaml'
 
+require 'rack/utils'
+
 MaRuKu::Globals[:html_math_engine] = 'ritex'
 
 module OMF::Web::Widget::Text
@@ -118,6 +120,54 @@ module OMF::Web::Widget::Text
       end
     end
 
+    class WidgetDescriptionErrorElement < OMF::Base::LObject
+
+
+      def initialize(lines, ex)
+        debug  "Embedding widget error - #{ex} "
+        if (m = ex.to_s.match /line ([0-9]+).*column ([0-9]+)/)
+          @line = m[1].to_i
+          @column = m[1].to_i
+        end
+        @lines = lines
+        @ex = ex
+      end
+
+      def to_html
+        gutter = @lines.size.times.map do |i|
+          if @line == i + 1
+            "<pre class='widget-description-error-line'>#{i + 1}</pre>"
+          else
+            "<pre>#{i + 1}</pre>"
+          end
+
+        end
+        code = @lines.map.with_index do |l, i|
+          l = " " if l.empty?
+          l = Rack::Utils.escape_html(l)
+          if @line == i + 1
+            "<pre class='widget-description-error-line'>#{l}</pre>"
+          else
+            "<pre>#{l}</pre>"
+          end
+        end
+        reason = Rack::Utils.escape_html(@ex.to_s)
+        content = ["<div class='widget-description-error'>",
+                   "<div class='widget-description-error-reason'>#{reason}</div>",
+                   "<div class='widget-description-error-content'>",
+                   "<div class='widget-description-error-gutter'>", gutter, "</div>",
+                   "<div class='widget-description-error-code'>", code, "</div>",
+                   "</div></div>"]
+        puts ">>> #{content}"
+        root = ::REXML::Document.new(content.join("\n")).root
+        root
+      end
+
+      def node_type
+        :widget_error
+      end
+    end
+
     OpenMatch = /^\s*\{\{\{\s*(.*)$/
     CloseMatch = /(.*)\}\}\}/
 
@@ -134,12 +184,14 @@ module OMF::Web::Widget::Text
           line = src.shift_line
         end
         lines << $1
+        puts ">>>>>>WIDGET PARSING"
         begin
           ytxt = lines.join("\n")
           descr = YAML::load(ytxt)
         rescue Exception => ex
-          warn "#{ex} - #{ytxt}"
-          next
+          context << WidgetDescriptionErrorElement.new(lines, ex)
+          #warn "While parsing embedded widget instructions #{ex.inspect} - #{ytxt[0 .. 60]}"
+          next true
         end
         descr = OMF::Web::deep_symbolize_keys(descr)
         if (wdescr = descr[:widget])
