@@ -140,8 +140,16 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
       }
 
       var fdata = this.filter_data(data);
+      var pdata = this._datum(fdata, this.chart);
+      if (pdata.length == 0) {
+        var l = this.base_layer.select('.nv-wrap'); //.remove()
+        l.remove();
+        this.base_el.classed("omf_data_widget_no_data", true);
+      } else {
+        this.base_el.classed("omf_data_widget_no_data", false);
+      }
       var bl = this.base_layer//.select(".chart_layer")
-                  .datum(this._datum(fdata, this.chart))
+                  .datum(pdata)
                   ;
       if (this.opts.transition_duration > 0) {
         bl = bl.transition().duration(500);

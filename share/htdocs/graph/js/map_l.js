@@ -1010,6 +1010,11 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
       var msg = {id: selected_id, type: type, source: this, data_source: ds, datum: datum};
       OHUB.trigger("graph.selected", msg);
       OHUB.trigger("graph." + ds.name + ".selected", msg);
+      var tname = this.opts.name;
+      if (tname) {
+        OHUB.trigger("graph." + tname + ".selected", msg);
+        OHUB.trigger("graph." + tname + "." + type + ".selected", msg);
+      }
     },
 
     _report_deselected: function(selected_id, type, datum) {
@@ -1017,6 +1022,11 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
       var msg = {id: selected_id, type: type, source: this, data_source: ds, datum: datum};
       OHUB.trigger("graph.deselected", msg);
       OHUB.trigger("graph." + ds.name + ".deselected", msg);
+      var tname = this.opts.name;
+      if (tname) {
+        OHUB.trigger("graph." + tname + ".deselected", msg);
+        OHUB.trigger("graph." + tname + "." + type + ".deselected", msg);
+      }
     }
   });
 

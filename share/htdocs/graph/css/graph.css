@@ -10,7 +10,9 @@ div.graph-type-selector .icon {
   display: block;
 }
 
-
+div.omf_data_widget_no_data {
+    background: lightgrey;
+}
 /*
 div.oml-line-chart {
   margin: 20px;

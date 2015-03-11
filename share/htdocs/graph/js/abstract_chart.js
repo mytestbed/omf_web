@@ -181,6 +181,7 @@ define(["graph/abstract_widget"], function (abstract_widget) {
     },
 
     init_filter: function() {
+      var self = this;
       var fdecl = this.opts.filter;
       if (!fdecl) return;
 
@@ -194,26 +195,42 @@ define(["graph/abstract_widget"], function (abstract_widget) {
         this.error("Unknown filter property '" + fp + "'.");
         return;
       }
+      var col_id = col.index;
       var v = fdecl.value;
       if (!v) {
         this.error("No 'value' field in 'filter' declaration");
         return;
       }
       var target, min, max;
+      var filterAll = false; // Used for event, in case it is canceled
       if (_.isObject(v)) {
         min = v.min;
         max = v.max;
-        if (v.event_id) {
-          OHUB.bind(event_id, function(evt) {
+        if (v.event) {
+          var eName = v.event.name;
+          filterAll = true;
+          OHUB.bind(eName + ".selected", function(evt) {
             // TODO: Not sure what to do here
-            update();
+            var ds = evt.data_source;
+            var d = evt.datum;
+            var cs = _.find(ds.schema, function(s) {
+              return s.name == v.event.property
+            });
+            target = d[cs.index];
+            filterAll = false;
+            self.update();
+          });
+          OHUB.bind(eName + ".deselected", function(evt) {
+            filterAll = true;
+            self.update();
           });
         }
       } else {
         target = v;
       }
-      var col_id = col.index;
       this.filter = function(d) {
+        if (filterAll) return false;
+
         var v = d[col_id];
         if (target) {
           return v == target;
