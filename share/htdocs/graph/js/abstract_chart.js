@@ -71,6 +71,8 @@ define(["graph/abstract_widget"], function (abstract_widget) {
         self.on_dehighlighted(evt);
       });
 
+      this.init_filter();
+
       //this.update(null);
       this.init_chart();
       this.update();
@@ -161,6 +163,65 @@ define(["graph/abstract_widget"], function (abstract_widget) {
         return index_f(a[0])
       });
       return data;
+    },
+
+    // Return a data array which may be filtered by some criteria
+    //
+    // Examples:
+    //    filter: {
+    //      property: site_id,
+    //      value: 5
+    //      value: {min: 0, max: 10}
+    //      value: event_id: foo.graph.update
+    //
+    filter_data: function(data) {
+      var f = this.filter;
+      if (!f) return data;
+      return _.filter(data, f);
+    },
+
+    init_filter: function() {
+      var fdecl = this.opts.filter;
+      if (!fdecl) return;
+
+      var fp = fdecl.property;
+      if (!fp) {
+        this.error("No 'property' field in 'filter' declaration");
+        return;
+      }
+      var col = this.schema[fp];
+      if (!col) {
+        this.error("Unknown filter property '" + fp + "'.");
+        return;
+      }
+      var v = fdecl.value;
+      if (!v) {
+        this.error("No 'value' field in 'filter' declaration");
+        return;
+      }
+      var target, min, max;
+      if (_.isObject(v)) {
+        min = v.min;
+        max = v.max;
+        if (v.event_id) {
+          OHUB.bind(event_id, function(evt) {
+            // TODO: Not sure what to do here
+            update();
+          });
+        }
+      } else {
+        target = v;
+      }
+      var col_id = col.index;
+      this.filter = function(d) {
+        var v = d[col_id];
+        if (target) {
+          return v == target;
+        }
+        if (min != null && v < min) return false;
+        if (max != null && v > max) return false;
+        return true;
+      }
     },
 
     init_selection: function(handler) {

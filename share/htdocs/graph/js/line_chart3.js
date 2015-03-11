@@ -52,15 +52,56 @@ define(["graph/abstract_nv_chart",
         // .showValues(opts.show_values)
         // .margin(opts.margin)
         // ;
-
       this.opts.transition_duration = 0; // force no smooth transition
       this._configure_xy_axis(opts, chart);
+
+      if (opts.pre_process) {
+        switch(opts.pre_process) {
+          case "relative_y":
+            this.pre_process = function(data) {
+              if (data.length <= 1) return data;
+
+              var m = this.opts.mapping;
+              var sx = this.schema[m.x_axis.property];
+              var sy = this.schema[m.y_axis.property];
+              if (sx == undefined || sy == undefined) {
+                error("Can't resolve x_axis or y_axis mapping");
+                return data;
+              }
+              var ix = sx.index;
+              var iy = sy.index;
+
+              var first = data.shift();
+              var x0 = first[ix];
+              var y0 = first[iy];
+              _.each(data, function(d) {
+                var x1 = d[ix];
+                var y1 = d[iy];
+                var dx = x1 - x0;
+                if (dx != 0) {
+                  var dy = y1 - y0;
+                  d[iy] = dy / dx;
+                } else {
+                  // TODO: What's a better strategy?
+                  var i = 0;
+                }
+                x0 = x1;
+                y0 = y1;
+              });
+              return data;
+            }
+            break;
+          default:
+            error("Unknown pre_process method '" + opts.pre_process + "'.");
+        }
+      }
     },
 
     _datum: function(data, chart) {
       var self = this;
       var m = this.mapping;
       var o = this.opts;
+
 
       var group_by = m.group_by;
       var data;
@@ -69,6 +110,12 @@ define(["graph/abstract_nv_chart",
       } else {
         data = [data];
       };
+      if (this.pre_process) {
+        data = _.map(data, function(group) {
+          return self.pre_process(group);
+        });
+      }
+
       chart.showLegend(group_by != null);
 
       return data.map(function(rows, i) {

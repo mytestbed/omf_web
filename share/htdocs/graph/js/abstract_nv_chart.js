@@ -138,8 +138,10 @@ define(["graph/abstract_chart", 'vendor/nv_d3/js/nv.d3'], function (abstract_cha
       if (aw < 10 || ah < 10) {
         return;
       }
+
+      var fdata = this.filter_data(data);
       var bl = this.base_layer//.select(".chart_layer")
-                  .datum(this._datum(data, this.chart))
+                  .datum(this._datum(fdata, this.chart))
                   ;
       if (this.opts.transition_duration > 0) {
         bl = bl.transition().duration(500);
