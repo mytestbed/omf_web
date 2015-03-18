@@ -6,43 +6,38 @@ OML.require_dependency("vendor/nv_d3/js/models/lineChart", ["vendor/nv_d3/js/mod
 define(["graph/line_chart3",
   ], function (line_chart) {
 
-  var chart = line_chart.extend({
-    decl_properties: [
-      ['x_axis', 'key', {property: 'x'}],
-      ['y_axis', 'key', {property: 'y'}],
-      ['group_by', 'key', {optional: true}],
-      ['stroke_width', 'int', 2],
-      ['stroke_color', 'color', 'category10()'],
-      ['stroke_fill', 'color', 'blue']
-    ],
+  var klass = line_chart.extend({
+    decl_properties: line_chart.prototype.decl_properties.concat([
+    ]),
 
+    // This product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).
+    RdYlGr: {
+      3: ["#fc8d59", "#ffffbf", "#91cf60"],
+      4: ["#d7191c", "#fdae61", "#a6d96a", "#1a9641"],
+      5: ["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"],
+      6: ["#d73027", "#fc8d59", "#fee08b", "#d9ef8b", "#91cf60", "#1a9850"],
+      7: ["#d73027", "#fc8d59", "#fee08b", "#ffffbf", "#d9ef8b", "#91cf60", "#1a9850"],
+      8: ["#d73027", "#f46d43", "#fdae61", "#fee08b", "#d9ef8b", "#a6d96a", "#66bd63", "#1a9850"],
+      9: ["#d73027", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#d9ef8b", "#a6d96a", "#66bd63", "#1a9850"],
+      10: ["#a50026", "#d73027", "#f46d43", "#fdae61", "#fee08b", "#d9ef8b", "#a6d96a", "#66bd63", "#1a9850", "#006837"],
+      11: ["#a50026", "#d73027", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#d9ef8b", "#a6d96a", "#66bd63", "#1a9850", "#006837"]
+    },
 
     _create_model: function() {
       return nv.models.stackedAreaChart()
-        .useInteractiveGuideline(true);
-    },
+        .useInteractiveGuideline(true)
+        .controlLabels({stacked: "Stacked"})
+        .showControls(false)
 
-    _configure_mapping: function(m, chart) {
-      var x_index = m.x_axis;
-      var y_index = m.y_axis;
-      chart.x(function(d) {
-        var v = x_index(d);
-        if (!_.isFinite(v)) {
-          return 0;
-        }
-        return v;
-      });
-      chart.y(function(d) {
-        var v = y_index(d);
-        if (!_.isFinite(v)) {
-          return 0;
-        }
-        return v;
-      });
+        ;
     },
 
     _configure_options: function(opts, chart) {
-      chart.__super__._configure_options.call(this, opts, chart);
+      klass.__super__._configure_options.call(this, opts, chart);
+      chart.stacked.style('expand');
+      chart.useInteractiveGuideline(true);
+
+
       // chart
         // .rotateLabels(opts.rotate_labels)
         // .staggerLabels(opts.stagger_labels)
@@ -50,49 +45,77 @@ define(["graph/line_chart3",
         // .showValues(opts.show_values)
         // .margin(opts.margin)
         // ;
-      this.opts.transition_duration = 0; // force no smooth transition
-      this._configure_xy_axis(opts, chart);
+      //this.opts.transition_duration = 0; // force no smooth transition
+      //this._configure_xy_axis(opts, chart);
+    },
 
-      if (opts.pre_process) {
-        switch(opts.pre_process) {
-          case "relative_y":
-            this.pre_process = function(data) {
-              if (data.length <= 1) return data;
+    _configure_mapping: function(m, chart) {
 
-              var m = this.opts.mapping;
-              var sx = this.schema[m.x_axis.property];
-              var sy = this.schema[m.y_axis.property];
-              if (sx == undefined || sy == undefined) {
-                error("Can't resolve x_axis or y_axis mapping");
-                return data;
-              }
-              var ix = sx.index;
-              var iy = sy.index;
+      chart.x(function(d) {
+        return d[1].x;
+      });
+      chart.y(function(d) {
+        var ya = d[1].y;
+        var y = ya[d[0]];
+        return y || 0;
+      });
+    },
 
-              var first = data.shift();
-              var x0 = first[ix];
-              var y0 = first[iy];
-              _.each(data, function(d) {
-                var x1 = d[ix];
-                var y1 = d[iy];
-                var dx = x1 - x0;
-                if (dx != 0) {
-                  var dy = y1 - y0;
-                  d[iy] = dy / dx;
-                } else {
-                  // TODO: What's a better strategy?
-                  var i = 0;
-                }
-                x0 = x1;
-                y0 = y1;
-              });
-              return data;
-            }
-            break;
-          default:
-            error("Unknown pre_process method '" + opts.pre_process + "'.");
+    _bin_data: function(data) {
+      if (data.length == 0) return null;
+
+      var self = this;
+      var m = self.mapping;
+      var dxy = _.map(data, function(d) { return [m.x_axis(d), m.y_axis(d)]; });
+
+      var unique_y = _.unique(dxy, function(d) { return d[1]; });
+      var bin_f;
+      var y_bin_labels;
+      if (unique_y.length > 10) {
+
+      } else {
+        var centers = _.map(unique_y, function(d) { return d[1]; }).sort();
+        y_bin_cnt = centers.length;
+        var last = centers[0];
+        var borders = _.map(centers.slice(1), function(c) {
+          var m = (c - last) / 2 + last;
+          last = c;
+          return m;
+        })
+        var ccnt = borders.length;
+        bin_f = function(d) {
+          var y = d[1];
+          for (var i = 0; i < ccnt; i++) {
+            if (y <= borders[i]) return i;
+          }
+          return ccnt;
         }
+        y_bin_labels = _.map(centers, function(d) { return "" + d; });
       }
+
+      var min_x = m.x_axis(_.min(data, function(d) {
+        return m.x_axis(d);
+      }));
+      var max_x = m.x_axis(_.max(data, function(d) { return m.x_axis(d); }));
+      var x_bin_cnt = Math.round(self.w / 5);
+      var x_bin_w = x_bin_cnt / (max_x - min_x); // make bins 5 smaple wide
+      var inv_x_bin_w = 1 / x_bin_w;
+      var x_bins = [];
+      for (var i = 0; i < x_bin_cnt; i++) {
+        x_bins[i] = {x: inv_x_bin_w * (0.5 + i) + min_x, y: []};
+      }
+      _.each(dxy, function(d) {
+        var x = d[0];
+        var xbid = Math.round((x - min_x) * x_bin_w);
+        var bin = x_bins[xbid];
+        if (bin == null) {
+          bin = x_bins[xbid] = {x: inv_x_bin_w * (0.5 + xbid) + min_x, y: []}
+        }
+        var ybid = bin_f(d);
+        var ycnt = bin.y[ybid] || 0;
+        bin.y[ybid] = ycnt + 1;
+      });
+      return {x_bins: _.compact(x_bins), y_bin_labels: y_bin_labels};
     },
 
     _datum: function(data, chart) {
@@ -100,56 +123,30 @@ define(["graph/line_chart3",
       var m = this.mapping;
       var o = this.opts;
 
+      var bd = this._bin_data(data);
+      if (bd == null) return [];
 
-      var group_by = m.group_by;
-      var data;
-      if (group_by != null) {
-        data = this.group_by(data, group_by);
-      } else {
-        data = [data];
-      };
-      if (this.pre_process) {
-        data = _.map(data, function(group) {
-          return self.pre_process(group);
-        });
-      }
+      var x_bins = bd.x_bins;
+      var y_bin_labels = bd.y_bin_labels;
 
       // Don't show legend if there are too many ines (groups)
-      chart.showLegend(group_by != null && data.length < 20);
-
-      return data.map(function(rows, i) {
-        if (rows.length > self.w) {
-          // to many data items, down sample
-          var spacing  = (0.8 * self.w) / rows.length;
-          var nd = [];
-          var i = 0;
-          for (; i < rows.length; i += spacing) {
-            nd.push(data[Math.round(i)]);
-          }
-          data = nd;
-        }
-        var name = m.group_by != null ? m.group_by(rows[0]) : 'unknown';
+      chart.showLegend(true);
+      chart.color(this.RdYlGr[y_bin_labels.length]|| d3.scale.category20().range());
+      var lines = [];
+      for (var i = 0; i < y_bin_labels.length; i++) {
+        var name = y_bin_labels[i];
         var line = {
-          values: rows,
           key: name,
+          values: _.map(x_bins, function(b) { return[i, b]; })
         };
-        if (o.area) line.area = o.area;
-        if (m.stroke_color) {
-          line.color = m.stroke_color(name);
-        }
-        if (m.stroke_width) {
-          if (typeof(m.stroke_width) === 'function') {
-            line.stroke_width = m.stroke_width(name);
-          } else {
-            line.stroke_width = m.stroke_width;
-          }
-        }
-        return line;
-      });
+        lines.push(line);
+      }
+      return lines;
     },
+
   });
 
-  return chart;
+  return klass;
 });
 
 /*
