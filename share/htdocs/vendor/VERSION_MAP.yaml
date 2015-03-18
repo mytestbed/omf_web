@@ -16,3 +16,4 @@ font-awesome: font-awesome-4.1.0
 smartmenus:   smartmenus-0.9.6
 echarts:      echarts-2.1.10
 leaflet:      leaflet-0.7.3
+nv_d3:        nvd3-1.2.0
