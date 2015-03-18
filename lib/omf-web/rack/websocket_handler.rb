@@ -24,6 +24,7 @@ module OMF::Web::Rack
         active_data_sources: {},
         pausing: false
       }
+      debug "websocket open - #{env.object_id}"
     end
 
     def on_message(env, msg_s)
@@ -78,7 +79,8 @@ module OMF::Web::Rack
       unless sq.empty?
         # More to send, let's wait a bit
         context[:pausing] = true
-        EM.add_timer SEND_INTERVAL do
+        #EM.add_timer SEND_INTERVAL do
+        EM.next_tick do
           context[:pausing] = false
           _process_send_queue(context)
         end
