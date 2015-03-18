@@ -48,13 +48,20 @@ define(['omf/data_source3'], function(data_source) {
 
       ds.close();
       delete sources[ds_name];
-    }
+    };
 
     context.each = function(f) {
       _.each(sources, function(ds, name) {
         f(ds, name);
       })
-    }
+    };
+
+    context.ping_repo = function(ds_name, ts) {
+      var ds = sources[ds_name];
+      if (ds) {
+        ds.ping(ts);
+      }
+    };
 
     return context;
   }

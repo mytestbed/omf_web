@@ -26,6 +26,10 @@ function omf_web_data_source(opts) {
       if (!arguments.length) return ping_marker;
       ping_marker = _;
       return data_source;
+    },
+    // return true if this data source should NOT be garbage collected
+    is_persistent: function() {
+      return opts.persistent == true
     }
   };
 
