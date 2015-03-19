@@ -238,7 +238,10 @@ define(['omf/data_source_repo', 'vendor/d3/d3'], function(ds_repo) {
             self.schemas[name] = schema;
           }
           if (typeof(self.decl_properties) != "undefined") {
-            var mapping = (name == null) ? self.opts.mapping : self.opts.mapping[name];
+            var mapping = self.opts.mapping || {};
+            if (name != null) {
+              mapping = mapping[name] || {};
+            }
             var decl_properties = (name == null) ? self.decl_properties : self.decl_properties[name];
             var mapping = self.process_single_mapping(schema, mapping, decl_properties);
             if (name == null) {

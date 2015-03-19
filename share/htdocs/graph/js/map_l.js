@@ -6,7 +6,12 @@ OML.append_require_shim("vendor/leaflet/leaflet-src", {
   deps: ["vendor/d3/d3", "css!vendor/leaflet/leaflet"]
 });
 
-define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/TileLayer.Grayscale"], function (abstract, L) {
+define(["graph/abstract_widget",
+  "vendor/leaflet/leaflet-src",
+  //"vendor/leaflet/leaflet-terminator",
+  "vendor/leaflet/L.Terminator",
+    "vendor/leaflet/TileLayer.Grayscale"
+  ], function (abstract, L, SunTerminator) {
 
   var ctxt = abstract.extend({
     //this.opts = opts;
@@ -36,7 +41,12 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
         ['fill_color', 'color', 'red'],
         ['stroke_width', 'int', 2],
         ['stroke_color', 'color', 'gray'],
+      ],
+      time: [
+        ['time', 'key', {property: 'time', optional: true}]
       ]
+
+
     },
 
     defaults: function() {
@@ -50,7 +60,8 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
         map: {
           lat: 39.0997300, lon: -94.5785700, // Kansas City
           zoom_level: 4,
-          tile_provider: 'esri_world_topo'
+          tile_provider: 'esri_world_topo',
+          show_terminator: false // sun terminator
         },
         nodes: {
           anchor: {
@@ -95,7 +106,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
       },
       esri_world_topo: {
         url: 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, FAO, NOAA'
       },
       esri_world_imagery: {
         url: 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -193,7 +204,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
         sources.forEach(function (ds) {
           if (ds.label == null) ds.label = 'nodes';
           var label = ds.label;
-          if (label == 'nodes' || label == 'links') {
+          if (label == 'nodes' || label == 'links' || label == 'time') {
             dss[label] = self.init_single_data_source(ds);
           } else {
             OML.error("received unknown data source: %s", ds);
@@ -203,7 +214,7 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
         _.each(_.pairs(sources), function(p) {
           var label = p[0];
           var ds = p[1];
-          if (label == 'nodes' || label == 'links') {
+          if (label == 'nodes' || label == 'links' || label == 'time') {
             dss[label] = self.init_single_data_source(ds);
           } else {
             OML.error("received unknown data source: %s", label);
@@ -243,6 +254,17 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
         self._on_map_changed();
       });
       this._create_tile_layer(mopts).addTo(map);
+      if (mopts.show_terminator) {
+        this.sun_terminator = SunTerminator({
+          //.setStyle({
+          //  weight: 1,
+          //  color: '#000',
+          //  fill: '#000'
+          }).addTo(map)
+          //.setTime(Date.now())
+          //.setTime(new Date(new Date().getTime() + 2 * 60 * 60000))
+        ;
+      }
       return map;
     },
 
@@ -335,15 +357,17 @@ define(["graph/abstract_widget", "vendor/leaflet/leaflet-src", "vendor/leaflet/T
     _draw: function(data, overlay) {
       /** Check if we want to hide the site internals for this zoom level ***/
       var hide_site_internals = false;
-      var shopts = this.opts.hide_site_internals
-      if (shopts && this.mapping.nodes.site) {
-        var zoom = this.map.getZoom();
-        var from = shopts.from || 0;
-        var to = shopts.to || 10000;
-        hide_site_internals =  from <= zoom && zoom <= to;
-      }
+      if (data.nodes) {
+        var shopts = this.opts.hide_site_internals;
+        if (shopts && this.mapping.nodes.site) {
+          var zoom = this.map.getZoom();
+          var from = shopts.from || 0;
+          var to = shopts.to || 10000;
+          hide_site_internals = from <= zoom && zoom <= to;
+        }
 
-      this._draw_nodes(data, overlay, hide_site_internals);
+        this._draw_nodes(data, overlay, hide_site_internals);
+      }
       if (data.links) {
         this._draw_links(data.links, overlay, hide_site_internals);
       }
